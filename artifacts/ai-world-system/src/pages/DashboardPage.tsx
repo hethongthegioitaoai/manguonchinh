@@ -7,7 +7,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
 import { getWorld, WORLDS, SYSTEM_ICONS, getRealm, type SystemName } from "@/lib/worlds";
 
 interface Character {
@@ -20,7 +19,7 @@ interface Character {
     exp?: number;
     created_at?: string;
   };
-  world_id: string;
+  worldId: string;
 }
 
 const STAT_BLOCKS = [
@@ -35,7 +34,7 @@ function randomStat(base: number) {
 }
 
 export default function DashboardPage() {
-  const { session, loading, signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const [, setLocation] = useLocation();
   const [characters, setCharacters] = useState<Character[]>([]);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -43,25 +42,21 @@ export default function DashboardPage() {
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && !session) setLocation("/login");
-  }, [session, loading, setLocation]);
+    if (!loading && !user) setLocation("/login");
+  }, [user, loading, setLocation]);
 
   useEffect(() => {
-    if (!session) return;
+    if (!user) return;
     loadCharacters();
-  }, [session]);
+  }, [user]);
 
   async function loadCharacters() {
     setFetching(true);
     setFetchError(null);
     try {
-      const { data, error } = await supabase
-        .from("characters")
-        .select("*")
-        .eq("user_id", session!.user.id)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
+      const res = await fetch("/api/characters", { credentials: "include" });
+      if (!res.ok) throw new Error(`Failed to load characters: ${res.status}`);
+      const data = await res.json();
       setCharacters(data ?? []);
     } catch (err: unknown) {
       setFetchError(err instanceof Error ? err.message : "Failed to load characters");
@@ -70,12 +65,11 @@ export default function DashboardPage() {
     }
   }
 
-  async function handleSignOut() {
-    await signOut();
-    setLocation("/");
+  function handleSignOut() {
+    signOut();
   }
 
-  if (loading || !session) {
+  if (loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="font-orbitron text-primary animate-pulse tracking-widest">INITIALIZING...</div>
@@ -97,14 +91,14 @@ export default function DashboardPage() {
   const seed = char ? char.id.charCodeAt(0) + char.id.charCodeAt(1) : 42;
   const stats = STAT_BLOCKS.map((s, i) => ({ ...s, val: randomStat(40 + seed % (10 + i * 5)) }));
 
+  const displayName = user.email ?? user.firstName ?? "OPERATIVE";
+
   return (
     <div className="min-h-screen w-full bg-background text-foreground relative overflow-hidden">
-      {/* Ambient glow */}
       <div
         className="absolute top-0 left-0 w-full h-96 pointer-events-none z-0 transition-all duration-700"
         style={{ background: `radial-gradient(ellipse at 30% -10%, ${worldColor}25, transparent 65%)` }}
       />
-      {/* Grid */}
       <div
         className="absolute inset-0 z-0 opacity-[0.03]"
         style={{
@@ -113,7 +107,6 @@ export default function DashboardPage() {
         }}
       />
 
-      {/* Nav */}
       <nav className="relative z-10 px-6 py-4 flex items-center justify-between border-b border-border/40">
         <div className="flex items-center gap-3">
           <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: worldColor }} />
@@ -123,7 +116,7 @@ export default function DashboardPage() {
         </div>
         <div className="flex items-center gap-4">
           <span className="font-mono text-xs text-muted-foreground hidden md:block">
-            {session.user.email}
+            {displayName}
           </span>
           <Button
             variant="ghost"
@@ -138,23 +131,18 @@ export default function DashboardPage() {
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 md:px-8 py-8">
 
-        {/* Loading */}
         {fetching && (
           <div className="flex items-center justify-center py-32">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         )}
 
-        {/* Error */}
         {!fetching && fetchError && (
           <div className="font-mono text-xs text-destructive border border-destructive/30 bg-destructive/10 px-4 py-3 max-w-lg mx-auto">
             {fetchError}
-            <br />
-            <span className="text-muted-foreground">Make sure you have run the Supabase setup SQL.</span>
           </div>
         )}
 
-        {/* No characters */}
         {!fetching && !fetchError && characters.length === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -173,7 +161,6 @@ export default function DashboardPage() {
           </motion.div>
         )}
 
-        {/* Dashboard with character */}
         {!fetching && !fetchError && characters.length > 0 && char && (
           <AnimatePresence mode="wait">
             <motion.div
@@ -185,7 +172,6 @@ export default function DashboardPage() {
               className="space-y-6"
             >
 
-              {/* Header row */}
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                   <p className="font-mono text-xs tracking-widest mb-1" style={{ color: worldColor }}>
@@ -225,10 +211,8 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Main grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
-                {/* Left — character card */}
                 <div
                   className="md:col-span-1 bg-card/60 backdrop-blur-md border border-border relative overflow-hidden"
                   style={{ boxShadow: `0 0 40px ${worldColor}10` }}
@@ -236,7 +220,6 @@ export default function DashboardPage() {
                   <div className="absolute top-0 left-0 w-1 h-full" style={{ backgroundColor: worldColor }} />
 
                   <div className="p-6 space-y-5">
-                    {/* Avatar */}
                     <div className="flex items-center justify-center">
                       <div
                         className="w-20 h-20 flex items-center justify-center border-2 text-4xl"
@@ -246,14 +229,12 @@ export default function DashboardPage() {
                       </div>
                     </div>
 
-                    {/* Level + Realm */}
                     <div className="text-center">
                       <div className="font-mono text-xs text-muted-foreground tracking-widest mb-1">REALM</div>
                       <div className="font-orbitron text-lg font-bold" style={{ color: worldColor }}>{realm}</div>
                       <div className="font-mono text-xs text-muted-foreground mt-1">LVL {level}</div>
                     </div>
 
-                    {/* EXP bar */}
                     <div>
                       <div className="flex justify-between font-mono text-xs text-muted-foreground mb-1">
                         <span>EXP</span>
@@ -270,7 +251,6 @@ export default function DashboardPage() {
                       </div>
                     </div>
 
-                    {/* Stats grid */}
                     <div className="grid grid-cols-2 gap-2">
                       {stats.map((s) => (
                         <div key={s.key} className="border border-border/50 p-2 text-center">
@@ -280,7 +260,6 @@ export default function DashboardPage() {
                       ))}
                     </div>
 
-                    {/* World badge */}
                     <div className="flex items-center gap-2 border border-border/40 px-3 py-2">
                       {world && <world.icon className="w-4 h-4 flex-shrink-0" style={{ color: worldColor }} strokeWidth={1.5} />}
                       <div>
@@ -291,10 +270,8 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Right — actions + world info */}
                 <div className="md:col-span-2 space-y-5">
 
-                  {/* Action cards */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {[
                       {
@@ -361,7 +338,6 @@ export default function DashboardPage() {
                     ))}
                   </div>
 
-                  {/* World lore panel */}
                   <div
                     className="border border-border/50 bg-card/40 p-6 relative overflow-hidden"
                     style={{ boxShadow: `inset 0 0 60px ${worldColor}05` }}
@@ -389,7 +365,6 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  {/* Character info strip */}
                   <div className="grid grid-cols-3 gap-3">
                     {[
                       { icon: User, label: "OPERATIVE", val: char.name },
@@ -406,7 +381,6 @@ export default function DashboardPage() {
                     ))}
                   </div>
 
-                  {/* Other worlds CTA */}
                   <div className="border border-dashed border-border/30 p-4 flex items-center justify-between">
                     <div>
                       <div className="font-mono text-xs text-muted-foreground tracking-widest">MULTIVERSE ACCESS</div>

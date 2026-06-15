@@ -18,29 +18,10 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-const basePath = process.env.BASE_PATH;
-
-if (!basePath) {
-  throw new Error(
-    "BASE_PATH environment variable is required but was not provided.",
-  );
-}
-
-let supabaseUrl = (process.env.SUPABASE_URL ?? "").trim();
-const supabaseAnonKey = (process.env.SUPABASE_ANON_KEY ?? "").trim();
-
-// Auto-prepend https:// if user entered the URL without a protocol
-if (supabaseUrl && !supabaseUrl.startsWith("http://") && !supabaseUrl.startsWith("https://")) {
-  supabaseUrl = "https://" + supabaseUrl;
-}
-
+const basePath = process.env.BASE_PATH ?? "/";
 
 export default defineConfig({
   base: basePath,
-  define: {
-    __SUPABASE_URL__: JSON.stringify(supabaseUrl),
-    __SUPABASE_ANON_KEY__: JSON.stringify(supabaseAnonKey),
-  },
   plugins: [
     react(),
     tailwindcss(),
@@ -78,6 +59,13 @@ export default defineConfig({
     allowedHosts: true,
     fs: {
       strict: true,
+    },
+    proxy: {
+      "/api": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
   preview: {

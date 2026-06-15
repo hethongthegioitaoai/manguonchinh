@@ -20,16 +20,16 @@ const itemVariants = {
 };
 
 export default function WorldsPage() {
-  const { session, loading, signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    if (!loading && !session) {
+    if (!loading && !user) {
       setLocation("/login");
     }
-  }, [session, loading, setLocation]);
+  }, [user, loading, setLocation]);
 
-  if (loading || !session) {
+  if (loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="font-orbitron text-primary animate-pulse tracking-widest">INITIALIZING...</div>
@@ -38,9 +38,10 @@ export default function WorldsPage() {
   }
 
   async function handleSignOut() {
-    await signOut();
-    setLocation("/");
+    signOut();
   }
+
+  const displayName = user.email ?? user.firstName ?? "OPERATIVE";
 
   return (
     <div className="min-h-screen w-full bg-background text-foreground py-12 px-4 md:px-8 relative overflow-hidden">
@@ -52,11 +53,10 @@ export default function WorldsPage() {
       />
 
       <div className="max-w-7xl mx-auto relative z-10">
-        {/* Header with sign out */}
         <header className="mb-16 text-center relative">
           <div className="absolute right-0 top-0 flex items-center gap-3">
             <span className="font-mono text-xs text-muted-foreground hidden md:block truncate max-w-[200px]" data-testid="text-user-email">
-              {session.user.email}
+              {displayName}
             </span>
             <Button
               variant="ghost"

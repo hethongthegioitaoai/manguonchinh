@@ -4,7 +4,6 @@ import { useLocation } from "wouter";
 import { ChevronLeft, Zap, RotateCcw, Loader2, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
 import { getWorld, SYSTEM_ICONS, type SystemName } from "@/lib/worlds";
 import { getStartNode, getNode, SYSTEM_BONUSES, type StoryNode, type StoryChoice } from "@/lib/narrative";
 
@@ -25,7 +24,7 @@ interface HistoryEntry {
 }
 
 export default function PlayPage() {
-  const { session, loading } = useAuth();
+  const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
 
   const [character, setCharacter] = useState<Character | null>(null);
@@ -41,13 +40,13 @@ export default function PlayPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!loading && !session) setLocation("/login");
-  }, [session, loading, setLocation]);
+    if (!loading && !user) setLocation("/login");
+  }, [user, loading, setLocation]);
 
   useEffect(() => {
-    if (!session) return;
+    if (!user) return;
     loadCharacter();
-  }, [session]);
+  }, [user]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -58,21 +57,21 @@ export default function PlayPage() {
   }, []);
 
   async function loadCharacter() {
-    const { data } = await supabase
-      .from("characters")
-      .select("*")
-      .eq("user_id", session!.user.id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
-
-    if (data) {
-      setCharacter(data);
-      setTotalExp(data.stats?.exp ?? 0);
-      const start = getStartNode(data.stats?.world_slug ?? "");
-      if (start) startTypewriter(start);
+    try {
+      const res = await fetch("/api/characters", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to load");
+      const data: Character[] = await res.json();
+      if (data.length > 0) {
+        const char = data[0];
+        setCharacter(char);
+        setTotalExp(char.stats?.exp ?? 0);
+        const start = getStartNode(char.stats?.world_slug ?? "");
+        if (start) startTypewriter(start);
+      }
+    } catch {
+    } finally {
+      setFetching(false);
     }
-    setFetching(false);
   }
 
   function startTypewriter(node: StoryNode) {
@@ -136,7 +135,7 @@ export default function PlayPage() {
     if (start) startTypewriter(start);
   }
 
-  if (loading || !session) {
+  if (loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="font-orbitron text-primary animate-pulse tracking-widest">ĐANG KHỞI ĐỘNG...</div>
@@ -170,7 +169,6 @@ export default function PlayPage() {
 
   return (
     <div className="min-h-screen w-full bg-background text-foreground relative flex flex-col">
-      {/* Ambient */}
       <div
         className="absolute top-0 left-0 w-full h-64 pointer-events-none z-0"
         style={{ background: `radial-gradient(ellipse at 50% -10%, ${worldColor}20, transparent 60%)` }}
@@ -183,7 +181,6 @@ export default function PlayPage() {
         }}
       />
 
-      {/* Nav */}
       <nav className="relative z-10 px-4 md:px-6 py-3 flex items-center justify-between border-b border-border/40 flex-shrink-0">
         <button
           onClick={() => setLocation("/dashboard")}
@@ -192,7 +189,6 @@ export default function PlayPage() {
           <ChevronLeft className="w-4 h-4" /> BẢNG ĐIỀU KHIỂN
         </button>
         <div className="flex items-center gap-3">
-          {/* EXP display */}
           <div className="relative">
             <div className="font-mono text-xs border border-border/50 px-3 py-1 flex items-center gap-2">
               <Zap className="w-3 h-3" style={{ color: worldColor }} />
@@ -213,7 +209,6 @@ export default function PlayPage() {
               )}
             </AnimatePresence>
           </div>
-          {/* Character chip */}
           <div className="font-mono text-xs border border-border/50 px-3 py-1 flex items-center gap-2">
             <span>{systemIcon}</span>
             <span className="text-muted-foreground">{character.name}</span>
@@ -221,10 +216,8 @@ export default function PlayPage() {
         </div>
       </nav>
 
-      {/* Main story area */}
       <div className="relative z-10 flex-1 flex flex-col max-w-3xl w-full mx-auto px-4 md:px-6 py-6">
 
-        {/* World header */}
         <div className="mb-4 flex items-center gap-3">
           {world && <world.icon className="w-5 h-5" style={{ color: worldColor }} strokeWidth={1.5} />}
           <div>
@@ -241,7 +234,6 @@ export default function PlayPage() {
           )}
         </div>
 
-        {/* System bonus tip */}
         {systemBonus && history.length === 0 && (
           <motion.div
             initial={{ opacity: 0, y: -8 }}
@@ -254,7 +246,6 @@ export default function PlayPage() {
           </motion.div>
         )}
 
-        {/* History log */}
         <div className="space-y-6 mb-6">
           {history.map((entry, i) => (
             <motion.div
@@ -275,7 +266,6 @@ export default function PlayPage() {
           ))}
         </div>
 
-        {/* Current story panel */}
         <AnimatePresence mode="wait">
           {currentNode && (
             <motion.div
@@ -286,7 +276,6 @@ export default function PlayPage() {
               transition={{ duration: 0.35 }}
               className="flex-1"
             >
-              {/* Story text */}
               <div
                 className="relative border border-border/60 bg-card/50 backdrop-blur-sm p-6 mb-6 cursor-pointer"
                 style={{ boxShadow: `0 0 40px ${worldColor}08` }}
@@ -295,7 +284,6 @@ export default function PlayPage() {
                 <div className="absolute top-0 left-0 w-1 h-full" style={{ backgroundColor: worldColor }} />
                 <div className="absolute top-0 right-0 w-8 h-px" style={{ backgroundColor: worldColor }} />
 
-                {/* Scan line */}
                 {isTyping && (
                   <motion.div
                     className="absolute left-0 right-0 h-px pointer-events-none opacity-30"
@@ -328,7 +316,6 @@ export default function PlayPage() {
                 )}
               </div>
 
-              {/* Choices */}
               {!isTyping && (
                 <AnimatePresence>
                   {isEnding ? (
@@ -379,7 +366,6 @@ export default function PlayPage() {
                           disabled={choosing}
                           onClick={() => handleChoice(choice)}
                           className="w-full text-left group border border-border/60 bg-card/30 hover:bg-card/60 px-5 py-4 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
-                          style={{}}
                           whileHover={{ borderColor: worldColor }}
                         >
                           <div

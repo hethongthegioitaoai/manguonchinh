@@ -16,7 +16,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
 import { getWorld, SYSTEMS, rollSystem, SYSTEM_ICONS, SYSTEM_DESC, type SystemName } from "@/lib/worlds";
 
 const schema = z.object({
@@ -33,7 +32,7 @@ type Phase = "form" | "rolling" | "revealed" | "saving" | "done";
 
 export default function CharacterCreationPage() {
   const { worldId } = useParams<{ worldId: string }>();
-  const { session, loading } = useAuth();
+  const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
 
   const world = getWorld(worldId ?? "");
@@ -50,8 +49,8 @@ export default function CharacterCreationPage() {
   });
 
   useEffect(() => {
-    if (!loading && !session) setLocation("/login");
-  }, [session, loading, setLocation]);
+    if (!loading && !user) setLocation("/login");
+  }, [user, loading, setLocation]);
 
   useEffect(() => {
     if (!world) setLocation("/worlds");
@@ -63,7 +62,7 @@ export default function CharacterCreationPage() {
     };
   }, []);
 
-  if (loading || !session || !world) {
+  if (loading || !user || !world) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="font-orbitron text-primary animate-pulse tracking-widest">INITIALIZING...</div>
@@ -71,7 +70,7 @@ export default function CharacterCreationPage() {
     );
   }
 
-  function handleRollSystem(data: FormValues) {
+  function handleRollSystem(_data: FormValues) {
     setPhase("rolling");
     setErrorMsg(null);
 
@@ -91,37 +90,31 @@ export default function CharacterCreationPage() {
   }
 
   async function handleConfirm() {
-    if (!assignedSystem || !session || !world) return;
+    if (!assignedSystem || !user || !world) return;
     setPhase("saving");
     setErrorMsg(null);
 
     const characterName = form.getValues("name");
 
     try {
-      const { data: worldRow, error: worldErr } = await supabase
-        .from("worlds")
-        .select("id")
-        .eq("slug", world.id)
-        .single();
-
-      if (worldErr || !worldRow) {
-        throw new Error(
-          "World not found in database. Make sure you've run the Supabase setup SQL."
-        );
-      }
-
-      const { error: insertErr } = await supabase.from("characters").insert({
-        user_id: session.user.id,
-        world_id: worldRow.id,
-        name: characterName,
-        stats: {
-          system: assignedSystem,
-          world_slug: world.id,
-          created_at: new Date().toISOString(),
-        },
+      const res = await fetch("/api/characters", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          worldSlug: world.id,
+          name: characterName,
+          stats: {
+            system: assignedSystem,
+            world_slug: world.id,
+          },
+        }),
       });
 
-      if (insertErr) throw new Error(insertErr.message);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message ?? "Failed to save character");
+      }
 
       setPhase("done");
       setTimeout(() => setLocation("/dashboard"), 2800);
@@ -137,14 +130,12 @@ export default function CharacterCreationPage() {
     <div
       className="min-h-screen w-full bg-background text-foreground relative overflow-hidden flex flex-col"
     >
-      {/* World-tinted top glow */}
       <div
         className="absolute top-0 left-0 w-full h-64 pointer-events-none z-0"
         style={{
           background: `radial-gradient(ellipse at 50% -20%, ${world.color}30, transparent 70%)`,
         }}
       />
-      {/* Grid */}
       <div
         className="absolute inset-0 z-0 opacity-[0.04]"
         style={{
@@ -154,7 +145,6 @@ export default function CharacterCreationPage() {
         }}
       />
 
-      {/* Nav */}
       <nav className="relative z-10 px-6 py-4 flex items-center justify-between border-b border-border/30">
         <button
           onClick={() => setLocation("/worlds")}
@@ -174,7 +164,6 @@ export default function CharacterCreationPage() {
       <div className="relative z-10 flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-lg">
 
-          {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -188,7 +177,6 @@ export default function CharacterCreationPage() {
             </h1>
           </motion.div>
 
-          {/* Done state */}
           <AnimatePresence mode="wait">
             {phase === "done" && (
               <motion.div
@@ -210,7 +198,6 @@ export default function CharacterCreationPage() {
             {phase !== "done" && (
               <motion.div key="form-area" className="space-y-6">
 
-                {/* Name Form */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -218,7 +205,6 @@ export default function CharacterCreationPage() {
                   className="bg-card/70 backdrop-blur-md border border-border relative"
                   style={{ boxShadow: `0 0 40px ${world.color}10` }}
                 >
-                  {/* accent bar */}
                   <div className="absolute top-0 left-0 w-1 h-full" style={{ backgroundColor: world.color }} />
                   <div className="absolute top-0 right-0 w-6 h-0.5" style={{ backgroundColor: world.color }} />
 
@@ -271,7 +257,6 @@ export default function CharacterCreationPage() {
                   </div>
                 </motion.div>
 
-                {/* System Panel */}
                 <AnimatePresence>
                   {(phase === "rolling" || phase === "revealed" || phase === "saving") && displaySystem && (
                     <motion.div
@@ -286,7 +271,6 @@ export default function CharacterCreationPage() {
                         transition: "border-color 0.3s, box-shadow 0.5s",
                       }}
                     >
-                      {/* Scan line animation during rolling */}
                       {phase === "rolling" && (
                         <motion.div
                           className="absolute inset-0 pointer-events-none"
@@ -334,7 +318,6 @@ export default function CharacterCreationPage() {
                   )}
                 </AnimatePresence>
 
-                {/* Error */}
                 {errorMsg && (
                   <motion.p
                     initial={{ opacity: 0 }}
@@ -346,7 +329,6 @@ export default function CharacterCreationPage() {
                   </motion.p>
                 )}
 
-                {/* Re-roll + Confirm buttons */}
                 {(phase === "revealed" || phase === "saving") && (
                   <motion.div
                     initial={{ opacity: 0, y: 12 }}
