@@ -1,99 +1,99 @@
 # AI World System
 
-A dark futuristic cyber cultivation web app where players authenticate, select immersive AI-driven worlds, and create characters bound to randomly assigned power systems.
+Ứng dụng web phong cách cyber cultivation tối tăm, nơi người chơi đăng nhập, chọn thế giới nhập vai do AI dẫn dắt và tạo nhân vật gắn với hệ thống năng lực được chỉ định ngẫu nhiên.
 
 ---
 
-## Tech Stack
+## Công nghệ sử dụng
 
 - **Frontend**: React + Vite + TypeScript
-- **Styling**: Tailwind CSS v4, Framer Motion
-- **Fonts**: Orbitron (display), Rajdhani (body)
-- **Routing**: Wouter
-- **Auth & Database**: Supabase
-- **UI Components**: shadcn/ui + Radix UI
+- **Giao diện**: Tailwind CSS v4, Framer Motion
+- **Font chữ**: Orbitron (tiêu đề), Rajdhani (nội dung)
+- **Điều hướng**: Wouter
+- **Xác thực & Cơ sở dữ liệu**: Supabase
+- **Thành phần UI**: shadcn/ui + Radix UI
 
 ---
 
-## Pages
+## Các trang
 
-| Route | Page | Description |
+| Đường dẫn | Trang | Mô tả |
 |---|---|---|
-| `/` | Landing | Full-screen entry point with animated logo and Enter World CTA |
-| `/login` | Login | Email + password auth via Supabase. New accounts auto-register |
-| `/worlds` | World Selection | Three world cards — Cultivation, Cyberpunk, Wasteland |
-| `/create-character/:worldId` | Character Creation | Enter name, roll a random System, save character to Supabase |
+| `/` | Trang chủ | Màn hình đầy đủ với logo có hiệu ứng động và nút Vào Thế Giới |
+| `/login` | Đăng nhập | Xác thực bằng email + mật khẩu qua Supabase. Tài khoản mới tự động đăng ký |
+| `/worlds` | Chọn Thế Giới | Ba thẻ thế giới — Tu Tiên, Cyberpunk, Vùng Hoang Phế |
+| `/create-character/:worldId` | Tạo Nhân Vật | Nhập tên, quay ngẫu nhiên Hệ Thống, lưu nhân vật vào Supabase |
 
 ---
 
-## Worlds
+## Các thế giới
 
-| World | Subtitle | Accent |
+| Thế Giới | Phụ đề | Màu chủ đạo |
 |---|---|---|
-| Cultivation | Nine Heavens Ascension | Cyan |
-| Cyberpunk | Neo-Kowloon Secundus | Purple |
-| Wasteland | Necro-Biome Zero | Toxic Green |
+| Tu Tiên | Cửu Thiên Thăng Thiên | Xanh Cyan |
+| Cyberpunk | Neo-Kowloon Secundus | Tím |
+| Vùng Hoang Phế | Necro-Biome Zero | Xanh Độc |
 
 ---
 
-## Systems (randomly assigned)
+## Hệ Thống (chỉ định ngẫu nhiên)
 
-- Sword God System
-- Alchemy System
-- Merchant System
-- Beast Taming System
-- Immortal Cultivation System
+- Kiếm Thần Hệ Thống
+- Luyện Đan Hệ Thống
+- Thương Nhân Hệ Thống
+- Thú Tướng Hệ Thống
+- Bất Tử Tu Tiên Hệ Thống
 
 ---
 
-## Supabase Setup
+## Cài đặt Supabase
 
-### Environment Variables
+### Biến môi trường
 
-| Secret | Description |
+| Bí mật | Mô tả |
 |---|---|
-| `SUPABASE_URL` | Project URL from Supabase → Settings → API → Project URL |
-| `SUPABASE_ANON_KEY` | Anon public key from the same section |
+| `SUPABASE_URL` | URL dự án — lấy tại Supabase → Settings → API → Project URL |
+| `SUPABASE_ANON_KEY` | Khóa công khai anon tại cùng mục trên |
 
-> The app auto-prepends `https://` if the URL was entered without a protocol.
+> Ứng dụng tự động thêm `https://` nếu URL được nhập thiếu giao thức.
 
-### Database Tables
+### Bảng cơ sở dữ liệu
 
-Run `artifacts/ai-world-system/supabase-setup.sql` in your Supabase **SQL Editor**:
+Chạy file `artifacts/ai-world-system/supabase-setup.sql` trong **SQL Editor** của Supabase:
 
 ```
-users       — Public profiles, auto-created via trigger on auth.users insert
-worlds      — The 3 worlds (seeded: cultivation, cyberpunk, zombie)
-characters  — User characters with name, world FK, and stats JSONB
+users       — Hồ sơ công khai, tự tạo qua trigger khi có user mới trong auth.users
+worlds      — 3 thế giới (đã seed sẵn: cultivation, cyberpunk, zombie)
+characters  — Nhân vật người dùng với tên, khóa ngoại thế giới và JSONB stats
 ```
 
-All tables use **Row Level Security** — users can only read and write their own data.
+Tất cả các bảng đều bật **Row Level Security** — người dùng chỉ đọc/ghi được dữ liệu của chính mình.
 
 ---
 
-## Local Development
+## Chạy dự án
 
 ```bash
-# Install dependencies
+# Cài đặt dependencies
 pnpm install
 
-# Start the frontend dev server
+# Khởi động frontend
 pnpm --filter @workspace/ai-world-system run dev
 
-# Start the API server
+# Khởi động API server
 pnpm --filter @workspace/api-server run dev
 
-# Full typecheck
+# Kiểm tra kiểu dữ liệu toàn bộ dự án
 pnpm run typecheck
 ```
 
 ---
 
-## Project Structure
+## Cấu trúc dự án
 
 ```
 artifacts/
-  ai-world-system/          # React + Vite frontend
+  ai-world-system/          # Frontend React + Vite
     src/
       pages/
         LandingPage.tsx
@@ -101,33 +101,33 @@ artifacts/
         WorldsPage.tsx
         CharacterCreationPage.tsx
       contexts/
-        AuthContext.tsx     # Supabase session state
+        AuthContext.tsx     # Quản lý phiên đăng nhập Supabase
       lib/
-        supabase.ts         # Supabase client
-        worlds.ts           # Worlds + Systems constants
-      components/ui/        # shadcn/ui components
-    supabase-setup.sql      # DB schema + RLS policies
+        supabase.ts         # Khởi tạo Supabase client
+        worlds.ts           # Hằng số Thế Giới & Hệ Thống
+      components/ui/        # Thành phần shadcn/ui
+    supabase-setup.sql      # Schema DB + RLS policies
     vite.config.ts
-  api-server/               # Express API (future backend logic)
-lib/                        # Shared workspace libraries
+  api-server/               # API Express (logic backend tương lai)
+lib/                        # Thư viện dùng chung giữa các package
 ```
 
 ---
 
-## Auth Flow
+## Luồng xác thực
 
-1. User enters email + password on `/login`
-2. `signInWithPassword` is attempted — if account doesn't exist, it auto-registers via `signUp` then signs in
-3. Session is stored by Supabase in localStorage and managed via `AuthContext`
-4. Protected routes (`/worlds`, `/create-character/*`) redirect to `/login` if no session
+1. Người dùng nhập email + mật khẩu tại `/login`
+2. Thử `signInWithPassword` — nếu tài khoản chưa tồn tại, tự động `signUp` rồi đăng nhập
+3. Phiên đăng nhập được Supabase lưu vào localStorage và quản lý qua `AuthContext`
+4. Các trang được bảo vệ (`/worlds`, `/create-character/*`) tự chuyển về `/login` nếu chưa đăng nhập
 
 ---
 
-## Character Creation Flow
+## Luồng tạo nhân vật
 
-1. Select a world on `/worlds`
-2. Enter a character name (2–32 chars)
-3. Click **ASSIGN SYSTEM** — roulette animation cycles through all systems before landing on a random one
-4. Review system description, re-roll or confirm
-5. On confirm: character is saved to Supabase `characters` table with name, world FK, and `stats.system`
-6. Redirects back to `/worlds`
+1. Chọn thế giới tại `/worlds`
+2. Nhập tên nhân vật (2–32 ký tự)
+3. Nhấn **ASSIGN SYSTEM** — hiệu ứng quay roulette chạy qua tất cả hệ thống rồi dừng ngẫu nhiên
+4. Xem mô tả hệ thống, quay lại hoặc xác nhận
+5. Khi xác nhận: nhân vật được lưu vào bảng `characters` với tên, khóa ngoại thế giới và `stats.system`
+6. Tự động chuyển về `/worlds`
