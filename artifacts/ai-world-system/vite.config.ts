@@ -26,8 +26,18 @@ if (!basePath) {
   );
 }
 
+const supabaseUrl = (process.env.SUPABASE_URL ?? "").trim();
+const supabaseAnonKey = (process.env.SUPABASE_ANON_KEY ?? "").trim();
+
+// eslint-disable-next-line no-console
+console.log("[vite-config] SUPABASE_URL present:", supabaseUrl.length > 0, "starts with https:", supabaseUrl.startsWith("https"));
+
 export default defineConfig({
   base: basePath,
+  define: {
+    __SUPABASE_URL__: JSON.stringify(supabaseUrl),
+    __SUPABASE_ANON_KEY__: JSON.stringify(supabaseAnonKey),
+  },
   plugins: [
     react(),
     tailwindcss(),
