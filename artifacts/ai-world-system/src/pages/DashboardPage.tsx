@@ -396,9 +396,9 @@ export default function DashboardPage() {
                         icon: Swords,
                         label: "CHIẾN ĐẤU",
                         sub: "Giao chiến kẻ thù, nhận EXP",
-                        tag: "SẮP RA MẮT",
-                        disabled: true,
-                        onClick: undefined,
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/battle"),
                       },
                       {
                         icon: Globe,
