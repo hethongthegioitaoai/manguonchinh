@@ -107,7 +107,7 @@ export default function CharacterCreationPage() {
   }
 
   async function handleConfirm() {
-    if (!assignedSystem || !session) return;
+    if (!assignedSystem || !session || !world) return;
     setPhase("saving");
     setErrorMsg(null);
 
