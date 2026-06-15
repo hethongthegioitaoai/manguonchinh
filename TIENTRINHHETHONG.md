@@ -183,8 +183,8 @@ lib/
 | `battles` | ✅ | Lịch sử chiến đấu |
 | `items` | ✅ | Vật phẩm (24 templates × 3 worlds) |
 | `inventory` | ✅ | Túi đồ nhân vật |
-| `guilds` | ❌ Chưa có | Guild system (P2) |
-| `guild_members` | ❌ Chưa có | Thành viên guild (P2) |
+| `guilds` | ✅ | Bang hội (P2) |
+| `guild_members` | ✅ | Thành viên bang hội (P2) |
 | `daily_logins` | ❌ Chưa có | Daily check-in (P3) |
 | `pvp_challenges` | ❌ Chưa có | PvP thách đấu (P3) |
 | `season_records` | ❌ Chưa có | Season system (P4) |
