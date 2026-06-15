@@ -1,36 +1,10 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLocation } from "wouter";
-import { Sword, Cpu, Biohazard, ArrowRight, LogOut } from "lucide-react";
+import { ArrowRight, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-
-const WORLDS = [
-  {
-    id: "cultivation",
-    name: "CULTIVATION",
-    title: "NINE HEAVENS ASCENSION",
-    description: "Ancient martial arts meets AI enhancement. Harness digital Qi, meditate in neon-lit mist mountains, and break through to the next realm of consciousness.",
-    icon: Sword,
-    color: "hsl(var(--primary))",
-  },
-  {
-    id: "cyberpunk",
-    name: "CYBERPUNK",
-    title: "NEO-KOWLOON SECUNDUS",
-    description: "A neon-drenched megacity where chrome and circuitry reign. Navigate rain-soaked streets, hack corporate ICE, and survive the digital underground.",
-    icon: Cpu,
-    color: "hsl(var(--secondary))",
-  },
-  {
-    id: "zombie",
-    name: "WASTELAND",
-    title: "NECRO-BIOME ZERO",
-    description: "Post-apocalyptic survival horror. Scavenge for synthetic resources in a world of bioluminescent decay and mutated techno-organic nightmares.",
-    icon: Biohazard,
-    color: "hsl(140 80% 50%)",
-  },
-];
+import { WORLDS } from "@/lib/worlds";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -156,6 +130,7 @@ export default function WorldsPage() {
                   <Button
                     className="w-full rounded-none font-orbitron tracking-widest border border-border bg-background hover:bg-background transition-all duration-300 group-hover:border-transparent relative overflow-hidden"
                     data-testid={`button-enter-${world.id}`}
+                    onClick={() => setLocation(`/create-character/${world.id}`)}
                   >
                     <span className="relative z-10 flex items-center justify-between w-full group-hover:text-black transition-colors duration-300">
                       <span>ENTER SIMULATION</span>
