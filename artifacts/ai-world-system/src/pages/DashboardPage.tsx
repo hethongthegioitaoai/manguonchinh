@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import {
   LogOut, Globe, Zap, User, Shield, Swords,
-  TrendingUp, ChevronRight, Plus, Loader2,
+  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,14 +12,23 @@ import { getWorld, WORLDS, SYSTEM_ICONS, getRealm, type SystemName } from "@/lib
 interface Character {
   id: string;
   name: string;
+  level: number;
+  exp: number;
   stats: {
     system: SystemName;
     world_slug: string;
-    level?: number;
-    exp?: number;
     created_at?: string;
   };
   worldId: string;
+}
+
+interface Quest {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  expReward: number;
+  questType: string;
 }
 
 const STAT_BLOCKS = [
@@ -33,6 +42,14 @@ function randomStat(base: number) {
   return Math.floor(base + Math.random() * 20);
 }
 
+const QUEST_TYPE_ICONS: Record<string, string> = {
+  daily: "📋",
+  combat: "⚔",
+  wisdom: "☯",
+  explore: "🗺",
+  trade: "💹",
+};
+
 export default function DashboardPage() {
   const { user, loading, signOut } = useAuth();
   const [, setLocation] = useLocation();
@@ -40,6 +57,11 @@ export default function DashboardPage() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [fetching, setFetching] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [quests, setQuests] = useState<Quest[]>([]);
+  const [questsLoading, setQuestsLoading] = useState(false);
+  const [completingId, setCompletingId] = useState<string | null>(null);
+  const [levelUpFlash, setLevelUpFlash] = useState(false);
+  const [expFlash, setExpFlash] = useState<number | null>(null);
 
   useEffect(() => {
     if (!loading && !user) setLocation("/login");
@@ -65,8 +87,55 @@ export default function DashboardPage() {
     }
   }
 
-  function handleSignOut() {
-    signOut();
+  const loadQuests = useCallback(async (characterId: string) => {
+    setQuestsLoading(true);
+    try {
+      const genRes = await fetch(`/api/quests/generate/${characterId}`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (genRes.ok) {
+        const data = await genRes.json();
+        setQuests(data.filter((q: Quest) => q.status === "active"));
+      }
+    } catch {
+    } finally {
+      setQuestsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const char = characters[activeIdx];
+    if (char) loadQuests(char.id);
+  }, [activeIdx, characters, loadQuests]);
+
+  async function handleCompleteQuest(questId: string) {
+    if (completingId) return;
+    setCompletingId(questId);
+    try {
+      const res = await fetch(`/api/quests/${questId}/complete`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed");
+      const data = await res.json();
+
+      setExpFlash(data.expGained);
+      setTimeout(() => setExpFlash(null), 2000);
+
+      if (data.leveledUp) {
+        setLevelUpFlash(true);
+        setTimeout(() => setLevelUpFlash(false), 3000);
+      }
+
+      setQuests(prev => prev.filter(q => q.id !== questId));
+      setCharacters(prev => prev.map((c, i) =>
+        i === activeIdx ? { ...c, level: data.character.level, exp: data.character.exp } : c
+      ));
+    } catch {
+    } finally {
+      setCompletingId(null);
+    }
   }
 
   if (loading || !user) {
@@ -81,10 +150,11 @@ export default function DashboardPage() {
   const worldSlug = char?.stats?.world_slug ?? "";
   const world = getWorld(worldSlug);
   const worldColor = world?.color ?? "hsl(var(--primary))";
-  const level = char?.stats?.level ?? 1;
-  const exp = char?.stats?.exp ?? 0;
-  const expNeeded = level * 100;
-  const expPercent = Math.min((exp / expNeeded) * 100, 100);
+  const level = char?.level ?? 1;
+  const exp = char?.exp ?? 0;
+  const expPerLevel = 100;
+  const expNeeded = level * expPerLevel;
+  const expPercent = Math.min(((exp % expPerLevel) / expPerLevel) * 100, 100);
   const realm = world ? getRealm(worldSlug, level) : "—";
   const systemIcon = char ? (SYSTEM_ICONS[char.stats.system] ?? "⚡") : "";
 
@@ -107,6 +177,29 @@ export default function DashboardPage() {
         }}
       />
 
+      <AnimatePresence>
+        {levelUpFlash && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.2 }}
+            className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+          >
+            <div
+              className="border-2 px-12 py-8 text-center backdrop-blur-sm"
+              style={{ borderColor: worldColor, background: `${worldColor}20` }}
+            >
+              <div className="font-orbitron text-3xl font-black tracking-widest mb-2" style={{ color: worldColor }}>
+                ⬆ THĂNG CẤP!
+              </div>
+              <div className="font-mono text-sm text-muted-foreground">
+                Ngươi đã đạt {getRealm(worldSlug, level)}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <nav className="relative z-10 px-6 py-4 flex items-center justify-between border-b border-border/40">
         <div className="flex items-center gap-3">
           <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: worldColor }} />
@@ -115,13 +208,24 @@ export default function DashboardPage() {
           </span>
         </div>
         <div className="flex items-center gap-4">
+          {expFlash !== null && (
+            <motion.div
+              initial={{ opacity: 1, y: 0 }}
+              animate={{ opacity: 0, y: -20 }}
+              transition={{ duration: 1.5 }}
+              className="font-orbitron text-xs font-bold"
+              style={{ color: worldColor }}
+            >
+              +{expFlash} EXP
+            </motion.div>
+          )}
           <span className="font-mono text-xs text-muted-foreground hidden md:block">
             {displayName}
           </span>
           <Button
             variant="ghost"
             size="sm"
-            onClick={handleSignOut}
+            onClick={signOut}
             className="font-mono text-xs text-muted-foreground hover:text-primary rounded-none border border-transparent hover:border-primary/30 transition-all"
           >
             <LogOut className="w-4 h-4 mr-1" /> DISCONNECT
@@ -171,7 +275,6 @@ export default function DashboardPage() {
               transition={{ duration: 0.3 }}
               className="space-y-6"
             >
-
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                   <p className="font-mono text-xs tracking-widest mb-1" style={{ color: worldColor }}>
@@ -230,15 +333,18 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="text-center">
-                      <div className="font-mono text-xs text-muted-foreground tracking-widest mb-1">REALM</div>
+                      <div className="font-mono text-xs text-muted-foreground tracking-widest mb-1">CẢNH GIỚI</div>
                       <div className="font-orbitron text-lg font-bold" style={{ color: worldColor }}>{realm}</div>
-                      <div className="font-mono text-xs text-muted-foreground mt-1">LVL {level}</div>
+                      <div className="flex items-center justify-center gap-1 mt-1">
+                        <Star className="w-3 h-3" style={{ color: worldColor }} />
+                        <span className="font-mono text-xs text-muted-foreground">CẤP {level}</span>
+                      </div>
                     </div>
 
                     <div>
                       <div className="flex justify-between font-mono text-xs text-muted-foreground mb-1">
                         <span>EXP</span>
-                        <span>{exp} / {expNeeded}</span>
+                        <span>{exp % expPerLevel} / {expPerLevel}</span>
                       </div>
                       <div className="w-full h-1.5 bg-border/50 relative overflow-hidden">
                         <motion.div
@@ -248,6 +354,9 @@ export default function DashboardPage() {
                           className="h-full"
                           style={{ backgroundColor: worldColor }}
                         />
+                      </div>
+                      <div className="font-mono text-xs text-muted-foreground/50 mt-1 text-right">
+                        Tổng: {exp} EXP
                       </div>
                     </div>
 
@@ -339,6 +448,74 @@ export default function DashboardPage() {
                   </div>
 
                   <div
+                    className="border border-border/60 bg-card/40 relative overflow-hidden"
+                    style={{ boxShadow: `inset 0 0 40px ${worldColor}05` }}
+                  >
+                    <div className="flex items-center justify-between px-5 py-3 border-b border-border/40">
+                      <div className="flex items-center gap-2">
+                        <Scroll className="w-4 h-4" style={{ color: worldColor }} strokeWidth={1.5} />
+                        <span className="font-orbitron text-sm font-bold tracking-widest" style={{ color: worldColor }}>
+                          NHIỆM VỤ
+                        </span>
+                      </div>
+                      <span className="font-mono text-xs text-muted-foreground">
+                        {quests.length} đang hoạt động
+                      </span>
+                    </div>
+
+                    <div className="p-4 space-y-3">
+                      {questsLoading ? (
+                        <div className="flex items-center justify-center py-6">
+                          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                        </div>
+                      ) : quests.length === 0 ? (
+                        <div className="text-center py-6 font-mono text-xs text-muted-foreground/50">
+                          Không có nhiệm vụ. Hãy khám phá thế giới!
+                        </div>
+                      ) : (
+                        quests.map((quest) => (
+                          <motion.div
+                            key={quest.id}
+                            initial={{ opacity: 0, x: -8 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 8 }}
+                            layout
+                            className="border border-border/50 bg-card/30 p-4 flex items-start gap-3"
+                          >
+                            <span className="text-lg flex-shrink-0 mt-0.5">
+                              {QUEST_TYPE_ICONS[quest.questType] ?? "📋"}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-orbitron text-xs font-bold truncate">{quest.title}</div>
+                              <div className="font-mono text-xs text-muted-foreground/70 mt-1 leading-relaxed line-clamp-2">
+                                {quest.description}
+                              </div>
+                              <div className="flex items-center gap-2 mt-2">
+                                <Zap className="w-3 h-3" style={{ color: worldColor }} />
+                                <span className="font-mono text-xs" style={{ color: worldColor }}>
+                                  +{quest.expReward} EXP
+                                </span>
+                              </div>
+                            </div>
+                            <Button
+                              size="sm"
+                              disabled={completingId === quest.id}
+                              onClick={() => handleCompleteQuest(quest.id)}
+                              className="rounded-none font-orbitron text-xs tracking-widest border flex-shrink-0 h-8 px-3"
+                              style={{ borderColor: worldColor, background: `${worldColor}15`, color: worldColor }}
+                            >
+                              {completingId === quest.id
+                                ? <Loader2 className="w-3 h-3 animate-spin" />
+                                : <CheckCircle2 className="w-3 h-3" />
+                              }
+                            </Button>
+                          </motion.div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  <div
                     className="border border-border/50 bg-card/40 p-6 relative overflow-hidden"
                     style={{ boxShadow: `inset 0 0 60px ${worldColor}05` }}
                   >
@@ -368,7 +545,7 @@ export default function DashboardPage() {
                   <div className="grid grid-cols-3 gap-3">
                     {[
                       { icon: User, label: "OPERATIVE", val: char.name },
-                      { icon: Zap, label: "SYSTEM", val: char.stats.system.replace(" System", "") },
+                      { icon: Zap, label: "SYSTEM", val: char.stats.system.replace(" System", "").replace(" Hệ Thống", "") },
                       { icon: Shield, label: "STATUS", val: "ACTIVE" },
                     ].map((item) => (
                       <div key={item.label} className="border border-border/50 bg-card/30 px-4 py-3 flex items-center gap-3">

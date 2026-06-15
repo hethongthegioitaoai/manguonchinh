@@ -1,4 +1,4 @@
-import { pgTable, varchar, timestamp, jsonb, uuid } from "drizzle-orm/pg-core";
+import { pgTable, varchar, timestamp, jsonb, uuid, integer } from "drizzle-orm/pg-core";
 import { users } from "./auth";
 
 export const worlds = pgTable("worlds", {
@@ -13,6 +13,8 @@ export const characters = pgTable("characters", {
   worldId: uuid("world_id").references(() => worlds.id),
   name: varchar("name", { length: 64 }).notNull(),
   stats: jsonb("stats").notNull().default({}),
+  level: integer("level").notNull().default(1),
+  exp: integer("exp").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

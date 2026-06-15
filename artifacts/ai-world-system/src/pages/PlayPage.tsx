@@ -10,11 +10,11 @@ import { getStartNode, getNode, SYSTEM_BONUSES, type StoryNode, type StoryChoice
 interface Character {
   id: string;
   name: string;
+  level: number;
+  exp: number;
   stats: {
     system: SystemName;
     world_slug: string;
-    level?: number;
-    exp?: number;
   };
 }
 
@@ -64,7 +64,7 @@ export default function PlayPage() {
       if (data.length > 0) {
         const char = data[0];
         setCharacter(char);
-        setTotalExp(char.stats?.exp ?? 0);
+        setTotalExp(char.exp ?? 0);
         const start = getStartNode(char.stats?.world_slug ?? "");
         if (start) startTypewriter(start);
       }
@@ -117,6 +117,13 @@ export default function PlayPage() {
     setExpFlash(gained);
     setTimeout(() => setExpFlash(null), 1500);
 
+    fetch(`/api/characters/${character.id}/exp`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount: gained }),
+    }).catch(() => {});
+
     await new Promise(r => setTimeout(r, 400));
 
     const nextNode = getNode(worldSlug, choice.nextNodeId);
@@ -130,7 +137,7 @@ export default function PlayPage() {
   function restartStory() {
     if (!character) return;
     setHistory([]);
-    setTotalExp(character.stats?.exp ?? 0);
+    setTotalExp(character.exp ?? 0);
     const start = getStartNode(character.stats.world_slug);
     if (start) startTypewriter(start);
   }

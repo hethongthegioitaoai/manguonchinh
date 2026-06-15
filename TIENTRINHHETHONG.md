@@ -103,20 +103,19 @@
 - [x] Dashboard "KHÁM PHÁ" → `/play` kết nối xong
 - [ ] **PHASE 2:** Tích hợp Gemini AI (khi có key) để sinh story động
 
-#### 2.3 Hệ thống Quest / Nhiệm vụ
-- [ ] Bảng DB: `quests` (id, character_id, world_id, title, description, status, reward)
-- [ ] API routes: `GET /api/quests`, `POST /api/quests/:id/complete`
-- [ ] UI: Danh sách quest, chi tiết quest, nhận thưởng
-- [ ] Quest do AI tự sinh dựa trên thế giới + hệ thống nhân vật
+#### 2.3 Hệ thống Quest / Nhiệm vụ ✅
+- [x] Bảng DB: `quests` (id, character_id, world_slug, title, description, status, exp_reward, quest_type, created_at, completed_at)
+- [x] API routes: `GET /api/quests/:characterId`, `POST /api/quests/generate/:characterId`, `POST /api/quests/:questId/complete`
+- [x] UI: Danh sách quest trong Dashboard (tối đa 3 active), nút hoàn thành, EXP flash animation
+- [x] 5 quest template per thế giới (Tu Tiên / Cyberpunk / Hoang Phế), tự động generate khi chưa đủ 3
 
-#### 2.4 Hệ thống Tiến trình / Level
-- [ ] Cột mới trong `characters`: `level`, `exp`, `hp`, `max_hp`, `attributes` JSONB
-- [ ] Công thức EXP lên cấp
-- [ ] Cảnh báo lên cấp (animation)
-- [ ] Danh hiệu/cảnh giới theo thế giới:
-  - Tu Tiên: Luyện Khí → Trúc Cơ → Kim Đan → Nguyên Anh...
-  - Cyberpunk: Cấp 1 → Hacker → Elite → Legend...
-  - Zombie: Survivor → Hunter → Warlord → Overlord...
+#### 2.4 Hệ thống Tiến trình / Level ✅
+- [x] Cột mới trong `characters`: `level` (integer, default 1), `exp` (integer, default 0)
+- [x] Công thức: mỗi 100 EXP = 1 level, level = floor(totalExp / 100) + 1
+- [x] Animation thăng cấp trên Dashboard (overlay fullscreen)
+- [x] EXP được lưu DB khi: hoàn thành quest, chọn lựa trong PlayPage
+- [x] API: `POST /api/characters/:characterId/exp` — cộng EXP + tự tính level
+- [x] Danh hiệu/cảnh giới theo thế giới đã có sẵn (REALM_TITLES trong worlds.ts)
 
 ---
 
