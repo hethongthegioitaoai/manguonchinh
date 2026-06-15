@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
-import { ChevronLeft, Zap, RotateCcw, Loader2, Home } from "lucide-react";
+import { ChevronLeft, Zap, RotateCcw, Loader2, Home, Bot, BookOpen, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { getWorld, SYSTEM_ICONS, type SystemName } from "@/lib/worlds";
@@ -23,19 +23,43 @@ interface HistoryEntry {
   chosen?: StoryChoice;
 }
 
+type PlayMode = "ai" | "static";
+
+const TAG_LABELS: Record<string, string> = {
+  combat: "⚔ chiến đấu",
+  wisdom: "☯ trí tuệ",
+  trade: "💹 giao dịch",
+  explore: "🗺 khám phá",
+};
+
+const SYSTEM_BONUS_MAP: Record<string, { tag: string; bonus: number }> = {
+  "Kiếm Thần Hệ Thống": { tag: "combat", bonus: 10 },
+  "Thương Nhân Hệ Thống": { tag: "trade", bonus: 15 },
+  "Bất Tử Tu Tiên Hệ Thống": { tag: "wisdom", bonus: 12 },
+  "Triệu Hồi Hệ Thống": { tag: "combat", bonus: 8 },
+  "Luyện Đan Hệ Thống": { tag: "wisdom", bonus: 10 },
+  "Ẩn Sát Hệ Thống": { tag: "explore", bonus: 12 },
+  "Cơ Khí Hệ Thống": { tag: "explore", bonus: 10 },
+  "Thần Thú Hệ Thống": { tag: "combat", bonus: 8 },
+};
+
 export default function PlayPage() {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
 
   const [character, setCharacter] = useState<Character | null>(null);
   const [fetching, setFetching] = useState(true);
+  const [mode, setMode] = useState<PlayMode>("ai");
   const [currentNode, setCurrentNode] = useState<StoryNode | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [aiHistory, setAiHistory] = useState<string[]>([]);
   const [totalExp, setTotalExp] = useState(0);
   const [choosing, setChoosing] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
   const [expFlash, setExpFlash] = useState<number | null>(null);
   const [typeText, setTypeText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
   const typeInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -50,7 +74,7 @@ export default function PlayPage() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [typeText, currentNode]);
+  }, [typeText, currentNode, aiLoading]);
 
   useEffect(() => {
     return () => { if (typeInterval.current) clearInterval(typeInterval.current); };
@@ -59,18 +83,74 @@ export default function PlayPage() {
   async function loadCharacter() {
     try {
       const res = await fetch("/api/characters", { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to load");
+      if (!res.ok) throw new Error("Failed");
       const data: Character[] = await res.json();
       if (data.length > 0) {
         const char = data[0];
         setCharacter(char);
         setTotalExp(char.exp ?? 0);
-        const start = getStartNode(char.stats?.world_slug ?? "");
-        if (start) startTypewriter(start);
+        startAiSession(char);
       }
     } catch {
     } finally {
       setFetching(false);
+    }
+  }
+
+  async function startAiSession(char: Character) {
+    setMode("ai");
+    setHistory([]);
+    setAiHistory([]);
+    setCurrentNode(null);
+    setAiError(null);
+    await fetchAiNode(char, null, []);
+  }
+
+  function startStaticSession(char: Character) {
+    setMode("static");
+    setHistory([]);
+    setAiError(null);
+    const start = getStartNode(char.stats?.world_slug ?? "");
+    if (start) startTypewriter(start);
+  }
+
+  async function fetchAiNode(
+    char: Character,
+    choiceLabel: string | null,
+    currentHistory: string[]
+  ) {
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const res = await fetch("/api/narrative/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          characterId: char.id,
+          choiceLabel,
+          history: currentHistory,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || data.fallback) {
+        // fallback về static
+        setAiError("AI Game Master tạm thời không khả dụng — chuyển sang Chế Độ Lịch Sử.");
+        setMode("static");
+        const start = getStartNode(char.stats?.world_slug ?? "");
+        if (start) startTypewriter(start);
+        return;
+      }
+
+      startTypewriter(data as StoryNode);
+    } catch {
+      setAiError("Lỗi kết nối AI — chuyển sang Chế Độ Lịch Sử.");
+      setMode("static");
+      const start = getStartNode(char.stats?.world_slug ?? "");
+      if (start) startTypewriter(start);
+    } finally {
+      setAiLoading(false);
     }
   }
 
@@ -79,7 +159,6 @@ export default function PlayPage() {
     setTypeText("");
     setIsTyping(true);
     if (typeInterval.current) clearInterval(typeInterval.current);
-
     const text = node.text;
     let i = 0;
     typeInterval.current = setInterval(() => {
@@ -89,7 +168,7 @@ export default function PlayPage() {
         clearInterval(typeInterval.current!);
         setIsTyping(false);
       }
-    }, 18);
+    }, 16);
   }
 
   function skipTypewriter() {
@@ -100,19 +179,15 @@ export default function PlayPage() {
   }
 
   async function handleChoice(choice: StoryChoice) {
-    if (!character || !currentNode || isTyping) return;
+    if (!character || !currentNode || isTyping || choosing) return;
     setChoosing(true);
 
-    const worldSlug = character.stats.world_slug;
-    const system = character.stats.system;
-
-    let bonus = 0;
-    if (system === "Kiếm Thần Hệ Thống" && choice.tag === "combat") bonus = 10;
-    if (system === "Thương Nhân Hệ Thống" && choice.tag === "trade") bonus = 15;
-    if (system === "Bất Tử Tu Tiên Hệ Thống" && choice.tag === "wisdom") bonus = 12;
+    const sysBonus = SYSTEM_BONUS_MAP[character.stats.system];
+    const bonus = sysBonus?.tag === choice.tag ? sysBonus.bonus : 0;
     const gained = choice.expGain + bonus;
 
-    setHistory(h => [...h, { node: currentNode, chosen: choice }]);
+    const newHistory = [...history, { node: currentNode, chosen: choice }];
+    setHistory(newHistory);
     setTotalExp(e => e + gained);
     setExpFlash(gained);
     setTimeout(() => setExpFlash(null), 1500);
@@ -124,22 +199,23 @@ export default function PlayPage() {
       body: JSON.stringify({ amount: gained }),
     }).catch(() => {});
 
-    await new Promise(r => setTimeout(r, 400));
-
-    const nextNode = getNode(worldSlug, choice.nextNodeId);
+    await new Promise(r => setTimeout(r, 300));
     setChoosing(false);
 
-    if (nextNode) {
-      startTypewriter(nextNode);
+    if (mode === "ai") {
+      const newAiHistory = [...aiHistory, `Người chơi chọn: "${choice.label}"`];
+      setAiHistory(newAiHistory);
+      await fetchAiNode(character, choice.label, newAiHistory);
+    } else {
+      const nextNode = getNode(character.stats.world_slug, choice.nextNodeId);
+      if (nextNode) startTypewriter(nextNode);
     }
   }
 
-  function restartStory() {
+  function restart() {
     if (!character) return;
-    setHistory([]);
     setTotalExp(character.exp ?? 0);
-    const start = getStartNode(character.stats.world_slug);
-    if (start) startTypewriter(start);
+    startAiSession(character);
   }
 
   if (loading || !user) {
@@ -172,10 +248,11 @@ export default function PlayPage() {
   const worldColor = world?.color ?? "hsl(var(--primary))";
   const systemIcon = SYSTEM_ICONS[character.stats.system] ?? "⚡";
   const systemBonus = SYSTEM_BONUSES[character.stats.system];
-  const isEnding = currentNode?.isEnding ?? false;
+  const isEnding = (currentNode?.isEnding ?? false) && mode === "static";
 
   return (
     <div className="min-h-screen w-full bg-background text-foreground relative flex flex-col">
+      {/* Background */}
       <div
         className="absolute top-0 left-0 w-full h-64 pointer-events-none z-0"
         style={{ background: `radial-gradient(ellipse at 50% -10%, ${worldColor}20, transparent 60%)` }}
@@ -188,6 +265,7 @@ export default function PlayPage() {
         }}
       />
 
+      {/* Nav */}
       <nav className="relative z-10 px-4 md:px-6 py-3 flex items-center justify-between border-b border-border/40 flex-shrink-0">
         <button
           onClick={() => setLocation("/dashboard")}
@@ -196,6 +274,30 @@ export default function PlayPage() {
           <ChevronLeft className="w-4 h-4" /> BẢNG ĐIỀU KHIỂN
         </button>
         <div className="flex items-center gap-3">
+          {/* Mode toggle */}
+          <div className="flex items-center rounded border border-border/50 overflow-hidden">
+            <button
+              onClick={() => character && startAiSession(character)}
+              className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono transition-colors ${
+                mode === "ai"
+                  ? "bg-primary/20 text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Bot className="w-3 h-3" /> AI
+            </button>
+            <button
+              onClick={() => character && startStaticSession(character)}
+              className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono transition-colors border-l border-border/50 ${
+                mode === "static"
+                  ? "bg-primary/20 text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <BookOpen className="w-3 h-3" /> Lịch Sử
+            </button>
+          </div>
+
           <div className="relative">
             <div className="font-mono text-xs border border-border/50 px-3 py-1 flex items-center gap-2">
               <Zap className="w-3 h-3" style={{ color: worldColor }} />
@@ -216,6 +318,7 @@ export default function PlayPage() {
               )}
             </AnimatePresence>
           </div>
+
           <div className="font-mono text-xs border border-border/50 px-3 py-1 flex items-center gap-2">
             <span>{systemIcon}</span>
             <span className="text-muted-foreground">{character.name}</span>
@@ -225,15 +328,24 @@ export default function PlayPage() {
 
       <div className="relative z-10 flex-1 flex flex-col max-w-3xl w-full mx-auto px-4 md:px-6 py-6">
 
+        {/* Header */}
         <div className="mb-4 flex items-center gap-3">
           {world && <world.icon className="w-5 h-5" style={{ color: worldColor }} strokeWidth={1.5} />}
           <div>
-            <span className="font-orbitron text-sm font-bold tracking-wider" style={{ color: worldColor }}>{world?.name}</span>
+            <span className="font-orbitron text-sm font-bold tracking-wider" style={{ color: worldColor }}>
+              {world?.name}
+            </span>
             <span className="font-mono text-xs text-muted-foreground ml-3">{world?.title}</span>
           </div>
+          {mode === "ai" && (
+            <div className="flex items-center gap-1 ml-2 text-xs font-mono" style={{ color: worldColor }}>
+              <Sparkles className="w-3 h-3" />
+              <span className="opacity-70">AI Game Master</span>
+            </div>
+          )}
           {history.length > 0 && (
             <button
-              onClick={restartStory}
+              onClick={restart}
               className="ml-auto font-mono text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
             >
               <RotateCcw className="w-3 h-3" /> Bắt Đầu Lại
@@ -241,7 +353,21 @@ export default function PlayPage() {
           )}
         </div>
 
-        {systemBonus && history.length === 0 && (
+        {/* AI error banner */}
+        <AnimatePresence>
+          {aiError && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              className="mb-4 border border-orange-500/40 bg-orange-500/10 px-4 py-2 font-mono text-xs text-orange-400 flex items-center gap-2"
+            >
+              <Bot className="w-3.5 h-3.5 shrink-0" />
+              {aiError}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* System bonus hint */}
+        {systemBonus && history.length === 0 && !aiLoading && (
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -253,14 +379,10 @@ export default function PlayPage() {
           </motion.div>
         )}
 
+        {/* History */}
         <div className="space-y-6 mb-6">
           {history.map((entry, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="opacity-40"
-            >
+            <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="opacity-40">
               <div className="font-mono text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
                 {entry.node.text.replace(/\*([^*]+)\*/g, "$1")}
               </div>
@@ -273,8 +395,44 @@ export default function PlayPage() {
           ))}
         </div>
 
+        {/* AI loading */}
+        <AnimatePresence>
+          {aiLoading && (
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="flex flex-col items-center justify-center py-16 gap-4"
+            >
+              <div className="relative">
+                <motion.div
+                  className="w-14 h-14 rounded-full border-2 flex items-center justify-center"
+                  style={{ borderColor: `${worldColor}40` }}
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                >
+                  <motion.div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: worldColor }}
+                    animate={{ scale: [1, 1.5, 1] }}
+                    transition={{ duration: 1, repeat: Infinity }}
+                  />
+                </motion.div>
+                <Bot className="w-5 h-5 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ color: worldColor }} />
+              </div>
+              <div className="font-mono text-xs text-muted-foreground tracking-widest">
+                <motion.span
+                  animate={{ opacity: [0.4, 1, 0.4] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  THIÊN ĐẠO ĐANG QUAN SÁT...
+                </motion.span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Current node */}
         <AnimatePresence mode="wait">
-          {currentNode && (
+          {currentNode && !aiLoading && (
             <motion.div
               key={currentNode.id}
               initial={{ opacity: 0, y: 16 }}
@@ -283,6 +441,7 @@ export default function PlayPage() {
               transition={{ duration: 0.35 }}
               className="flex-1"
             >
+              {/* Story text */}
               <div
                 className="relative border border-border/60 bg-card/50 backdrop-blur-sm p-6 mb-6 cursor-pointer"
                 style={{ boxShadow: `0 0 40px ${worldColor}08` }}
@@ -290,6 +449,14 @@ export default function PlayPage() {
               >
                 <div className="absolute top-0 left-0 w-1 h-full" style={{ backgroundColor: worldColor }} />
                 <div className="absolute top-0 right-0 w-8 h-px" style={{ backgroundColor: worldColor }} />
+
+                {/* AI badge */}
+                {mode === "ai" && !isTyping && (
+                  <div className="absolute top-3 right-3 flex items-center gap-1 opacity-40">
+                    <Sparkles className="w-3 h-3" style={{ color: worldColor }} />
+                    <span className="font-mono text-[10px]" style={{ color: worldColor }}>AI</span>
+                  </div>
+                )}
 
                 {isTyping && (
                   <motion.div
@@ -317,20 +484,15 @@ export default function PlayPage() {
                 </p>
 
                 {isTyping && (
-                  <p className="font-mono text-xs text-muted-foreground/40 mt-3 text-right">
-                    [nhấn để bỏ qua]
-                  </p>
+                  <p className="font-mono text-xs text-muted-foreground/40 mt-3 text-right">[nhấn để bỏ qua]</p>
                 )}
               </div>
 
+              {/* Choices */}
               {!isTyping && (
                 <AnimatePresence>
                   {isEnding ? (
-                    <motion.div
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="space-y-4"
-                    >
+                    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
                       <div
                         className="border font-mono text-xs px-4 py-2 text-center tracking-widest"
                         style={{ borderColor: `${worldColor}60`, color: worldColor }}
@@ -339,7 +501,7 @@ export default function PlayPage() {
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <Button
-                          onClick={restartStory}
+                          onClick={restart}
                           variant="outline"
                           className="rounded-none font-orbitron text-xs tracking-widest border-border hover:border-primary/50"
                         >
@@ -364,52 +526,53 @@ export default function PlayPage() {
                       <p className="font-mono text-xs text-muted-foreground tracking-widest mb-4">
                         — CHỌN HÀNH ĐỘNG CỦA NGƯƠI —
                       </p>
-                      {currentNode.choices.map((choice, i) => (
-                        <motion.button
-                          key={choice.id}
-                          initial={{ opacity: 0, x: -12 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: i * 0.1 }}
-                          disabled={choosing}
-                          onClick={() => handleChoice(choice)}
-                          className="w-full text-left group border border-border/60 bg-card/30 hover:bg-card/60 px-5 py-4 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
-                          whileHover={{ borderColor: worldColor }}
-                        >
-                          <div
-                            className="absolute left-0 top-0 h-full w-0 group-hover:w-1 transition-all duration-200"
-                            style={{ backgroundColor: worldColor }}
-                          />
-                          <div className="flex items-start gap-4 pl-2">
-                            <span
-                              className="font-orbitron text-xs font-bold mt-0.5 flex-shrink-0"
-                              style={{ color: worldColor }}
-                            >
-                              {String.fromCharCode(65 + i)}.
-                            </span>
-                            <div className="flex-1 min-w-0">
-                              <span className="font-mono text-sm text-foreground/90 group-hover:text-foreground transition-colors leading-relaxed">
-                                {choice.label}
+                      {currentNode.choices.map((choice, i) => {
+                        const sysBonus = SYSTEM_BONUS_MAP[character.stats.system];
+                        const hasBonus = sysBonus?.tag === choice.tag;
+                        return (
+                          <motion.button
+                            key={choice.id}
+                            initial={{ opacity: 0, x: -12 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.08 }}
+                            disabled={choosing || aiLoading}
+                            onClick={() => handleChoice(choice)}
+                            className="w-full text-left group border border-border/60 bg-card/30 hover:bg-card/60 px-5 py-4 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
+                            whileHover={{ borderColor: worldColor }}
+                          >
+                            <div
+                              className="absolute left-0 top-0 h-full w-0 group-hover:w-1 transition-all duration-200"
+                              style={{ backgroundColor: worldColor }}
+                            />
+                            <div className="flex items-start gap-4 pl-2">
+                              <span
+                                className="font-orbitron text-xs font-bold mt-0.5 flex-shrink-0"
+                                style={{ color: worldColor }}
+                              >
+                                {String.fromCharCode(65 + i)}.
                               </span>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="font-mono text-xs text-muted-foreground/50">
-                                  +{choice.expGain} EXP
-                                  {choice.tag === "combat" && character.stats.system === "Kiếm Thần Hệ Thống" && " +10 bonus"}
-                                  {choice.tag === "trade" && character.stats.system === "Thương Nhân Hệ Thống" && " +15 bonus"}
-                                  {choice.tag === "wisdom" && character.stats.system === "Bất Tử Tu Tiên Hệ Thống" && " +12 bonus"}
+                              <div className="flex-1 min-w-0">
+                                <span className="font-mono text-sm text-foreground/90 group-hover:text-foreground transition-colors leading-relaxed">
+                                  {choice.label}
                                 </span>
-                                {choice.tag && (
-                                  <span className="font-mono text-xs border border-border/30 px-1.5 py-px text-muted-foreground/40">
-                                    {choice.tag === "combat" && "⚔ chiến đấu"}
-                                    {choice.tag === "wisdom" && "☯ trí tuệ"}
-                                    {choice.tag === "trade" && "💹 giao dịch"}
-                                    {choice.tag === "explore" && "🗺 khám phá"}
+                                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                  <span className="font-mono text-xs text-muted-foreground/50">
+                                    +{choice.expGain} EXP
+                                    {hasBonus && (
+                                      <span style={{ color: worldColor }}> +{sysBonus.bonus} hệ thống</span>
+                                    )}
                                   </span>
-                                )}
+                                  {choice.tag && (
+                                    <span className="font-mono text-xs border border-border/30 px-1.5 py-px text-muted-foreground/40">
+                                      {TAG_LABELS[choice.tag] ?? choice.tag}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </motion.button>
-                      ))}
+                          </motion.button>
+                        );
+                      })}
                     </motion.div>
                   )}
                 </AnimatePresence>

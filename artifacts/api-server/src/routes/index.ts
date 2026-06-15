@@ -8,6 +8,7 @@ import battleRouter from "./battle.js";
 import inventoryRouter from "./inventory.js";
 import cultivateRouter from "./cultivate.js";
 import guildsRouter from "./guilds.js";
+import narrativeRouter from "./narrative.js";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(battleRouter);
 router.use(inventoryRouter);
 router.use(cultivateRouter);
 router.use(guildsRouter);
+router.use(narrativeRouter);
 
 export default router;

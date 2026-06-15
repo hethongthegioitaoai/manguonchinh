@@ -5,7 +5,7 @@
 > 2. Tìm task `[ ]` đầu tiên theo thứ tự ưu tiên (P1 → P2 → P3 → P4)
 > 3. Build xong → đánh `[x]` → cập nhật bảng trạng thái → ghi ngày cập nhật
 
-> **Cập nhật lần cuối:** 15/06/2026 — Guild/Clan System xong (/guilds, /guilds/:id, tạo/gia nhập/rời/giải tán bang)
+> **Cập nhật lần cuối:** 15/06/2026 — AI Game Master xong (Gemini 2.0 Flash Lite, POST /api/narrative/generate, PlayPage AI mode + fallback)
 
 ---
 
@@ -104,10 +104,10 @@ lib/
 - [x] QueryClient retry config
 
 #### [AI] AI Narrative — sinh story động
-- [ ] Set secret `GEMINI_API_KEY` (hoặc dùng Replit AI integration)
-- [ ] `POST /api/narrative/generate` — sinh story node từ context nhân vật + world
-- [ ] PlayPage: option "Khám phá tự do" gọi AI endpoint
-- [ ] Fallback về static tree nếu AI lỗi / chưa có key
+- [x] Set secret `GEMINI_API_KEY`
+- [x] `POST /api/narrative/generate` — Gemini 2.0 Flash Lite sinh story node động theo context nhân vật + world + lịch sử hành động
+- [x] PlayPage: mode toggle AI / Lịch Sử, AI mặc định khi vào trang
+- [x] Fallback tự động về static tree nếu AI lỗi / key chưa có
 
 #### [GAME] Tu Luyện System
 - [x] Trang `/cultivate` — màn hình tu luyện nhân vật
