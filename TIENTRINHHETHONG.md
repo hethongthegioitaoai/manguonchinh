@@ -5,7 +5,7 @@
 > 2. Tìm task `[ ]` đầu tiên theo thứ tự ưu tiên (P1 → P2 → P3 → P4)
 > 3. Build xong → đánh `[x]` → cập nhật bảng trạng thái → ghi ngày cập nhật
 
-> **Cập nhật lần cuối:** 15/06/2026 — Tu Luyện System xong (/cultivate, cultivation energy, 6 base stats)
+> **Cập nhật lần cuối:** 15/06/2026 — Guild/Clan System xong (/guilds, /guilds/:id, tạo/gia nhập/rời/giải tán bang)
 
 ---
 
@@ -119,11 +119,12 @@ lib/
 - [x] Dashboard: bỏ "SẮP RA MẮT", route tới `/cultivate`
 
 #### [SOCIAL] Guild / Clan System
-- [ ] Bảng DB `guilds` (id, name, worldSlug, leaderId, memberCount, totalExp)
-- [ ] Bảng DB `guild_members` (guildId, characterId, role, joinedAt)
-- [ ] API `GET/POST /api/guilds`, `POST /api/guilds/:id/join`
-- [ ] Trang `/guilds` — danh sách guild theo world, top guild xếp hạng
-- [ ] Trang `/guilds/:id` — thành viên, tổng EXP, leader
+- [x] Bảng DB `guilds` (id, name, worldSlug, leaderId, memberCount, totalExp, description, tag)
+- [x] Bảng DB `guild_members` (guildId, characterId, role, joinedAt)
+- [x] API `GET/POST /api/guilds`, `POST /api/guilds/:id/join`, `POST /api/guilds/:id/leave`, `DELETE /api/guilds/:id`
+- [x] Trang `/guilds` — danh sách bang, filter theo thế giới, tìm kiếm, lập bang mới
+- [x] Trang `/guilds/:id` — chi tiết, danh sách thành viên, gia nhập/rời/giải tán
+- [x] Dashboard: nút BANG HỘI active, route tới `/guilds`
 
 ### ─────────────────────────────────────────
 ### P3 — HOÀN THIỆN UX
@@ -208,8 +209,8 @@ lib/
 | `/inventory` | Túi đồ / Trang bị | ✅ |
 | `/settings` | Cài đặt tài khoản | ✅ |
 | `/cultivate` | Tu Luyện chỉ số | ✅ |
-| `/guilds` | Danh sách guild | ❌ P2 |
-| `/guilds/:id` | Chi tiết guild | ❌ P2 |
+| `/guilds` | Danh sách bang hội | ✅ |
+| `/guilds/:id` | Chi tiết bang hội | ✅ |
 | `/pvp` | PvP thách đấu | ❌ P3 |
 
 ---

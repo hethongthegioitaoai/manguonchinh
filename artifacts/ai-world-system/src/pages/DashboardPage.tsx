@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import {
-  LogOut, Globe, Zap, User, Shield, Swords,
+  LogOut, Globe, Zap, User, Shield, Swords, Users,
   TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -431,6 +431,14 @@ export default function DashboardPage() {
                         tag: null,
                         disabled: false,
                         onClick: () => setLocation("/inventory"),
+                      },
+                      {
+                        icon: Users,
+                        label: "BANG HỘI",
+                        sub: "Lập bang, chinh chiến cùng đồng minh",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/guilds"),
                       },
                     ].map((action) => (
                       <motion.div

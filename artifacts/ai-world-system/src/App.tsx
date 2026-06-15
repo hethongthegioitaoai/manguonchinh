@@ -18,6 +18,8 @@ import BattleHistoryPage from "@/pages/BattleHistoryPage";
 import InventoryPage from "@/pages/InventoryPage";
 import SettingsPage from "@/pages/SettingsPage";
 import CultivatePage from "@/pages/CultivatePage";
+import GuildsPage from "@/pages/GuildsPage";
+import GuildDetailPage from "@/pages/GuildDetailPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,6 +46,8 @@ function Router() {
       <Route path="/battle" component={BattlePage} />
       <Route path="/settings" component={SettingsPage} />
       <Route path="/cultivate" component={CultivatePage} />
+      <Route path="/guilds" component={GuildsPage} />
+      <Route path="/guilds/:id" component={GuildDetailPage} />
       <Route component={NotFound} />
     </Switch>
   );
