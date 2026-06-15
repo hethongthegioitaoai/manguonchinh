@@ -79,12 +79,13 @@
 
 ### 🟠 ƯU TIÊN 2 — GAMEPLAY CORE (App có nhưng chưa chơi được)
 
-#### 2.1 Trang Phiêu Lưu / Dashboard Nhân Vật (`/dashboard` hoặc `/play`)
-- [ ] Hiển thị thông tin nhân vật hiện tại (tên, thế giới, hệ thống)
-- [ ] Hiển thị stats (level, EXP, HP, năng lực)
-- [ ] Nút vào quest / câu chuyện
-- [ ] Lịch sử hành động gần đây
-- [ ] **→ Hiện tại sau khi tạo nhân vật thì không biết đi đâu tiếp**
+#### 2.1 Trang Dashboard Nhân Vật (`/dashboard`) ✅
+- [x] Hiển thị thông tin nhân vật (tên, thế giới, hệ thống, cảnh giới/realm)
+- [x] Stats panel (STR, INT, AGI, LCK) + thanh EXP
+- [x] Nút hành động: Battle, Explore, Train, Inventory (placeholder COMING SOON)
+- [x] World lore panel + badge thế giới
+- [x] Nút tạo nhân vật mới + chuyển đổi nhân vật
+- [x] Sau khi tạo nhân vật → redirect về `/dashboard` thay vì `/worlds`
 
 #### 2.2 Hệ thống AI Narrative (Trái tim của game!)
 - [ ] Tích hợp AI (OpenAI / Anthropic / Gemini) qua Replit AI Integration

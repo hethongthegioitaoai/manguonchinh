@@ -140,7 +140,7 @@ export default function CharacterCreationPage() {
       if (insertErr) throw new Error(insertErr.message);
 
       setPhase("done");
-      setTimeout(() => setLocation("/worlds"), 2800);
+      setTimeout(() => setLocation("/dashboard"), 2800);
     } catch (err: unknown) {
       setErrorMsg(err instanceof Error ? err.message : "Unknown error occurred");
       setPhase("revealed");
