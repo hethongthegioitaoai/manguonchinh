@@ -160,12 +160,22 @@ router.post("/battle/finish", isAuthenticated, async (req: any, res) => {
       metadata: metadata ?? {},
     }).returning();
 
+    const cultivationEnergyGained = result === "win" ? 20 : result === "draw" ? 10 : 0;
+    const currentStats = (char.stats as any) ?? {};
+    const currentEnergy = typeof currentStats.cultivationEnergy === "number" ? currentStats.cultivationEnergy : 100;
+    const updatedStats = { ...currentStats, cultivationEnergy: currentEnergy + cultivationEnergyGained };
+
     let updatedChar = char;
     let leveledUp = false;
-    if (expGained > 0) {
+
+    if (expGained > 0 || cultivationEnergyGained > 0) {
       const { newExp, newLevel } = levelUp(char.exp, expGained);
       leveledUp = newLevel > char.level;
-      const [updated] = await db.update(characters).set({ exp: newExp, level: newLevel }).where(eq(characters.id, characterId)).returning();
+      const [updated] = await db.update(characters).set({
+        exp: newExp,
+        level: newLevel,
+        stats: updatedStats,
+      }).where(eq(characters.id, characterId)).returning();
       updatedChar = updated;
     }
 
@@ -198,7 +208,7 @@ router.post("/battle/finish", isAuthenticated, async (req: any, res) => {
       }
     }
 
-    res.json({ battle, character: updatedChar, expGained, leveledUp, droppedItem });
+    res.json({ battle, character: updatedChar, expGained, leveledUp, droppedItem, cultivationEnergyGained });
   } catch (err) {
     res.status(500).json({ message: "Failed to finish battle" });
   }

@@ -419,10 +419,10 @@ export default function DashboardPage() {
                       {
                         icon: TrendingUp,
                         label: "TU LUYỆN",
-                        sub: "Tăng cường chỉ số cốt lõi",
-                        tag: "SẮP RA MẮT",
-                        disabled: true,
-                        onClick: undefined,
+                        sub: "Đầu tư linh khí vào chỉ số",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/cultivate"),
                       },
                       {
                         icon: Shield,

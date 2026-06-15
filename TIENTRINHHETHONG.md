@@ -5,7 +5,7 @@
 > 2. Tìm task `[ ]` đầu tiên theo thứ tự ưu tiên (P1 → P2 → P3 → P4)
 > 3. Build xong → đánh `[x]` → cập nhật bảng trạng thái → ghi ngày cập nhật
 
-> **Cập nhật lần cuối:** 15/06/2026 — settings page + error boundary xong
+> **Cập nhật lần cuối:** 15/06/2026 — Tu Luyện System xong (/cultivate, cultivation energy, 6 base stats)
 
 ---
 
@@ -110,12 +110,13 @@ lib/
 - [ ] Fallback về static tree nếu AI lỗi / chưa có key
 
 #### [GAME] Tu Luyện System
-- [ ] Trang `/cultivate` — màn hình tu luyện nhân vật
-- [ ] API `POST /api/cultivate/:characterId` — đầu tư EXP vào chỉ số cụ thể (STR/INT/AGI/LCK)
-- [ ] Hệ thống cost: mỗi điểm chỉ số tốn `level × 10` EXP
-- [ ] Cập nhật bảng `characters.stats` với base stats riêng
-- [ ] Hiển thị stats mới trong radar chart ở `/character/:id`
-- [ ] Dashboard: bỏ "SẮP RA MẮT", route tới `/cultivate`
+- [x] Trang `/cultivate` — màn hình tu luyện nhân vật
+- [x] API `GET/POST /api/cultivate/:characterId` — đọc và đầu tư năng lượng vào chỉ số (STR/INT/AGI/LCK/END/SPR)
+- [x] Hệ thống cost: `floor(currentValue/10) × 10 + 10` năng lượng mỗi điểm (progressive)
+- [x] Năng lượng tu luyện (`cultivationEnergy`) lưu trong `stats` JSONB — +20 win / +10 draw / +15 quest
+- [x] Cập nhật `characters.stats.baseStats` với 6 chỉ số riêng
+- [x] Hiển thị real baseStats trong radar chart ở `/character/:id`
+- [x] Dashboard: bỏ "SẮP RA MẮT", route tới `/cultivate`
 
 #### [SOCIAL] Guild / Clan System
 - [ ] Bảng DB `guilds` (id, name, worldSlug, leaderId, memberCount, totalExp)
@@ -206,7 +207,7 @@ lib/
 | `/battle/history` | Lịch sử chiến đấu | ✅ |
 | `/inventory` | Túi đồ / Trang bị | ✅ |
 | `/settings` | Cài đặt tài khoản | ✅ |
-| `/cultivate` | Tu Luyện chỉ số | ❌ P2 |
+| `/cultivate` | Tu Luyện chỉ số | ✅ |
 | `/guilds` | Danh sách guild | ❌ P2 |
 | `/guilds/:id` | Chi tiết guild | ❌ P2 |
 | `/pvp` | PvP thách đấu | ❌ P3 |

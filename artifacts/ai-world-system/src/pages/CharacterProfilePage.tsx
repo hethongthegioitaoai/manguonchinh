@@ -62,7 +62,17 @@ function seededRandom(seed: number) {
   };
 }
 
-function getStats(charId: string) {
+function getStats(charId: string, baseStats?: Record<string, number> | null) {
+  if (baseStats && typeof baseStats === "object") {
+    return [
+      { stat: "STRENGTH", value: baseStats.STR ?? 10, fullMark: 100 },
+      { stat: "INTEL", value: baseStats.INT ?? 10, fullMark: 100 },
+      { stat: "AGILITY", value: baseStats.AGI ?? 10, fullMark: 100 },
+      { stat: "LUCK", value: baseStats.LCK ?? 10, fullMark: 100 },
+      { stat: "ENDURANCE", value: baseStats.END ?? 10, fullMark: 100 },
+      { stat: "SPIRIT", value: baseStats.SPR ?? 10, fullMark: 100 },
+    ];
+  }
   const rng = seededRandom(charId.split("").reduce((a, c) => a + c.charCodeAt(0), 0));
   return [
     { stat: "STRENGTH", value: Math.floor(40 + rng() * 55), fullMark: 100 },
@@ -154,7 +164,7 @@ export default function CharacterProfilePage() {
   const expPercent = Math.min((expInLevel / expPerLevel) * 100, 100);
   const realm = getRealm(worldSlug, level);
   const systemIcon = SYSTEM_ICONS[character.stats.system] ?? "⚡";
-  const statData = getStats(character.id);
+  const statData = getStats(character.id, (character.stats as any)?.baseStats ?? null);
   const completedQuests = quests.filter(q => q.status === "completed");
   const totalExpFromQuests = completedQuests.reduce((sum, q) => sum + q.expReward, 0);
   const realmTitles = REALM_TITLES[worldSlug] ?? REALM_TITLES["cultivation"];

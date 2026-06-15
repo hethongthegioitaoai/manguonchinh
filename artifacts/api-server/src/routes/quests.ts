@@ -30,6 +30,8 @@ const QUEST_TEMPLATES: Record<string, Array<{ title: string; description: string
   ],
 };
 
+const CULTIVATION_ENERGY_PER_QUEST = 15;
+
 router.get("/quests/:characterId", isAuthenticated, async (req: any, res) => {
   try {
     const userId = req.user.claims.sub;
@@ -110,10 +112,23 @@ router.post("/quests/:questId/complete", isAuthenticated, async (req: any, res) 
     const expPerLevel = 100;
     const newLevel = Math.floor(newExp / expPerLevel) + 1;
 
-    await db.update(quests).set({ status: "completed", completedAt: new Date() }).where(eq(quests.id, questId));
-    const [updatedChar] = await db.update(characters).set({ exp: newExp, level: newLevel }).where(eq(characters.id, char.id)).returning();
+    const currentStats = (char.stats as any) ?? {};
+    const currentEnergy = typeof currentStats.cultivationEnergy === "number" ? currentStats.cultivationEnergy : 100;
+    const updatedStats = { ...currentStats, cultivationEnergy: currentEnergy + CULTIVATION_ENERGY_PER_QUEST };
 
-    res.json({ quest: { ...quest, status: "completed" }, character: updatedChar, expGained: quest.expReward, leveledUp: newLevel > char.level });
+    await db.update(quests).set({ status: "completed", completedAt: new Date() }).where(eq(quests.id, questId));
+    const [updatedChar] = await db.update(characters)
+      .set({ exp: newExp, level: newLevel, stats: updatedStats })
+      .where(eq(characters.id, char.id))
+      .returning();
+
+    res.json({
+      quest: { ...quest, status: "completed" },
+      character: updatedChar,
+      expGained: quest.expReward,
+      leveledUp: newLevel > char.level,
+      cultivationEnergyGained: CULTIVATION_ENERGY_PER_QUEST,
+    });
   } catch {
     res.status(500).json({ message: "Failed to complete quest" });
   }
