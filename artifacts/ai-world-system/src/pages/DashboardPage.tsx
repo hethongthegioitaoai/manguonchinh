@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import {
   LogOut, Globe, Zap, User, Shield, Swords, Users,
-  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings,
+  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -439,6 +439,14 @@ export default function DashboardPage() {
                         tag: null,
                         disabled: false,
                         onClick: () => setLocation("/guilds"),
+                      },
+                      {
+                        icon: Brain,
+                        label: "KÝ ỨC",
+                        sub: "Xem lịch sử hành trình đã ghi lại",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/memories"),
                       },
                     ].map((action) => (
                       <motion.div

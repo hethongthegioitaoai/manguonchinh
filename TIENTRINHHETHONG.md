@@ -2,23 +2,24 @@
 
 > **⚠️ AGENT — ĐỌC FILE NÀY TRƯỚC TIÊN KHI MỞ DỰ ÁN**
 > 1. Đọc phần **ROADMAP** để nắm toàn bộ kế hoạch
-> 2. Tìm task `[ ]` đầu tiên theo thứ tự ưu tiên (P1 → P2 → P3 → P4)
+> 2. Tìm task `[ ]` đầu tiên theo thứ tự Phase 1 → 2 → 3...
 > 3. Build xong → đánh `[x]` → cập nhật bảng trạng thái → ghi ngày cập nhật
 
-> **Cập nhật lần cuối:** 15/06/2026 — AI Game Master xong (Gemini 2.0 Flash Lite, POST /api/narrative/generate, PlayPage AI mode + fallback)
+> **Cập nhật lần cuối:** 15/06/2026 — Phase 2 (Tử Linh), Phase 3 (Memory Engine), Phase 5 (Free Exploration) xong
 
 ---
 
 ## 🌐 TỔNG QUAN DỰ ÁN
 
 **Tên:** AI World System
-**Mô tả:** Web app nhập vai phong cách cyber cultivation tối tăm — người chơi đăng nhập (Replit Auth), chọn thế giới, tạo nhân vật với hệ thống năng lực ngẫu nhiên, chiến đấu, nhận quest, và phiêu lưu.
+**Tầm nhìn:** Nền tảng nơi người dùng tạo thế giới riêng, AI tự sinh NPC/Quest/Boss/Lịch sử, AI quản trị như Game Master, mỗi người chơi nhận Hệ Thống khác nhau. Thế giới tồn tại ngay cả khi không có người chơi online. Sau này hỗ trợ 3D, VR, AR, MR, XR.
 
 **Stack thực tế:**
 - Frontend: React 19 + Vite 7 + TypeScript + Tailwind CSS v4 + Framer Motion + Wouter + shadcn/ui
 - Backend: Express 5 (Node.js 24) — port 8080
 - Database: PostgreSQL + Drizzle ORM (`DATABASE_URL` secret, Replit managed)
 - Auth: **Replit Auth** (OIDC — `openid-client` + `passport`) — KHÔNG dùng Supabase
+- AI: **Gemini 2.0 Flash Lite** (`@google/generative-ai`, key `GEMINI_API_KEY`)
 - Session: `express-session` + `connect-pg-simple` (bảng `sessions`)
 - Monorepo: pnpm workspaces
 
@@ -36,182 +37,273 @@ lib/
 
 ---
 
-## 🗺️ ROADMAP ĐẦY ĐỦ
+## 🗺️ MASTER ROADMAP — 12 PHASES
 
-> Đây là bản đồ toàn bộ tính năng dự kiến của dự án — từ MVP đến hoàn chỉnh.
-> Agent: tìm `[ ]` đầu tiên theo thứ tự P1 → P2 → P3 → P4 và build.
+> Agent: tìm `[ ]` đầu tiên theo thứ tự Phase và build.
 
-### ─────────────────────────────────────────
-### P1 — MVP CỐT LÕI (Đã xong ✅)
-### ─────────────────────────────────────────
+### ════════════════════════════════════════
+### PHASE 1 — FOUNDATION MVP ✅
+### ════════════════════════════════════════
 
-#### [INFRA] Hạ tầng & Auth
-- [x] pnpm monorepo workspace
-- [x] TypeScript config (base + references)
-- [x] Replit Auth OIDC (login/logout/callback + session PostgreSQL)
-- [x] Bảng `sessions`, `users` trong DB
-- [x] `isAuthenticated` middleware + auto refresh token
-- [x] Workflow Frontend (port 19734) + API Server (port 8080)
-- [x] `DATABASE_URL`, `SESSION_SECRET`, `REPL_ID` đã set
+**Mục tiêu:** Người chơi đăng nhập và bắt đầu cuộc phiêu lưu đầu tiên.
 
-#### [DB] Database Schema
-- [x] Bảng `worlds` — 3 thế giới
-- [x] Bảng `characters` — nhân vật (userId, worldId, name, stats JSONB, level, exp)
-- [x] Bảng `quests` — nhiệm vụ
-- [x] Bảng `battles` — lịch sử chiến đấu
-- [x] Bảng `items` — 24 template vật phẩm × 3 worlds
-- [x] Bảng `inventory` — túi đồ nhân vật
+#### Auth
+- [x] Login (Replit Auth OIDC)
+- [x] Session (PostgreSQL)
+- [x] Profile (`/settings`)
 
-#### [FE] Các trang cơ bản
-- [x] `/` — Landing Page
-- [x] `/login` — Đăng nhập Replit Auth
-- [x] `/worlds` — Chọn thế giới
-- [x] `/create-character/:worldId` — Tạo nhân vật + roulette hệ thống
-- [x] `/dashboard` — Dashboard chính
-- [x] `/play` — Narrative / Khám phá
-- [x] `/character/:id` — Hồ sơ nhân vật + radar chart
-- [x] `/leaderboard` — Bảng xếp hạng top 20
-- [x] `/battle` — Chiến trường 6 chế độ
-- [x] `/battle/history` — Lịch sử chiến đấu + stats
-- [x] `/inventory` — Túi đồ + trang bị
-- [x] `/404` — Not Found
+#### Character
+- [x] Tạo nhân vật
+- [x] Chọn thế giới
+- [x] Chỉ số cơ bản (6 stats)
+- [x] Level + EXP system
 
-#### [BE] API Routes cơ bản
-- [x] `GET /health`
-- [x] `GET /api/auth/user`
-- [x] `GET/POST /api/characters`, `DELETE /api/characters/:id`
-- [x] `POST /api/characters/:characterId/exp`
-- [x] `GET/POST /api/quests/:characterId`, `POST /api/quests/:questId/complete`
-- [x] `GET /api/leaderboard`
-- [x] `POST /api/battle/start`, `POST /api/battle/finish`
-- [x] `GET /api/battle/history/:characterId`
-- [x] `GET/POST /api/inventory/:characterId`, `POST /api/inventory/equip`
+#### Core Systems
+- [x] Inventory (`/inventory`)
+- [x] Quest system (`/play`)
+- [x] Battle (6 modes, `/battle`)
+- [x] Leaderboard (`/leaderboard`)
 
-#### [GAME] Gameplay cốt lõi
-- [x] Enemy Generator — 18 template × 3 worlds, stats ±20% random
-- [x] 6 Battle Modes: Turn-Based, Real-Time, Auto, Puzzle, Narrative, Dice
-- [x] Quest system — 5 template/world, auto generate, EXP reward
-- [x] Level/EXP system — 100 EXP/level, animation thăng cấp, cảnh giới
-- [x] Narrative system — 3 cây chuyện ~40 node, typewriter, EXP bonus
+#### Worlds
+- [x] Cultivation World (Tu Tiên)
+- [x] Cyberpunk World
+- [x] Wasteland World (Hoang Phế)
 
-### ─────────────────────────────────────────
-### P2 — GAMEPLAY NÂNG CAO
-### ─────────────────────────────────────────
+---
 
-#### [UX] Trang Cài đặt & Error Handling
-- [x] `/settings` — Thông tin tài khoản, danh sách nhân vật, xoá nhân vật
-- [x] React Error Boundary bao toàn app
-- [x] QueryClient retry config
+### ════════════════════════════════════════
+### PHASE 2 — SYSTEM ENGINE ✅
+### ════════════════════════════════════════
 
-#### [AI] AI Narrative — sinh story động
-- [x] Set secret `GEMINI_API_KEY`
-- [x] `POST /api/narrative/generate` — Gemini 2.0 Flash Lite sinh story node động theo context nhân vật + world + lịch sử hành động
-- [x] PlayPage: mode toggle AI / Lịch Sử, AI mặc định khi vào trang
-- [x] Fallback tự động về static tree nếu AI lỗi / key chưa có
+**Mục tiêu:** Mỗi người chơi có trải nghiệm khác nhau.
 
-#### [GAME] Tu Luyện System
-- [x] Trang `/cultivate` — màn hình tu luyện nhân vật
-- [x] API `GET/POST /api/cultivate/:characterId` — đọc và đầu tư năng lượng vào chỉ số (STR/INT/AGI/LCK/END/SPR)
-- [x] Hệ thống cost: `floor(currentValue/10) × 10 + 10` năng lượng mỗi điểm (progressive)
-- [x] Năng lượng tu luyện (`cultivationEnergy`) lưu trong `stats` JSONB — +20 win / +10 draw / +15 quest
-- [x] Cập nhật `characters.stats.baseStats` với 6 chỉ số riêng
-- [x] Hiển thị real baseStats trong radar chart ở `/character/:id`
-- [x] Dashboard: bỏ "SẮP RA MẮT", route tới `/cultivate`
+#### System Database
+- [x] Kiếm Thần Hệ Thống
+- [x] Luyện Đan Hệ Thống (Alchemy)
+- [x] Thương Nhân Hệ Thống (Merchant)
+- [x] Triệu Hồi Hệ Thống (Summoner)
+- [x] Thần Thú Hệ Thống (Beast Taming)
+- [x] Tử Linh Hệ Thống (Necromancer) — icon 💀, desc, SYSTEM_ICONS, SYSTEM_DESC, narrative flavor
 
-#### [SOCIAL] Guild / Clan System
-- [x] Bảng DB `guilds` (id, name, worldSlug, leaderId, memberCount, totalExp, description, tag)
-- [x] Bảng DB `guild_members` (guildId, characterId, role, joinedAt)
-- [x] API `GET/POST /api/guilds`, `POST /api/guilds/:id/join`, `POST /api/guilds/:id/leave`, `DELETE /api/guilds/:id`
-- [x] Trang `/guilds` — danh sách bang, filter theo thế giới, tìm kiếm, lập bang mới
-- [x] Trang `/guilds/:id` — chi tiết, danh sách thành viên, gia nhập/rời/giải tán
-- [x] Dashboard: nút BANG HỘI active, route tới `/guilds`
+#### System Assignment
+- [x] Random khi tạo nhân vật (roulette animation)
+- [x] System bonus áp dụng vào battle + narrative
 
-### ─────────────────────────────────────────
-### P3 — HOÀN THIỆN UX
-### ─────────────────────────────────────────
+#### Rule Engine
+- [x] Level + EXP (100 EXP/level)
+- [x] Inventory + Equip
+- [ ] Skills — bảng DB `character_skills`, mỗi system có skill tree riêng
+- [ ] Factions — bảng DB `factions`, `character_faction`
 
-#### [UX] Mobile & Loading
-- [ ] Loading skeleton cho Dashboard, Battle, Leaderboard (dùng `shadcn/ui Skeleton`)
-- [ ] Mobile responsive: kiểm tra layout < 375px, battle tap target ≥ 44px
-- [ ] Sonner toast khi lỗi network (wrap fetch calls trong lib utility)
+---
 
-#### [UX] Onboarding Flow
-- [ ] Tooltip hướng dẫn lần đầu (chỉ hiện 1 lần, lưu localStorage)
-- [ ] Màn hình "Chào mừng" sau khi tạo nhân vật đầu tiên
+### ════════════════════════════════════════
+### PHASE 3 — MEMORY ENGINE ⬅️ BUILD TIẾP
+### ════════════════════════════════════════
 
-#### [GAME] Daily Bonus & Streak
-- [ ] Bảng DB `daily_logins` (characterId, date)
-- [ ] API `POST /api/daily-checkin/:characterId` — nhận EXP mỗi ngày
-- [ ] UI trong Dashboard: streak counter, nút check-in hàng ngày
+**Mục tiêu:** Thế giới nhớ người chơi.
 
-#### [SOCIAL] PvP — Thách Đấu
-- [ ] Bảng DB `pvp_challenges` (challengerId, defenderId, status, result, battleLog)
-- [ ] API `POST /api/pvp/challenge/:targetCharacterId`
-- [ ] Trang `/pvp` — giao diện thách đấu, lịch sử PvP
-- [ ] Leaderboard PvP riêng
+#### Character Memory
+- [x] Bảng DB `character_memories` (id, characterId, memoryType, content, importance, createdAt)
+- [x] Tự động lưu memory sau mỗi AI narrative (fire-and-forget, keywords: giết/chết/boss/đột phá/cứu/phản bội...)
+- [x] API `GET /api/memories/:characterId` — lấy memories, `DELETE /api/memories/:id`
 
-### ─────────────────────────────────────────
-### P4 — TRIỂN KHAI & MỞ RỘNG
-### ─────────────────────────────────────────
+#### NPC Memory
+- [x] Bảng DB `npc_memories` (id, npcKey, characterId, relationship, lastInteraction, notes)
 
-#### [OPS] Deploy
-- [ ] Verify tất cả env vars đúng cho production
-- [ ] Test end-to-end sau khi publish
-- [ ] Cấu hình custom domain (nếu cần)
+#### World Memory
+- [x] Bảng DB `world_memories` (id, worldSlug, eventType, content, happenedAt)
+- [x] Tự động lưu world event khi story chứa từ khóa lớn (boss bị tiêu diệt/đại chiến...)
+- [x] API `GET /api/world-memories/:worldSlug`
 
-#### [GAME] Season System
-- [ ] Mùa giải 30 ngày — reset xếp hạng, giữ nhân vật
-- [ ] Phần thưởng cuối mùa (item đặc biệt, title)
-- [ ] Bảng `season_records` lưu lịch sử từng mùa
+#### AI Integration
+- [x] Feed top 5 memories quan trọng nhất vào Gemini prompt (sorted by importance + createdAt)
+- [x] AI sinh story có tham chiếu tự nhiên đến ký ức người chơi
 
-#### [GAME] World Events
-- [ ] Sự kiện ngẫu nhiên theo giờ (boss xuất hiện, bonus EXP 2×)
-- [ ] Bảng `world_events` (worldSlug, type, startAt, endAt, metadata)
+#### UI
+- [x] Trang `/memories` — xem ký ức cá nhân + lịch sử thế giới, xóa ký ức
+- [x] Dashboard button "KÝ ỨC" → `/memories`
+
+---
+
+### ════════════════════════════════════════
+### PHASE 4 — PERSISTENT WORLD
+### ════════════════════════════════════════
+
+**Mục tiêu:** Thế giới không reset.
+
+#### World State
+- [ ] Bảng DB `world_state` (worldSlug, key, value, updatedAt) — key-value store
+- [ ] Boss state: alive/dead, respawn timer
+- [ ] Resource nodes: gỗ/đá/linh thạch — bị khai thác thì giảm, hồi dần theo thời gian
+
+#### Resource System
+- [ ] Bảng DB `world_resources` (worldSlug, resourceType, quantity, maxQuantity, regenRate)
+- [ ] API `GET /api/world/state/:worldSlug` — lấy trạng thái thế giới hiện tại
+- [ ] Tích hợp vào `/play` — AI phản hồi dựa trên resource hiện tại
+
+#### Economy System
+- [ ] Item price fluctuate theo supply/demand
+- [ ] Market API — xem giá hiện tại
+
+---
+
+### ════════════════════════════════════════
+### PHASE 5 — AI NARRATIVE ENGINE ⚠️ PARTIAL
+### ════════════════════════════════════════
+
+**Mục tiêu:** Quest và cốt truyện được AI sinh động.
+
+#### Dynamic Story
+- [x] AI (Gemini) sinh story node theo context nhân vật + world
+- [x] 3 lựa chọn per node, expGain + tag
+- [x] Fallback về static tree khi AI lỗi
+- [x] Feed character memory + world state vào prompt
+
+#### Free Exploration
+- [x] Input text tự do trong `/play` — người chơi gõ "Tôi muốn vào rừng phía Bắc"
+- [x] AI phản hồi theo `freeInput`, sinh tiếp story, +25 EXP mỗi lần gửi
+- [x] Toggle giữa "Chọn" (3 buttons) và "Tự Do" (textarea + Enter/Gửi) trong nav bar
+
+---
+
+### ════════════════════════════════════════
+### PHASE 6 — AI GAME MASTER
+### ════════════════════════════════════════
+
+**Mục tiêu:** AI quản trị thế giới.
+
+#### Dynamic Events
+- [ ] Bảng DB `world_events` (worldSlug, type, title, description, startAt, endAt, active)
+- [ ] AI tự sinh sự kiện định kỳ (thiên tai, boss xuất hiện, bí cảnh mở)
 - [ ] Banner sự kiện trên Dashboard
+
+#### Reward/Punishment System
+- [ ] API `POST /api/admin/event/trigger` — AI trigger event dựa trên hành động người chơi
+- [ ] World karma score — thưởng/phạt dựa trên hành vi cộng đồng
+
+#### World Monitoring Dashboard
+- [ ] `/admin` route — thống kê economy, PvP, Guild, population per world
+- [ ] Chỉ admin (user đầu tiên) mới vào được
+
+---
+
+### ════════════════════════════════════════
+### PHASE 7 — MULTI AGENT NPC
+### ════════════════════════════════════════
+
+**Mục tiêu:** NPC tự sống.
+
+- [ ] Bảng DB `npcs` (id, worldSlug, name, role, goals, personality, currentState)
+- [ ] Agent loop: mỗi 5 phút AI chạy 1 turn cho mỗi NPC active
+- [ ] NPC goals: kiếm tiền / bảo vệ làng / cướp bóc
+- [ ] NPC interaction: mua bán, chiến đấu, liên minh
+- [ ] NPC xuất hiện trong `/play` narrative
+
+---
+
+### ════════════════════════════════════════
+### PHASE 8 — WORLD CREATOR
+### ════════════════════════════════════════
+
+**Mục tiêu:** Người chơi tạo thế giới riêng.
+
+- [ ] Form tạo thế giới: tên, thể loại, luật, mô tả
+- [ ] AI nhận input → sinh lịch sử, NPC gốc, Boss đầu, phe phái
+- [ ] World được lưu vào DB, người khác có thể vào chơi
+
+---
+
+### ════════════════════════════════════════
+### PHASE 9 — AI WORLD GENERATOR
+### ════════════════════════════════════════
+
+**Mục tiêu:** AI tự tạo thế giới hoàn chỉnh không cần input.
+
+- [ ] AI generate World #XXXXX với lore/NPC/Quest/Boss/Dungeon/Items đầy đủ
+- [ ] World discovery feed — người chơi browse các AI-generated worlds
+
+---
+
+### ════════════════════════════════════════
+### PHASE 10 — MULTIVERSE
+### ════════════════════════════════════════
+
+**Mục tiêu:** Nhiều thế giới cùng tồn tại trên một nền tảng.
+
+- [ ] Cross-world events (World War, Portal Events)
+- [ ] Nhân vật có thể di chuyển giữa các thế giới
+- [ ] World merge events
+
+---
+
+### ════════════════════════════════════════
+### PHASE 11 — 3D WORLD
+### ════════════════════════════════════════
+
+- [ ] Unity hoặc Unreal Engine 5 client
+- [ ] AI vẫn điều khiển NPC, Quest, Story, Events qua API
+
+---
+
+### ════════════════════════════════════════
+### PHASE 12 — VR / AR / MR / XR
+### ════════════════════════════════════════
+
+- [ ] Meta Quest / Vision Pro / Android XR support
+- [ ] AI đóng vai Thiên Đạo / Chủ Thần / Hệ Thống trực tiếp trong VR
 
 ---
 
 ## 📦 TRẠNG THÁI BẢNG DB
 
-| Bảng | Trạng thái | Mô tả |
-|---|---|---|
-| `users` | ✅ | Profile Replit user |
-| `sessions` | ✅ | Server-side sessions |
-| `worlds` | ✅ | 3 thế giới |
-| `characters` | ✅ | Nhân vật người chơi |
-| `quests` | ✅ | Nhiệm vụ |
-| `battles` | ✅ | Lịch sử chiến đấu |
-| `items` | ✅ | Vật phẩm (24 templates × 3 worlds) |
-| `inventory` | ✅ | Túi đồ nhân vật |
-| `guilds` | ✅ | Bang hội (P2) |
-| `guild_members` | ✅ | Thành viên bang hội (P2) |
-| `daily_logins` | ❌ Chưa có | Daily check-in (P3) |
-| `pvp_challenges` | ❌ Chưa có | PvP thách đấu (P3) |
-| `season_records` | ❌ Chưa có | Season system (P4) |
-| `world_events` | ❌ Chưa có | World events (P4) |
+| Bảng | Trạng thái | Phase | Mô tả |
+|---|---|---|---|
+| `users` | ✅ | P1 | Profile Replit user |
+| `sessions` | ✅ | P1 | Server-side sessions |
+| `worlds` | ✅ | P1 | 3 thế giới |
+| `characters` | ✅ | P1 | Nhân vật người chơi |
+| `quests` | ✅ | P1 | Nhiệm vụ |
+| `battles` | ✅ | P1 | Lịch sử chiến đấu |
+| `items` | ✅ | P1 | Vật phẩm (24 templates × 3 worlds) |
+| `inventory` | ✅ | P1 | Túi đồ nhân vật |
+| `guilds` | ✅ | P1+ | Bang hội |
+| `guild_members` | ✅ | P1+ | Thành viên bang hội |
+| `character_memories` | ✅ | P3 | Ký ức nhân vật |
+| `npc_memories` | ✅ | P3 | NPC nhớ người chơi |
+| `world_memories` | ✅ | P3 | Lịch sử thế giới |
+| `world_state` | ❌ | P4 | Trạng thái thế giới persistent |
+| `world_resources` | ❌ | P4 | Tài nguyên thế giới |
+| `world_events` | ❌ | P6 | Sự kiện AI sinh |
+| `npcs` | ❌ | P7 | NPC agents |
+| `character_skills` | ❌ | P2 | Skill tree per system |
+| `factions` | ❌ | P2 | Phe phái |
 
 ---
 
 ## 🗺️ TRẠNG THÁI ROUTE
 
-| Route | Trang | Trạng thái |
-|---|---|---|
-| `/` | Landing Page | ✅ |
-| `/login` | Đăng nhập (Replit Auth) | ✅ |
-| `/worlds` | Chọn thế giới | ✅ |
-| `/create-character/:worldId` | Tạo nhân vật | ✅ |
-| `/dashboard` | Dashboard nhân vật | ✅ |
-| `/play` | Narrative / Khám phá | ✅ |
-| `/character/:id` | Hồ sơ nhân vật | ✅ |
-| `/leaderboard` | Bảng xếp hạng | ✅ |
-| `/battle` | Chiến trường (6 mode) | ✅ |
-| `/battle/history` | Lịch sử chiến đấu | ✅ |
-| `/inventory` | Túi đồ / Trang bị | ✅ |
-| `/settings` | Cài đặt tài khoản | ✅ |
-| `/cultivate` | Tu Luyện chỉ số | ✅ |
-| `/guilds` | Danh sách bang hội | ✅ |
-| `/guilds/:id` | Chi tiết bang hội | ✅ |
-| `/pvp` | PvP thách đấu | ❌ P3 |
+| Route | Trang | Phase | Trạng thái |
+|---|---|---|---|
+| `/` | Landing Page | P1 | ✅ |
+| `/login` | Đăng nhập (Replit Auth) | P1 | ✅ |
+| `/worlds` | Chọn thế giới | P1 | ✅ |
+| `/create-character/:worldId` | Tạo nhân vật | P1 | ✅ |
+| `/dashboard` | Dashboard nhân vật | P1 | ✅ |
+| `/play` | AI Narrative + Khám phá | P5 | ✅ (AI mode) |
+| `/character/:id` | Hồ sơ nhân vật | P1 | ✅ |
+| `/leaderboard` | Bảng xếp hạng | P1 | ✅ |
+| `/battle` | Chiến trường (6 mode) | P1 | ✅ |
+| `/battle/history` | Lịch sử chiến đấu | P1 | ✅ |
+| `/inventory` | Túi đồ / Trang bị | P1 | ✅ |
+| `/settings` | Cài đặt tài khoản | P1 | ✅ |
+| `/cultivate` | Tu Luyện chỉ số | P2 | ✅ |
+| `/guilds` | Danh sách bang hội | P1+ | ✅ |
+| `/guilds/:id` | Chi tiết bang hội | P1+ | ✅ |
+| `/memories` | Ký ức hành trình | P3 | ✅ |
+| `/world/:slug/state` | Trạng thái thế giới | P4 | ❌ |
+| `/pvp` | PvP thách đấu | P1+ | ❌ |
+| `/admin` | World Monitor | P6 | ❌ |
 
 ---
 
@@ -219,7 +311,7 @@ lib/
 
 - **Auth:** Replit Auth OIDC — KHÔNG dùng Supabase. Cookie session qua `express-session`.
 - **DB:** Drizzle ORM + PostgreSQL. Schema thay đổi → `pnpm --filter @workspace/db run push`
-- **API codegen:** OpenAPI spec thay đổi → `pnpm --filter @workspace/api-spec run codegen`
+- **AI:** Gemini 2.0 Flash Lite — model `gemini-2.0-flash-lite`, key `GEMINI_API_KEY`
 - **Backend rebuild:** Không hot-reload — restart workflow "API Server" sau mỗi lần sửa
 - **EXP formula:** `level = floor(totalExp / 100) + 1`
 - **Battle EXP:** win = `enemyLevel × 10`, draw = `×3`, lose = `0`
@@ -234,7 +326,7 @@ lib/
 ```
 1. Đọc file này (TIENTRINHHETHONG.md) TRƯỚC TIÊN
 2. Kiểm tra workflow "Start application" + "API Server" đang chạy
-3. Tìm task [ ] đầu tiên trong ROADMAP theo thứ tự P2 → P3 → P4
+3. Tìm task [ ] đầu tiên trong ROADMAP theo thứ tự Phase 1 → 2 → 3...
 4. Build task đó (không cần hỏi user nếu task rõ ràng)
 5. Sau khi xong:
    - Đánh [x] vào task đã hoàn thành

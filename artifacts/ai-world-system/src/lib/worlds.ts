@@ -42,6 +42,7 @@ export const SYSTEMS = [
   "Thương Nhân Hệ Thống",
   "Thú Tướng Hệ Thống",
   "Bất Tử Tu Tiên Hệ Thống",
+  "Tử Linh Hệ Thống",
 ] as const;
 
 export type SystemName = typeof SYSTEMS[number];
@@ -52,6 +53,7 @@ export const SYSTEM_ICONS: Record<SystemName, string> = {
   "Thương Nhân Hệ Thống": "💹",
   "Thú Tướng Hệ Thống": "🐉",
   "Bất Tử Tu Tiên Hệ Thống": "☯",
+  "Tử Linh Hệ Thống": "💀",
 };
 
 export const SYSTEM_DESC: Record<SystemName, string> = {
@@ -60,6 +62,7 @@ export const SYSTEM_DESC: Record<SystemName, string> = {
   "Thương Nhân Hệ Thống": "Giao dịch xuyên chiều không gian. Tích lũy nghiệp tài phú quý, mở khoá thị trường ẩn giữa cõi người và thiên giới.",
   "Thú Tướng Hệ Thống": "Chỉ huy linh thú cổ đại gắn kết qua linh khế. Ý chí của ngươi vang vọng qua từng vảy và vuốt nanh.",
   "Bất Tử Tu Tiên Hệ Thống": "Nén tụ vũ trụ vào đan điền. Vượt qua thiên kiếp để xưng bá giữa các bậc trường sinh bất tử.",
+  "Tử Linh Hệ Thống": "Triệu hồi và kiểm soát linh hồn người chết. Biến cái chết thành sức mạnh — mỗi kẻ địch ngã xuống là một chiến binh mới trong đội quân bóng tối.",
 };
 
 export const REALM_TITLES: Record<string, string[]> = {

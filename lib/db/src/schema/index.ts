@@ -4,3 +4,4 @@ export * from "./quests";
 export * from "./battles";
 export * from "./items";
 export * from "./guilds";
+export * from "./memories";

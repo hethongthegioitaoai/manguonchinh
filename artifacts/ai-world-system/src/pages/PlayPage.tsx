@@ -1,7 +1,7 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
-import { ChevronLeft, Zap, RotateCcw, Loader2, Home, Bot, BookOpen, Sparkles } from "lucide-react";
+import { ChevronLeft, Zap, RotateCcw, Loader2, Home, Bot, BookOpen, Sparkles, PenLine, List, SendHorizonal, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { getWorld, SYSTEM_ICONS, type SystemName } from "@/lib/worlds";
@@ -24,6 +24,7 @@ interface HistoryEntry {
 }
 
 type PlayMode = "ai" | "static";
+type InputMode = "choice" | "free";
 
 const TAG_LABELS: Record<string, string> = {
   combat: "⚔ chiến đấu",
@@ -41,6 +42,7 @@ const SYSTEM_BONUS_MAP: Record<string, { tag: string; bonus: number }> = {
   "Ẩn Sát Hệ Thống": { tag: "explore", bonus: 12 },
   "Cơ Khí Hệ Thống": { tag: "explore", bonus: 10 },
   "Thần Thú Hệ Thống": { tag: "combat", bonus: 8 },
+  "Tử Linh Hệ Thống": { tag: "combat", bonus: 9 },
 };
 
 export default function PlayPage() {
@@ -50,6 +52,8 @@ export default function PlayPage() {
   const [character, setCharacter] = useState<Character | null>(null);
   const [fetching, setFetching] = useState(true);
   const [mode, setMode] = useState<PlayMode>("ai");
+  const [inputMode, setInputMode] = useState<InputMode>("choice");
+  const [freeText, setFreeText] = useState("");
   const [currentNode, setCurrentNode] = useState<StoryNode | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [aiHistory, setAiHistory] = useState<string[]>([]);
@@ -61,6 +65,7 @@ export default function PlayPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const typeInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const freeInputRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -117,7 +122,8 @@ export default function PlayPage() {
   async function fetchAiNode(
     char: Character,
     choiceLabel: string | null,
-    currentHistory: string[]
+    currentHistory: string[],
+    freeInput?: string
   ) {
     setAiLoading(true);
     setAiError(null);
@@ -130,12 +136,12 @@ export default function PlayPage() {
           characterId: char.id,
           choiceLabel,
           history: currentHistory,
+          freeInput: freeInput ?? null,
         }),
       });
       const data = await res.json();
 
       if (!res.ok || data.fallback) {
-        // fallback về static
         setAiError("AI Game Master tạm thời không khả dụng — chuyển sang Chế Độ Lịch Sử.");
         setMode("static");
         const start = getStartNode(char.stats?.world_slug ?? "");
@@ -152,6 +158,34 @@ export default function PlayPage() {
     } finally {
       setAiLoading(false);
     }
+  }
+
+  async function handleFreeSubmit() {
+    if (!character || !currentNode || isTyping || choosing || !freeText.trim() || aiLoading) return;
+    const input = freeText.trim();
+    setFreeText("");
+    setChoosing(true);
+
+    const gained = 25;
+    const newHistory = [...history, { node: currentNode, chosen: { id: "free", label: input, nextNodeId: "ai_next", expGain: gained, tag: "explore" } as StoryChoice }];
+    setHistory(newHistory);
+    setTotalExp(e => e + gained);
+    setExpFlash(gained);
+    setTimeout(() => setExpFlash(null), 1500);
+
+    fetch(`/api/characters/${character.id}/exp`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount: gained }),
+    }).catch(() => {});
+
+    await new Promise(r => setTimeout(r, 300));
+    setChoosing(false);
+
+    const newAiHistory = [...aiHistory, `Người chơi hành động tự do: "${input}"`];
+    setAiHistory(newAiHistory);
+    await fetchAiNode(character, null, newAiHistory, input);
   }
 
   function startTypewriter(node: StoryNode) {
@@ -273,11 +307,39 @@ export default function PlayPage() {
         >
           <ChevronLeft className="w-4 h-4" /> BẢNG ĐIỀU KHIỂN
         </button>
-        <div className="flex items-center gap-3">
-          {/* Mode toggle */}
+        <div className="flex items-center gap-2">
+          {/* Input mode toggle — only in AI mode */}
+          {mode === "ai" && (
+            <div className="flex items-center rounded border border-border/50 overflow-hidden">
+              <button
+                onClick={() => setInputMode("choice")}
+                title="Chế độ lựa chọn"
+                className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono transition-colors ${
+                  inputMode === "choice"
+                    ? "bg-primary/20 text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <List className="w-3 h-3" /> Chọn
+              </button>
+              <button
+                onClick={() => { setInputMode("free"); setTimeout(() => freeInputRef.current?.focus(), 100); }}
+                title="Chế độ tự do — gõ hành động tùy ý"
+                className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono transition-colors border-l border-border/50 ${
+                  inputMode === "free"
+                    ? "bg-primary/20 text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <PenLine className="w-3 h-3" /> Tự Do
+              </button>
+            </div>
+          )}
+
+          {/* Play mode toggle */}
           <div className="flex items-center rounded border border-border/50 overflow-hidden">
             <button
-              onClick={() => character && startAiSession(character)}
+              onClick={() => { character && startAiSession(character); setInputMode("choice"); }}
               className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono transition-colors ${
                 mode === "ai"
                   ? "bg-primary/20 text-primary"
@@ -488,11 +550,11 @@ export default function PlayPage() {
                 )}
               </div>
 
-              {/* Choices */}
+              {/* Choices / Free Input */}
               {!isTyping && (
-                <AnimatePresence>
+                <AnimatePresence mode="wait">
                   {isEnding ? (
-                    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+                    <motion.div key="ending" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
                       <div
                         className="border font-mono text-xs px-4 py-2 text-center tracking-widest"
                         style={{ borderColor: `${worldColor}60`, color: worldColor }}
@@ -516,8 +578,57 @@ export default function PlayPage() {
                         </Button>
                       </div>
                     </motion.div>
-                  ) : (
+                  ) : mode === "ai" && inputMode === "free" ? (
+                    /* ── FREE EXPLORATION INPUT ── */
                     <motion.div
+                      key="free-input"
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.05 }}
+                      className="space-y-3"
+                    >
+                      <p className="font-mono text-xs text-muted-foreground tracking-widest">
+                        — NHẬP HÀNH ĐỘNG TỰ DO —
+                      </p>
+                      <div
+                        className="border bg-card/30 focus-within:border-opacity-80 transition-all"
+                        style={{ borderColor: `${worldColor}40` }}
+                      >
+                        <textarea
+                          ref={freeInputRef}
+                          value={freeText}
+                          onChange={e => setFreeText(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleFreeSubmit(); }
+                          }}
+                          placeholder={`Ngươi muốn làm gì? (Enter để gửi)\nVí dụ: "Tôi muốn vào khu rừng phía Bắc" hoặc "Luyện kiếm đến tận đêm khuya"`}
+                          rows={3}
+                          disabled={choosing || aiLoading}
+                          className="w-full bg-transparent px-4 py-3 font-mono text-sm text-foreground/90 placeholder:text-muted-foreground/30 resize-none outline-none disabled:opacity-50"
+                          style={{ caretColor: worldColor }}
+                        />
+                        <div className="flex items-center justify-between px-4 py-2 border-t border-border/20">
+                          <span className="font-mono text-xs text-muted-foreground/40">
+                            {freeText.length}/200 ký tự · +25 EXP khi gửi
+                          </span>
+                          <button
+                            onClick={handleFreeSubmit}
+                            disabled={!freeText.trim() || choosing || aiLoading}
+                            className="flex items-center gap-2 px-4 py-1.5 font-orbitron text-xs font-bold tracking-wider disabled:opacity-30 disabled:cursor-not-allowed transition-all hover:scale-[1.02]"
+                            style={{ color: worldColor, borderColor: worldColor, border: "1px solid" }}
+                          >
+                            <SendHorizonal className="w-3.5 h-3.5" /> GỬI
+                          </button>
+                        </div>
+                      </div>
+                      <p className="font-mono text-xs text-muted-foreground/30 flex items-center gap-1">
+                        <PenLine className="w-3 h-3" /> AI Game Master sẽ phản hồi theo hành động của ngươi
+                      </p>
+                    </motion.div>
+                  ) : (
+                    /* ── CHOICE BUTTONS ── */
+                    <motion.div
+                      key="choices"
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.1 }}

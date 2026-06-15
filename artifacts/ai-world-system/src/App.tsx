@@ -20,6 +20,7 @@ import SettingsPage from "@/pages/SettingsPage";
 import CultivatePage from "@/pages/CultivatePage";
 import GuildsPage from "@/pages/GuildsPage";
 import GuildDetailPage from "@/pages/GuildDetailPage";
+import MemoriesPage from "@/pages/MemoriesPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -48,6 +49,7 @@ function Router() {
       <Route path="/cultivate" component={CultivatePage} />
       <Route path="/guilds" component={GuildsPage} />
       <Route path="/guilds/:id" component={GuildDetailPage} />
+      <Route path="/memories" component={MemoriesPage} />
       <Route component={NotFound} />
     </Switch>
   );

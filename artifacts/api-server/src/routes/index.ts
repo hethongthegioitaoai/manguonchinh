@@ -9,6 +9,7 @@ import inventoryRouter from "./inventory.js";
 import cultivateRouter from "./cultivate.js";
 import guildsRouter from "./guilds.js";
 import narrativeRouter from "./narrative.js";
+import memoriesRouter from "./memories.js";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use(inventoryRouter);
 router.use(cultivateRouter);
 router.use(guildsRouter);
 router.use(narrativeRouter);
+router.use(memoriesRouter);
 
 export default router;
