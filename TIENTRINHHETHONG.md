@@ -61,15 +61,13 @@
 
 ### 🔴 ƯU TIÊN 1 — BẮT BUỘC ĐỂ APP CHẠY ĐƯỢC
 
-#### 1.1 Cấu hình Workflow (Chưa có workflow nào!)
-- [ ] Tạo workflow cho **Frontend** (`pnpm --filter @workspace/ai-world-system run dev`)
-- [ ] Tạo workflow cho **API Server** (`pnpm --filter @workspace/api-server run dev`)
-- [ ] **→ App không chạy được nếu chưa có workflow**
+#### 1.1 Cấu hình Workflow ✅
+- [x] Workflow **Frontend** — `PORT=19734 BASE_PATH=/ pnpm --filter @workspace/ai-world-system run dev`
+- [x] Workflow **API Server** — `PORT=8080 pnpm --filter @workspace/api-server run dev`
 
-#### 1.2 Biến môi trường Supabase (Chưa set!)
-- [ ] `SUPABASE_URL` — URL dự án Supabase
-- [ ] `SUPABASE_ANON_KEY` — Anon public key
-- [ ] **→ Login và DB đều không hoạt động nếu thiếu**
+#### 1.2 Biến môi trường Supabase ✅
+- [x] `SUPABASE_URL` — đã set (`https://wyxisszfooqaxjpbicoc.supabase.co`)
+- [x] `SUPABASE_ANON_KEY` — đã set (secret)
 
 #### 1.3 Chạy SQL setup Supabase
 - [ ] Vào Supabase Dashboard → SQL Editor
