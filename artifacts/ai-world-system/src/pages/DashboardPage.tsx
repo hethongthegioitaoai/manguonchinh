@@ -8,26 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
-import { getWorld, WORLDS, type SystemName } from "@/lib/worlds";
-
-const SYSTEM_ICONS: Record<string, string> = {
-  "Sword God System": "⚔",
-  "Alchemy System": "⚗",
-  "Merchant System": "💹",
-  "Beast Taming System": "🐉",
-  "Immortal Cultivation System": "☯",
-};
-
-const REALM_TITLES: Record<string, string[]> = {
-  cultivation: ["Luyện Khí", "Trúc Cơ", "Kim Đan", "Nguyên Anh", "Hóa Thần", "Luyện Hư", "Hợp Thể", "Đại Thừa", "Độ Kiếp", "Bất Tử"],
-  cyberpunk: ["Street Zero", "Runner", "Hacker", "Ghost", "Chrome Elite", "Netrunner", "ICE Breaker", "Corp Slayer", "Legend", "God Mode"],
-  zombie: ["Survivor", "Scout", "Hunter", "Raider", "Warlord", "Apex", "Overseer", "Tyrant", "Overlord", "Necro-God"],
-};
-
-function getRealm(worldSlug: string, level: number): string {
-  const titles = REALM_TITLES[worldSlug] ?? REALM_TITLES["cultivation"];
-  return titles[Math.min(level - 1, titles.length - 1)];
-}
+import { getWorld, WORLDS, SYSTEM_ICONS, getRealm, type SystemName } from "@/lib/worlds";
 
 interface Character {
   id: string;
@@ -318,36 +299,41 @@ export default function DashboardPage() {
                     {[
                       {
                         icon: Swords,
-                        label: "ENTER BATTLE",
-                        sub: "Fight enemies, gain EXP",
-                        tag: "COMING SOON",
+                        label: "CHIẾN ĐẤU",
+                        sub: "Giao chiến kẻ thù, nhận EXP",
+                        tag: "SẮP RA MẮT",
                         disabled: true,
+                        onClick: undefined,
                       },
                       {
                         icon: Globe,
-                        label: "EXPLORE",
-                        sub: "Roam the world, find quests",
-                        tag: "COMING SOON",
-                        disabled: true,
+                        label: "KHÁM PHÁ",
+                        sub: "Nhập hành trình AI của ngươi",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/play"),
                       },
                       {
                         icon: TrendingUp,
-                        label: "TRAIN",
-                        sub: "Boost your core stats",
-                        tag: "COMING SOON",
+                        label: "TU LUYỆN",
+                        sub: "Tăng cường chỉ số cốt lõi",
+                        tag: "SẮP RA MẮT",
                         disabled: true,
+                        onClick: undefined,
                       },
                       {
                         icon: Shield,
-                        label: "INVENTORY",
-                        sub: "Manage your items & gear",
-                        tag: "COMING SOON",
+                        label: "TÚI ĐỒ",
+                        sub: "Quản lý vật phẩm & trang bị",
+                        tag: "SẮP RA MẮT",
                         disabled: true,
+                        onClick: undefined,
                       },
                     ].map((action) => (
                       <motion.div
                         key={action.label}
                         whileHover={!action.disabled ? { scale: 1.01 } : {}}
+                        onClick={action.onClick}
                         className={`group relative border border-border bg-card/50 p-5 flex items-center gap-4 transition-all duration-300 ${
                           action.disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:border-opacity-100"
                         }`}

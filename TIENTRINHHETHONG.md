@@ -81,17 +81,27 @@
 #### 2.1 Trang Dashboard Nhân Vật (`/dashboard`) ✅
 - [x] Hiển thị thông tin nhân vật (tên, thế giới, hệ thống, cảnh giới/realm)
 - [x] Stats panel (STR, INT, AGI, LCK) + thanh EXP
-- [x] Nút hành động: Battle, Explore, Train, Inventory (placeholder COMING SOON)
+- [x] Nút hành động: CHIẾN ĐẤU, KHÁM PHÁ (→ `/play`), TU LUYỆN, TÚI ĐỒ
 - [x] World lore panel + badge thế giới
 - [x] Nút tạo nhân vật mới + chuyển đổi nhân vật
 - [x] Sau khi tạo nhân vật → redirect về `/dashboard` thay vì `/worlds`
+- [x] **Toàn bộ Việt hóa** — Dashboard, CharacterCreation, Worlds, Landing
 
-#### 2.2 Hệ thống AI Narrative (Trái tim của game!)
-- [ ] Tích hợp AI (OpenAI / Anthropic / Gemini) qua Replit AI Integration
-- [ ] Xây dựng prompt system theo từng thế giới (Tu Tiên / Cyberpunk / Zombie)
-- [ ] API route: `POST /api/ai/narrative` — sinh câu chuyện dựa trên lựa chọn người dùng
-- [ ] Luồng hội thoại: AI kể chuyện → người chơi chọn hành động → AI phản hồi
-- [ ] **→ Đây là tính năng CHÍNH làm app khác biệt**
+#### 2.2 Hệ thống Narrative (Trái tim của game!) ✅ PHASE 1
+- [x] `lib/narrative.ts` — 3 cây chuyện đầy đủ (Tu Tiên + Cyberpunk + Hoang Phế)
+  - Tu Tiên: 15 node, nhiều nhánh, kết thúc khác nhau
+  - Cyberpunk: 14 node, Project GENESIS arc, nhiều lựa chọn
+  - Hoang Phế: 13 node, sinh tồn + Nexus arc
+- [x] `PlayPage.tsx` (`/play`) — giao diện narrative hoàn chỉnh
+  - Typewriter effect cho story text
+  - Highlight chữ *in nghiêng* màu thế giới
+  - Hệ thống lựa chọn A/B/C với EXP + tag
+  - Bonus EXP theo hệ thống nhân vật (Kiếm Thần +combat, Thương Nhân +trade, Bất Tử +wisdom)
+  - Flash EXP animation
+  - Lịch sử hành động mờ dần
+  - Kết thúc + nút chơi lại
+- [x] Dashboard "KHÁM PHÁ" → `/play` kết nối xong
+- [ ] **PHASE 2:** Tích hợp Gemini AI (khi có key) để sinh story động
 
 #### 2.3 Hệ thống Quest / Nhiệm vụ
 - [ ] Bảng DB: `quests` (id, character_id, world_id, title, description, status, reward)
@@ -192,8 +202,8 @@
 | `/login` | Đăng nhập | ✅ Xong |
 | `/worlds` | Chọn thế giới | ✅ Xong |
 | `/create-character/:worldId` | Tạo nhân vật | ✅ Xong |
-| `/dashboard` | Dashboard nhân vật | ❌ Chưa có |
-| `/play` | Màn chơi / Narrative AI | ❌ Chưa có |
+| `/dashboard` | Dashboard nhân vật | ✅ Xong |
+| `/play` | Màn chơi / Narrative (Phase 1) | ✅ Xong |
 | `/quest/:id` | Chi tiết quest | ❌ Chưa có |
 | `/character/:id` | Hồ sơ nhân vật | ❌ Chưa có |
 | `/battle` | Chiến đấu | ❌ Chưa có |
@@ -219,7 +229,8 @@
 - **Supabase client** được init tại `artifacts/ai-world-system/src/lib/supabase.ts`
 - **World constants** (danh sách hệ thống, mô tả thế giới) tại `artifacts/ai-world-system/src/lib/worlds.ts`
 - **Hiện tại FE gọi Supabase trực tiếp** — cần chuyển dần sang API Server để bảo mật hơn
-- **AI Integration** nên dùng Replit AI Integration (không cần API key riêng) — đọc skill `ai-integrations-openai` hoặc `ai-integrations-anthropic`
+- **Narrative data** tại `artifacts/ai-world-system/src/lib/narrative.ts` — 3 cây chuyện ~40 node tổng, pure frontend, không cần AI key
+- **AI Integration** — Replit AI Integration yêu cầu nâng cấp tài khoản. Thay thế miễn phí: Google AI Studio → https://aistudio.google.com (lấy Gemini API key free) → set secret `GEMINI_API_KEY` → tích hợp vào `/api/narrative`
 - **Font chữ**: Orbitron (tiêu đề), Rajdhani (nội dung) — cyber aesthetic
 
 ---

@@ -17,33 +17,17 @@ import {
 } from "@/components/ui/form";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
-import { getWorld, SYSTEMS, rollSystem, type SystemName } from "@/lib/worlds";
+import { getWorld, SYSTEMS, rollSystem, SYSTEM_ICONS, SYSTEM_DESC, type SystemName } from "@/lib/worlds";
 
 const schema = z.object({
   name: z
     .string()
-    .min(2, "Name must be at least 2 characters")
-    .max(32, "Name must be 32 characters or less")
-    .regex(/^[a-zA-Z0-9 _'-]+$/, "Only letters, numbers, spaces and - _ ' allowed"),
+    .min(2, "Tên phải có ít nhất 2 ký tự")
+    .max(32, "Tên tối đa 32 ký tự")
+    .regex(/^[\p{L}0-9 _'\-]+$/u, "Chỉ dùng chữ cái, số, khoảng trắng và - _ '"),
 });
 
 type FormValues = z.infer<typeof schema>;
-
-const SYSTEM_ICONS: Record<SystemName, string> = {
-  "Sword God System": "⚔",
-  "Alchemy System": "⚗",
-  "Merchant System": "💹",
-  "Beast Taming System": "🐉",
-  "Immortal Cultivation System": "☯",
-};
-
-const SYSTEM_DESC: Record<SystemName, string> = {
-  "Sword God System": "Wield divine blade energy. Every strike tears through realms, every breath sharpens intent into living force.",
-  "Alchemy System": "Transmute raw essence into immortal pills. Master the cosmic furnace — turn poison into salvation.",
-  "Merchant System": "Trade across dimensions. Accumulate karmic wealth, unlock hidden markets between mortal and celestial planes.",
-  "Beast Taming System": "Command ancient creatures bonded by spirit contract. Your will echoes through every scale and claw.",
-  "Immortal Cultivation System": "Compress the universe into your dantian. Ascend through tribulations to claim your place among the eternal.",
-};
 
 type Phase = "form" | "rolling" | "revealed" | "saving" | "done";
 
@@ -177,7 +161,7 @@ export default function CharacterCreationPage() {
           className="font-mono text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
           data-testid="button-back-worlds"
         >
-          <ChevronLeft className="w-4 h-4" /> WORLDS
+          <ChevronLeft className="w-4 h-4" /> THẾ GIỚI
         </button>
         <div className="flex items-center gap-2">
           <world.icon className="w-4 h-4" style={{ color: world.color }} strokeWidth={1.5} />
@@ -197,10 +181,10 @@ export default function CharacterCreationPage() {
             className="text-center mb-10"
           >
             <p className="font-mono text-xs tracking-widest mb-2" style={{ color: world.color }}>
-              CHARACTER INITIALIZATION PROTOCOL
+              GIAO THỨC KHỞI TẠO NHÂN VẬT
             </p>
             <h1 className="font-orbitron text-3xl md:text-4xl font-bold tracking-wider text-foreground">
-              CREATE YOUR IDENTITY
+              TẠO DANH TÍNH CỦA NGƯƠI
             </h1>
           </motion.div>
 
@@ -215,10 +199,10 @@ export default function CharacterCreationPage() {
               >
                 <CheckCircle className="w-16 h-16 mx-auto" style={{ color: world.color }} />
                 <h2 className="font-orbitron text-2xl tracking-widest text-foreground">
-                  IDENTITY CONFIRMED
+                  DANH TÍNH ĐÃ XÁC NHẬN
                 </h2>
                 <p className="font-mono text-sm text-muted-foreground">
-                  Neural binding complete. Returning to world selection...
+                  Liên kết thần kinh hoàn tất. Đang chuyển về bảng điều khiển...
                 </p>
               </motion.div>
             )}
@@ -247,11 +231,11 @@ export default function CharacterCreationPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="font-orbitron text-sm tracking-widest flex items-center gap-2" style={{ color: world.color }}>
-                                <User className="w-4 h-4" /> OPERATIVE NAME
+                                <User className="w-4 h-4" /> DANH HIỆU
                               </FormLabel>
                               <FormControl>
                                 <Input
-                                  placeholder="Enter your designation..."
+                                  placeholder="Nhập danh hiệu của ngươi..."
                                   className="h-12 bg-background/50 border-border focus-visible:ring-0 focus-visible:border-current font-mono rounded-none placeholder:text-muted-foreground/40 text-foreground"
                                   style={{ "--tw-ring-color": world.color } as React.CSSProperties}
                                   data-testid="input-character-name"
@@ -278,7 +262,7 @@ export default function CharacterCreationPage() {
                           >
                             <span className="relative z-10 flex items-center justify-center gap-3">
                               <Shuffle className="w-4 h-4" />
-                              ASSIGN SYSTEM
+                              PHÂN CÔNG HỆ THỐNG
                             </span>
                           </Button>
                         )}
@@ -317,7 +301,7 @@ export default function CharacterCreationPage() {
 
                       <div className="p-6 text-center space-y-4">
                         <p className="font-mono text-xs tracking-widest text-muted-foreground">
-                          {phase === "rolling" ? "SCANNING COSMIC REGISTRY..." : "SYSTEM ASSIGNED"}
+                          {phase === "rolling" ? "ĐANG QUÉT CỔ VŨ KÝ..." : "HỆ THỐNG ĐÃ PHÂN CÔNG"}
                         </p>
 
                         <motion.div
@@ -380,7 +364,7 @@ export default function CharacterCreationPage() {
                       disabled={phase === "saving"}
                       data-testid="button-reroll-system"
                     >
-                      <Shuffle className="w-4 h-4 mr-2" /> RE-ROLL
+                      <Shuffle className="w-4 h-4 mr-2" /> QUAY LẠI
                     </Button>
                     <Button
                       className="h-12 rounded-none font-orbitron tracking-widest border relative overflow-hidden"
@@ -395,11 +379,11 @@ export default function CharacterCreationPage() {
                     >
                       {phase === "saving" ? (
                         <span className="flex items-center gap-2">
-                          <Loader2 className="w-4 h-4 animate-spin" /> BINDING...
+                          <Loader2 className="w-4 h-4 animate-spin" /> ĐANG LIÊN KẾT...
                         </span>
                       ) : (
                         <span className="flex items-center gap-2">
-                          <Zap className="w-4 h-4" /> CONFIRM
+                          <Zap className="w-4 h-4" /> XÁC NHẬN
                         </span>
                       )}
                     </Button>

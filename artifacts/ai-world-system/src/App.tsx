@@ -9,6 +9,7 @@ import LoginPage from "@/pages/LoginPage";
 import WorldsPage from "@/pages/WorldsPage";
 import CharacterCreationPage from "@/pages/CharacterCreationPage";
 import DashboardPage from "@/pages/DashboardPage";
+import PlayPage from "@/pages/PlayPage";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/worlds" component={WorldsPage} />
       <Route path="/create-character/:worldId" component={CharacterCreationPage} />
       <Route path="/dashboard" component={DashboardPage} />
+      <Route path="/play" component={PlayPage} />
       <Route component={NotFound} />
     </Switch>
   );

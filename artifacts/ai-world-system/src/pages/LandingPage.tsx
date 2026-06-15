@@ -47,7 +47,7 @@ export default function LandingPage() {
           transition={{ duration: 1, delay: 0.4 }}
         >
           <p className="text-lg md:text-2xl text-muted-foreground font-semibold tracking-widest uppercase mb-12">
-            INITIALIZE NEURAL LINK • ENTER THE VOID
+            KHỞI TẠO THẦN KINH KẾT NỐI • BƯỚC VÀO VÙNG HƯ VÔ
           </p>
         </motion.div>
 
@@ -63,7 +63,7 @@ export default function LandingPage() {
               data-testid="button-enter-world"
             >
               <span className="relative z-10 flex items-center gap-2 tracking-widest">
-                ENTER WORLD <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                VÀO THẾ GIỚI <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </span>
               <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
             </Button>

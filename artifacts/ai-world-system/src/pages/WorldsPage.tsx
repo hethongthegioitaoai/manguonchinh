@@ -74,9 +74,9 @@ export default function WorldsPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="font-mono text-primary mb-2 tracking-widest text-sm uppercase">Connection Established</h2>
+            <h2 className="font-mono text-primary mb-2 tracking-widest text-sm uppercase">Kết Nối Thành Công</h2>
             <h1 className="font-orbitron text-4xl md:text-6xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-muted-foreground drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">
-              SELECT YOUR WORLD
+              CHỌN THẾ GIỚI CỦA NGƯƠI
             </h1>
           </motion.div>
         </header>
@@ -133,7 +133,7 @@ export default function WorldsPage() {
                     onClick={() => setLocation(`/create-character/${world.id}`)}
                   >
                     <span className="relative z-10 flex items-center justify-between w-full group-hover:text-black transition-colors duration-300">
-                      <span>ENTER SIMULATION</span>
+                      <span>NHẬP THẾ GIỚI</span>
                       <ArrowRight className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
                     </span>
                     <div
@@ -149,7 +149,7 @@ export default function WorldsPage() {
 
         <div className="mt-16 text-center">
           <p className="font-mono text-xs text-muted-foreground/50 tracking-widest">
-            WARNING: NEURAL DESYNC MAY OCCUR. PROCEED WITH CAUTION.
+            CẢNH BÁO: CÓ THỂ XẢY RA MẤT ĐỒNG BỘ THẦN KINH. HÃY THẬN TRỌNG.
           </p>
         </div>
       </div>
