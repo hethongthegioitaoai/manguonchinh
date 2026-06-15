@@ -69,11 +69,10 @@
 - [x] `SUPABASE_URL` — đã set (`https://wyxisszfooqaxjpbicoc.supabase.co`)
 - [x] `SUPABASE_ANON_KEY` — đã set (secret)
 
-#### 1.3 Chạy SQL setup Supabase
-- [ ] Vào Supabase Dashboard → SQL Editor
-- [ ] Chạy file `artifacts/ai-world-system/supabase-setup.sql`
-- [ ] Kiểm tra 3 bảng: `users`, `worlds`, `characters` đã tồn tại
-- [ ] **→ Mọi thao tác DB đều lỗi nếu bảng chưa tạo**
+#### 1.3 Chạy SQL setup Supabase ✅
+- [x] Vào Supabase Dashboard → SQL Editor
+- [x] Chạy file `artifacts/ai-world-system/supabase-setup.sql`
+- [x] 3 bảng đã tồn tại: `users`, `worlds`, `characters`
 
 ---
 
