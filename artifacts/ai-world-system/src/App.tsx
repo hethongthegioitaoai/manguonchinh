@@ -11,6 +11,7 @@ import CharacterCreationPage from "@/pages/CharacterCreationPage";
 import DashboardPage from "@/pages/DashboardPage";
 import PlayPage from "@/pages/PlayPage";
 import CharacterProfilePage from "@/pages/CharacterProfilePage";
+import LeaderboardPage from "@/pages/LeaderboardPage";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/dashboard" component={DashboardPage} />
       <Route path="/play" component={PlayPage} />
       <Route path="/character/:id" component={CharacterProfilePage} />
+      <Route path="/leaderboard" component={LeaderboardPage} />
       <Route component={NotFound} />
     </Switch>
   );

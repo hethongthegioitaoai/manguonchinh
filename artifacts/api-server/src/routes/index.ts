@@ -3,6 +3,7 @@ import healthRouter from "./health.js";
 import authRouter from "./auth.js";
 import charactersRouter from "./characters.js";
 import questsRouter from "./quests.js";
+import leaderboardRouter from "./leaderboard.js";
 
 const router: IRouter = Router();
 
@@ -10,5 +11,6 @@ router.use(healthRouter);
 router.use(authRouter);
 router.use(charactersRouter);
 router.use(questsRouter);
+router.use(leaderboardRouter);
 
 export default router;

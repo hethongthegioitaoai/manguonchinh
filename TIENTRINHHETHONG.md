@@ -139,9 +139,11 @@
 - [ ] Phần thưởng quest có thể là item
 - [ ] Trang bị ảnh hưởng stats
 
-#### 3.4 Bảng Xếp Hạng (`/leaderboard`)
-- [ ] Top nhân vật theo level trong từng thế giới
-- [ ] Reset định kỳ (tuần/tháng)?
+#### 3.4 Bảng Xếp Hạng (`/leaderboard`) ✅
+- [x] Top 20 nhân vật theo level + EXP toàn server
+- [x] Lọc theo thế giới (TẤT CẢ / TU TIÊN / CYBERPUNK / HOANG PHẾ)
+- [x] Top 3 có icon vàng/bạc/đồng + hiệu ứng riêng
+- [x] Nút "XẾP HẠNG" trong nav Dashboard
 
 #### 3.5 Cài đặt & Hồ sơ Người Dùng (`/settings`)
 - [ ] Đổi username
