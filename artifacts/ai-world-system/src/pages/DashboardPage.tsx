@@ -420,9 +420,9 @@ export default function DashboardPage() {
                         icon: Shield,
                         label: "TÚI ĐỒ",
                         sub: "Quản lý vật phẩm & trang bị",
-                        tag: "SẮP RA MẮT",
-                        disabled: true,
-                        onClick: undefined,
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/inventory"),
                       },
                     ].map((action) => (
                       <motion.div

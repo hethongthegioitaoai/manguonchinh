@@ -3,7 +3,7 @@
 > **⚠️ AGENT — ĐỌC FILE NÀY TRƯỚC TIÊN KHI MỞ DỰ ÁN**
 > Tìm tính năng đầu tiên còn `[ ]` theo thứ tự ưu tiên → build → đánh dấu `[x]` → cập nhật bảng trạng thái.
 
-> **Cập nhật lần cuối:** 15/06/2026 (battle/history xong)
+> **Cập nhật lần cuối:** 15/06/2026 (inventory system xong)
 
 ---
 
@@ -111,11 +111,11 @@ lib/
 - [x] Link từ BattlePage result screen (nút "Lịch Sử")
 
 #### 2.2 Hệ thống Vật Phẩm / Trang Bị
-- [ ] Bảng DB: `items` (id, name, type, rarity, stats JSONB, worldSlug, description, icon)
-- [ ] Bảng DB: `inventory` (id, characterId, itemId, quantity, equippedSlot)
-- [ ] API: `GET /api/inventory/:characterId`, `POST /api/inventory/equip`
-- [ ] Drop item sau khi thắng battle (tỉ lệ theo rarity)
-- [ ] Trang `/inventory` — hiển thị item, nút trang bị, tác động stats
+- [x] Bảng DB: `items` (id, name, type, rarity, stats JSONB, worldSlug, description, icon)
+- [x] Bảng DB: `inventory` (id, characterId, itemId, quantity, equippedSlot)
+- [x] API: `GET /api/inventory/:characterId`, `POST /api/inventory/equip`
+- [x] Drop item sau khi thắng battle (tỉ lệ theo rarity, tăng theo enemyLevel)
+- [x] Trang `/inventory` — hiển thị item, nút trang bị, tác động stats, bộ lọc
 
 #### 2.3 AI Narrative (Phase 2 — cần Gemini API key)
 - [ ] Set secret `GEMINI_API_KEY` (Google AI Studio free)
@@ -161,8 +161,8 @@ lib/
 | `characters` | ✅ Trong DB | Nhân vật người chơi |
 | `quests` | ✅ Trong DB | Nhiệm vụ |
 | `battles` | ✅ Trong DB | Lịch sử chiến đấu |
-| `items` | ❌ Chưa có | Vật phẩm |
-| `inventory` | ❌ Chưa có | Túi đồ nhân vật |
+| `items` | ✅ Trong DB | Vật phẩm (24 templates × 3 worlds) |
+| `inventory` | ✅ Trong DB | Túi đồ nhân vật |
 
 ---
 
@@ -180,7 +180,7 @@ lib/
 | `/leaderboard` | Bảng xếp hạng | ✅ Xong |
 | `/battle` | Chiến trường (6 mode) | ✅ Xong |
 | `/battle/history` | Lịch sử chiến đấu | ✅ Xong |
-| `/inventory` | Túi đồ / Trang bị | ❌ Chưa có |
+| `/inventory` | Túi đồ / Trang bị | ✅ Xong |
 | `/settings` | Cài đặt tài khoản | ❌ Chưa có |
 
 ---

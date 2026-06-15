@@ -14,6 +14,7 @@ import CharacterProfilePage from "@/pages/CharacterProfilePage";
 import LeaderboardPage from "@/pages/LeaderboardPage";
 import BattlePage from "@/pages/BattlePage";
 import BattleHistoryPage from "@/pages/BattleHistoryPage";
+import InventoryPage from "@/pages/InventoryPage";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/character/:id" component={CharacterProfilePage} />
       <Route path="/leaderboard" component={LeaderboardPage} />
       <Route path="/battle/history" component={BattleHistoryPage} />
+      <Route path="/inventory" component={InventoryPage} />
       <Route path="/battle" component={BattlePage} />
       <Route component={NotFound} />
     </Switch>

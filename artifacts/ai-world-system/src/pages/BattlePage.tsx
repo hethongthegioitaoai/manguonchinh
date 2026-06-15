@@ -25,6 +25,16 @@ interface Character {
   stats: { system: string; world_slug: string };
 }
 
+interface DroppedItem {
+  id: string;
+  name: string;
+  icon: string;
+  rarity: string;
+  type: string;
+  description: string;
+  bonusStats: Record<string, number>;
+}
+
 interface BattleResult {
   result: "win" | "lose" | "draw";
   hpLeft: number;
@@ -32,6 +42,7 @@ interface BattleResult {
   leveledUp: boolean;
   enemy: Enemy;
   mode: BattleMode;
+  droppedItem?: DroppedItem | null;
 }
 
 const MODE_INFO: Record<BattleMode, { label: string; icon: React.ReactNode; desc: string; color: string; border: string; glow: string }> = {
@@ -144,10 +155,10 @@ export default function BattlePage() {
         }),
       });
       const data = await res.json();
-      setBattleResult({ result, hpLeft, expGained: data.expGained, leveledUp: data.leveledUp, enemy, mode: selectedMode });
+      setBattleResult({ result, hpLeft, expGained: data.expGained, leveledUp: data.leveledUp, enemy, mode: selectedMode, droppedItem: data.droppedItem ?? null });
       if (data.character) setActiveChar(prev => prev ? { ...prev, exp: data.character.exp, level: data.character.level } : prev);
     } catch {
-      setBattleResult({ result, hpLeft, expGained: 0, leveledUp: false, enemy, mode: selectedMode });
+      setBattleResult({ result, hpLeft, expGained: 0, leveledUp: false, enemy, mode: selectedMode, droppedItem: null });
     }
     setPhase("result");
   }
@@ -327,6 +338,25 @@ export default function BattlePage() {
                     <Star className="w-5 h-5 text-yellow-400" />
                     <span className="text-yellow-300 font-bold">LÊN CẤP! → Lv.{activeChar.level}</span>
                     <Star className="w-5 h-5 text-yellow-400" />
+                  </motion.div>
+                )}
+                {battleResult.droppedItem && (
+                  <motion.div initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.65, type: "spring" }}
+                    className="flex items-center gap-3 bg-cyan-900/20 border border-cyan-500/40 rounded-xl p-3">
+                    <span className="text-3xl flex-shrink-0">{battleResult.droppedItem.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs text-cyan-400 font-bold mb-0.5">📦 VẬT PHẨM RƠI!</div>
+                      <div className="text-sm font-semibold text-white truncate">{battleResult.droppedItem.name}</div>
+                      <div className="flex gap-1.5 mt-1 flex-wrap">
+                        {Object.entries(battleResult.droppedItem.bonusStats).map(([s, v]) => (
+                          <span key={s} className="text-xs text-cyan-300 font-bold">+{v}{s}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <button onClick={() => setLocation("/inventory")}
+                      className="text-xs text-cyan-400 hover:text-cyan-200 flex-shrink-0 underline underline-offset-2">
+                      Xem →
+                    </button>
                   </motion.div>
                 )}
               </motion.div>

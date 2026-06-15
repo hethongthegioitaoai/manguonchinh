@@ -1,8 +1,9 @@
 import { Router } from "express";
 import { isAuthenticated } from "../auth/replitAuth.js";
 import { db } from "@workspace/db";
-import { battles, characters } from "@workspace/db/schema";
+import { battles, characters, items, inventory } from "@workspace/db/schema";
 import { eq, and } from "drizzle-orm";
+import { shouldDropItem, pickDropItem } from "../lib/itemTemplates.js";
 
 const router = Router();
 
@@ -168,7 +169,36 @@ router.post("/battle/finish", isAuthenticated, async (req: any, res) => {
       updatedChar = updated;
     }
 
-    res.json({ battle, character: updatedChar, expGained, leveledUp });
+    let droppedItem = null;
+    const worldSlug = ((char.stats as any)?.world_slug ?? "cultivation") as string;
+    if (shouldDropItem(result, enemyLevel)) {
+      const template = pickDropItem(worldSlug, enemyLevel);
+      if (template) {
+        let [dbItem] = await db.select().from(items).where(
+          and(eq(items.name, template.name), eq(items.worldSlug, template.worldSlug))
+        );
+        if (!dbItem) {
+          const [inserted] = await db.insert(items).values({
+            name: template.name,
+            type: template.type,
+            rarity: template.rarity,
+            worldSlug: template.worldSlug,
+            description: template.description,
+            icon: template.icon,
+            bonusStats: template.bonusStats,
+          }).returning();
+          dbItem = inserted;
+        }
+        const [invRow] = await db.insert(inventory).values({
+          characterId,
+          itemId: dbItem.id,
+          quantity: 1,
+        }).returning();
+        droppedItem = { ...dbItem, inventoryId: invRow.id };
+      }
+    }
+
+    res.json({ battle, character: updatedChar, expGained, leveledUp, droppedItem });
   } catch (err) {
     res.status(500).json({ message: "Failed to finish battle" });
   }
