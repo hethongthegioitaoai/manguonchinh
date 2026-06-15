@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import {
   LogOut, Globe, Zap, User, Shield, Swords,
-  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star,
+  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -557,6 +557,27 @@ export default function DashboardPage() {
                       </div>
                     ))}
                   </div>
+
+                  <motion.div
+                    whileHover={{ scale: 1.005 }}
+                    onClick={() => setLocation(`/character/${char.id}`)}
+                    className="group cursor-pointer border border-border/50 bg-card/30 hover:bg-card/60 px-5 py-3 flex items-center justify-between transition-all duration-200"
+                    style={{ borderColor: `${worldColor}40` }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-8 h-8 flex items-center justify-center border"
+                        style={{ borderColor: `${worldColor}40`, backgroundColor: `${worldColor}10` }}
+                      >
+                        <ExternalLink className="w-4 h-4" style={{ color: worldColor }} strokeWidth={1.5} />
+                      </div>
+                      <div>
+                        <div className="font-orbitron text-xs font-bold tracking-wide">XEM HỒ SƠ ĐẦY ĐỦ</div>
+                        <div className="font-mono text-xs text-muted-foreground mt-0.5">Stats, biểu đồ & lịch sử nhiệm vụ</div>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  </motion.div>
 
                   <div className="border border-dashed border-border/30 p-4 flex items-center justify-between">
                     <div>

@@ -121,11 +121,12 @@
 
 ### 🟡 ƯU TIÊN 3 — TÍNH NĂNG NÂNG CAO
 
-#### 3.1 Trang Hồ Sơ Nhân Vật (`/character/:id`)
-- [ ] Xem đầy đủ thông tin nhân vật
-- [ ] Lịch sử quest đã hoàn thành
-- [ ] Stats dạng chart / bar
-- [ ] Đổi tên nhân vật (nếu cho phép)
+#### 3.1 Trang Hồ Sơ Nhân Vật (`/character/:id`) ✅
+- [x] Xem đầy đủ thông tin nhân vật (cấp, EXP, cảnh giới, ngày tham gia, tổng quest)
+- [x] Lịch sử quest đã hoàn thành (tab riêng, sort theo status)
+- [x] Biểu đồ radar 6 chỉ số (recharts) + bar chart quest theo loại
+- [x] Lộ trình cảnh giới — highlight vị trí hiện tại
+- [x] Nút "XEM HỒ SƠ ĐẦY ĐỦ" trên Dashboard → `/character/:id`
 
 #### 3.2 Hệ thống Chiến Đấu
 - [ ] Bảng DB: `battles` (id, character_id, enemy, result, timestamp)
