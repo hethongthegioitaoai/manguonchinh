@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import {
   Swords, Zap, Bot, Puzzle, BookOpen, Dices,
-  Shuffle, ArrowLeft, Trophy, Skull, Minus, Star, ChevronRight,
+  Shuffle, ArrowLeft, Trophy, Skull, Minus, Star, ChevronRight, TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -336,10 +336,16 @@ export default function BattlePage() {
                 <Button onClick={resetBattle} className="w-full bg-red-700 hover:bg-red-600 gap-2 h-12">
                   <Swords className="w-4 h-4" /> Trận Chiến Tiếp Theo
                 </Button>
-                <Button onClick={() => setLocation("/dashboard")} variant="outline"
-                  className="w-full border-gray-700 text-gray-300 hover:bg-gray-800 h-12">
-                  Về Dashboard
-                </Button>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button onClick={() => setLocation("/battle/history")} variant="outline"
+                    className="border-cyan-700/60 text-cyan-400 hover:bg-cyan-900/20 h-11 text-sm gap-1.5">
+                    <TrendingUp className="w-4 h-4" /> Lịch Sử
+                  </Button>
+                  <Button onClick={() => setLocation("/dashboard")} variant="outline"
+                    className="border-gray-700 text-gray-300 hover:bg-gray-800 h-11 text-sm">
+                    Dashboard
+                  </Button>
+                </div>
               </motion.div>
             </motion.div>
           )}

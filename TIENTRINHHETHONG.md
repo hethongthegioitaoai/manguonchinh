@@ -3,7 +3,7 @@
 > **⚠️ AGENT — ĐỌC FILE NÀY TRƯỚC TIÊN KHI MỞ DỰ ÁN**
 > Tìm tính năng đầu tiên còn `[ ]` theo thứ tự ưu tiên → build → đánh dấu `[x]` → cập nhật bảng trạng thái.
 
-> **Cập nhật lần cuối:** 15/06/2026
+> **Cập nhật lần cuối:** 15/06/2026 (battle/history xong)
 
 ---
 
@@ -102,11 +102,13 @@ lib/
 
 ### 🟠 ƯU TIÊN 2 — GAMEPLAY NÂNG CAO
 
-#### 2.1 Trang Lịch Sử Chiến Đấu (`/battle/history`)
-- [ ] Danh sách các trận đã đánh (từ bảng `battles`)
-- [ ] Thống kê: tổng trận / win / lose / draw theo mode
-- [ ] Filter theo mode hoặc kết quả
-- [ ] Link từ Dashboard hoặc sau khi kết thúc trận
+#### 2.1 Trang Lịch Sử Chiến Đấu (`/battle/history`) ✅
+- [x] Danh sách các trận đã đánh (từ bảng `battles`)
+- [x] Thống kê: tổng trận / win / lose / draw + tổng EXP
+- [x] Win-rate bar chart tổng + breakdown theo từng mode
+- [x] Filter theo mode (6 loại) và kết quả (thắng/thua/hòa)
+- [x] API `GET /api/battle/history/:characterId` với stats server-side
+- [x] Link từ BattlePage result screen (nút "Lịch Sử")
 
 #### 2.2 Hệ thống Vật Phẩm / Trang Bị
 - [ ] Bảng DB: `items` (id, name, type, rarity, stats JSONB, worldSlug, description, icon)
@@ -177,7 +179,7 @@ lib/
 | `/character/:id` | Hồ sơ nhân vật | ✅ Xong |
 | `/leaderboard` | Bảng xếp hạng | ✅ Xong |
 | `/battle` | Chiến trường (6 mode) | ✅ Xong |
-| `/battle/history` | Lịch sử chiến đấu | ❌ Chưa có |
+| `/battle/history` | Lịch sử chiến đấu | ✅ Xong |
 | `/inventory` | Túi đồ / Trang bị | ❌ Chưa có |
 | `/settings` | Cài đặt tài khoản | ❌ Chưa có |
 

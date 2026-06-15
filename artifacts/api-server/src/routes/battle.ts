@@ -61,6 +61,50 @@ function generateEnemy(worldSlug: string, characterLevel: number) {
   return { ...template, level: enemyLevel, hpMax, atk, def };
 }
 
+router.get("/battle/history/:characterId", isAuthenticated, async (req: any, res) => {
+  try {
+    const userId = req.user.claims.sub;
+    const { characterId } = req.params;
+    const limit = Math.min(Number(req.query.limit) || 50, 100);
+
+    const [char] = await db.select().from(characters).where(
+      and(eq(characters.id, characterId), eq(characters.userId, userId))
+    );
+    if (!char) return res.status(404).json({ message: "Character not found" });
+
+    const history = await db
+      .select()
+      .from(battles)
+      .where(eq(battles.characterId, characterId))
+      .orderBy(battles.createdAt)
+      .limit(limit);
+
+    history.reverse();
+
+    const stats = {
+      total: history.length,
+      win: history.filter(b => b.result === "win").length,
+      lose: history.filter(b => b.result === "lose").length,
+      draw: history.filter(b => b.result === "draw").length,
+      totalExp: history.reduce((s, b) => s + (b.expGained ?? 0), 0),
+      byMode: {} as Record<string, { total: number; win: number; lose: number; draw: number }>,
+    };
+
+    for (const b of history) {
+      const m = b.battleMode;
+      if (!stats.byMode[m]) stats.byMode[m] = { total: 0, win: 0, lose: 0, draw: 0 };
+      stats.byMode[m].total++;
+      if (b.result === "win") stats.byMode[m].win++;
+      else if (b.result === "lose") stats.byMode[m].lose++;
+      else if (b.result === "draw") stats.byMode[m].draw++;
+    }
+
+    res.json({ battles: history, stats });
+  } catch {
+    res.status(500).json({ message: "Failed to fetch battle history" });
+  }
+});
+
 router.post("/battle/start", isAuthenticated, async (req: any, res) => {
   try {
     const userId = req.user.claims.sub;
