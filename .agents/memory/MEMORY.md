@@ -1,0 +1,1 @@
+- [Đọc TIENTRINHHETHONG.md trước](tientrinhhethong-protocol.md) — file tracking tiến trình build, LUÔN đọc đầu tiên khi mở dự án, build task [ ] đầu tiên rồi cập nhật file

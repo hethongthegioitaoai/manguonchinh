@@ -1,7 +1,8 @@
 # 🗂️ TIẾN TRÌNH HỆ THỐNG — AI WORLD SYSTEM
 
-> **Mục đích:** Mỗi khi mở dự án, đọc file này trước để biết đang ở đâu, cần Build gì tiếp theo, và còn thiếu gì.
->
+> **⚠️ AGENT — ĐỌC FILE NÀY TRƯỚC TIÊN KHI MỞ DỰ ÁN**
+> Tìm tính năng đầu tiên còn `[ ]` theo thứ tự ưu tiên → build → đánh dấu `[x]` → cập nhật bảng trạng thái.
+
 > **Cập nhật lần cuối:** 15/06/2026
 
 ---
@@ -9,232 +10,201 @@
 ## 🌐 TỔNG QUAN DỰ ÁN
 
 **Tên:** AI World System
-**Mô tả:** Web app nhập vai phong cách cyber cultivation tối tăm — người chơi đăng nhập, chọn thế giới do AI dẫn dắt, tạo nhân vật với hệ thống năng lực ngẫu nhiên, rồi phiêu lưu trong thế giới đó.
+**Mô tả:** Web app nhập vai phong cách cyber cultivation tối tăm — người chơi đăng nhập (Replit Auth), chọn thế giới, tạo nhân vật với hệ thống năng lực ngẫu nhiên, chiến đấu, nhận quest, và phiêu lưu.
 
-**Stack:**
-- Frontend: React + Vite + TypeScript + Tailwind CSS v4 + Framer Motion
-- Backend: Express 5 (Node.js 24)
-- Database: Supabase (PostgreSQL + Auth + RLS)
-- AI: Chưa tích hợp
-- Routing: Wouter
-- UI: shadcn/ui + Radix UI
+**Stack thực tế (KHÔNG dùng Supabase):**
+- Frontend: React 19 + Vite 7 + TypeScript + Tailwind CSS v4 + Framer Motion + Wouter + shadcn/ui
+- Backend: Express 5 (Node.js 24) — port 8080
+- Database: PostgreSQL + Drizzle ORM (Replit managed, `DATABASE_URL` secret)
+- Auth: **Replit Auth** (OIDC via `openid-client` + `passport`) — KHÔNG dùng Supabase Auth
+- Session: `express-session` + `connect-pg-simple` (lưu vào bảng `sessions`)
+- Monorepo: pnpm workspaces
+
+**Cấu trúc thư mục:**
+```
+artifacts/
+  ai-world-system/   ← Frontend React (port 19734)
+  api-server/        ← Backend Express (port 8080)
+lib/
+  db/                ← Schema Drizzle + DB client
+  api-spec/          ← OpenAPI spec + Orval codegen
+  api-zod/           ← Zod schemas (generated)
+  api-client-react/  ← React hooks (generated)
+```
 
 ---
 
 ## ✅ ĐÃ HOÀN THÀNH
 
-### 🎨 Frontend — Giao diện
-- [x] **Trang Chủ** (`/`) — Landing page với logo animation, nút "Vào Thế Giới"
-- [x] **Trang Đăng Nhập** (`/login`) — Email + password, tự động signup nếu chưa có tài khoản
-- [x] **Trang Chọn Thế Giới** (`/worlds`) — 3 thế giới: Tu Tiên / Cyberpunk / Vùng Hoang Phế
-- [x] **Trang Tạo Nhân Vật** (`/create-character/:worldId`) — Nhập tên, roulette chọn Hệ Thống ngẫu nhiên
-- [x] **Trang 404** — Not Found page
-
-### 🔐 Xác thực
-- [x] **AuthContext** — Quản lý session Supabase toàn app
-- [x] **Bảo vệ route** — Tự redirect về `/login` nếu chưa đăng nhập
-- [x] **Supabase Auth** — signIn + signUp tự động
-
-### 🗄️ Cơ sở dữ liệu (Schema SQL đã viết)
-- [x] Bảng `users` — profile công khai, trigger tự tạo khi có auth user mới
-- [x] Bảng `worlds` — 3 thế giới (seed sẵn)
-- [x] Bảng `characters` — lưu nhân vật với tên, worldId, JSONB stats
-- [x] **Row Level Security (RLS)** — bật cho tất cả bảng
-
-### ⚙️ Backend
-- [x] **API Server Express** — cấu trúc cơ bản (src/app.ts, src/index.ts)
-- [x] **Health route** (`/health`) — kiểm tra server còn sống
-- [x] **Logger middleware** — ghi log request
-
-### 🏗️ Hạ tầng
-- [x] pnpm monorepo workspace cấu hình xong
+### 🏗️ Hạ tầng & Auth
+- [x] pnpm monorepo workspace
 - [x] TypeScript config (base + references)
-- [x] Cấu trúc thư mục chuẩn
+- [x] **Replit Auth** — OIDC login/logout/callback, session PostgreSQL
+- [x] Bảng `sessions` — lưu server-side session
+- [x] Bảng `users` — upsert khi login, lưu email/firstName/lastName/profileImageUrl
+- [x] `isAuthenticated` middleware — kiểm tra + tự refresh token hết hạn
+- [x] Workflow Frontend (port 19734) + Workflow API Server (port 8080)
+- [x] `DATABASE_URL`, `SESSION_SECRET`, `REPL_ID` — secrets đã set
+
+### 🗄️ Database (Drizzle ORM — đã push schema)
+- [x] Bảng `worlds` — 3 thế giới (cultivation / cyberpunk / zombie)
+- [x] Bảng `characters` — nhân vật (userId, worldId, name, stats JSONB, level, exp)
+- [x] Bảng `quests` — nhiệm vụ (characterId, worldSlug, title, description, status, expReward, questType)
+- [x] Bảng `battles` — chiến đấu (characterId, enemyName, enemyLevel, battleMode, result, expGained, hpLeft, duration, metadata JSONB)
+
+### 🎨 Frontend — Các trang
+- [x] `/` — Landing Page (logo animation, nút vào thế giới)
+- [x] `/login` — Replit Auth login
+- [x] `/worlds` — Chọn thế giới (Tu Tiên / Cyberpunk / Hoang Phế)
+- [x] `/create-character/:worldId` — Tạo nhân vật, roulette chọn Hệ Thống
+- [x] `/dashboard` — Dashboard chính: stats, quests, level/EXP, hành động
+- [x] `/play` — Narrative/Khám phá: cây chuyện 3 thế giới, typewriter, lựa chọn, EXP
+- [x] `/character/:id` — Hồ sơ nhân vật: radar chart 6 chỉ số, lịch sử quest, lộ trình cảnh giới
+- [x] `/leaderboard` — Bảng xếp hạng top 20, lọc theo thế giới
+- [x] `/battle` — **Chiến trường: 6 chế độ + màn hình kết quả + EXP**
+- [x] `/404` — Not Found page
+
+### ⚙️ Backend API Routes
+- [x] `GET /health`
+- [x] `GET /api/auth/user` — thông tin user đang login
+- [x] `GET /api/login`, `GET /api/callback`, `GET /api/logout` — Replit Auth flow
+- [x] `GET /api/characters` — danh sách nhân vật của user
+- [x] `POST /api/characters` — tạo nhân vật mới
+- [x] `POST /api/characters/:characterId/exp` — cộng EXP thủ công
+- [x] `GET /api/quests/:characterId` — lấy quest
+- [x] `POST /api/quests/generate/:characterId` — sinh tối đa 3 quest active
+- [x] `POST /api/quests/:questId/complete` — hoàn thành quest, nhận EXP
+- [x] `GET /api/leaderboard` — top 20 nhân vật
+- [x] `POST /api/battle/start` — sinh enemy + mode → trả về cho FE
+- [x] `POST /api/battle/finish` — lưu kết quả, cộng EXP, level-up
+
+### 🎮 Gameplay Systems
+- [x] **Enemy Generator** (`lib/enemies.ts`) — 18 enemy template × 3 thế giới, stats ±20% theo level
+- [x] **6 Battle Modes:**
+  - [x] Turn-Based (`TurnBased.tsx`) — lượt chiến Tấn Công / Kỹ Năng / Phòng Thủ / Bỏ Chạy
+  - [x] Real-Time (`RealTime.tsx`) — nhấn nhanh trong 20s
+  - [x] Auto Battle (`AutoBattle.tsx`) — tự chạy, chỉnh tốc độ 1×/2×/3×
+  - [x] Puzzle (`PuzzleBattle.tsx`) — ghi nhớ chuỗi màu, 5 vòng
+  - [x] Narrative (`NarrativeBattle.tsx`) — chọn hành động theo câu chuyện
+  - [x] Dice (`DiceBattle.tsx`) — 6 hiệp lăn xúc xắc, chí mạng = 6
+- [x] Màn hình kết quả chiến đấu: thắng/thua/hòa, EXP flash, level-up animation
+- [x] **Quest system** — 5 template/thế giới, tự generate khi < 3 active, EXP khi hoàn thành
+- [x] **Level/EXP system** — 100 EXP/level, animation thăng cấp, cảnh giới theo thế giới
+- [x] **Narrative system** — 3 cây chuyện (~40 node), typewriter effect, bonus EXP theo hệ thống
 
 ---
 
-## ❌ CÒN THIẾU — CẦN BUILD
+## ❌ CẦN BUILD — ƯU TIÊN THEO THỨ TỰ
 
-> Sắp xếp theo **thứ tự ưu tiên** — build từ trên xuống.
-
----
-
-### 🔴 ƯU TIÊN 1 — BẮT BUỘC ĐỂ APP CHẠY ĐƯỢC
-
-#### 1.1 Cấu hình Workflow ✅
-- [x] Workflow **Frontend** — `PORT=19734 BASE_PATH=/ pnpm --filter @workspace/ai-world-system run dev`
-- [x] Workflow **API Server** — `PORT=8080 pnpm --filter @workspace/api-server run dev`
-
-#### 1.2 Biến môi trường Supabase ✅
-- [x] `SUPABASE_URL` — đã set (`https://wyxisszfooqaxjpbicoc.supabase.co`)
-- [x] `SUPABASE_ANON_KEY` — đã set (secret)
-
-#### 1.3 Chạy SQL setup Supabase ✅
-- [x] Vào Supabase Dashboard → SQL Editor
-- [x] Chạy file `artifacts/ai-world-system/supabase-setup.sql`
-- [x] 3 bảng đã tồn tại: `users`, `worlds`, `characters`
+> **Agent:** Lấy task đầu tiên chưa hoàn thành, build xong rồi đánh `[x]` và cập nhật bảng trạng thái bên dưới.
 
 ---
 
-### 🟠 ƯU TIÊN 2 — GAMEPLAY CORE (App có nhưng chưa chơi được)
+### 🟠 ƯU TIÊN 2 — GAMEPLAY NÂNG CAO
 
-#### 2.1 Trang Dashboard Nhân Vật (`/dashboard`) ✅
-- [x] Hiển thị thông tin nhân vật (tên, thế giới, hệ thống, cảnh giới/realm)
-- [x] Stats panel (STR, INT, AGI, LCK) + thanh EXP
-- [x] Nút hành động: CHIẾN ĐẤU, KHÁM PHÁ (→ `/play`), TU LUYỆN, TÚI ĐỒ
-- [x] World lore panel + badge thế giới
-- [x] Nút tạo nhân vật mới + chuyển đổi nhân vật
-- [x] Sau khi tạo nhân vật → redirect về `/dashboard` thay vì `/worlds`
-- [x] **Toàn bộ Việt hóa** — Dashboard, CharacterCreation, Worlds, Landing
+#### 2.1 Trang Lịch Sử Chiến Đấu (`/battle/history`)
+- [ ] Danh sách các trận đã đánh (từ bảng `battles`)
+- [ ] Thống kê: tổng trận / win / lose / draw theo mode
+- [ ] Filter theo mode hoặc kết quả
+- [ ] Link từ Dashboard hoặc sau khi kết thúc trận
 
-#### 2.2 Hệ thống Narrative (Trái tim của game!) ✅ PHASE 1
-- [x] `lib/narrative.ts` — 3 cây chuyện đầy đủ (Tu Tiên + Cyberpunk + Hoang Phế)
-  - Tu Tiên: 15 node, nhiều nhánh, kết thúc khác nhau
-  - Cyberpunk: 14 node, Project GENESIS arc, nhiều lựa chọn
-  - Hoang Phế: 13 node, sinh tồn + Nexus arc
-- [x] `PlayPage.tsx` (`/play`) — giao diện narrative hoàn chỉnh
-  - Typewriter effect cho story text
-  - Highlight chữ *in nghiêng* màu thế giới
-  - Hệ thống lựa chọn A/B/C với EXP + tag
-  - Bonus EXP theo hệ thống nhân vật (Kiếm Thần +combat, Thương Nhân +trade, Bất Tử +wisdom)
-  - Flash EXP animation
-  - Lịch sử hành động mờ dần
-  - Kết thúc + nút chơi lại
-- [x] Dashboard "KHÁM PHÁ" → `/play` kết nối xong
-- [ ] **PHASE 2:** Tích hợp Gemini AI (khi có key) để sinh story động
+#### 2.2 Hệ thống Vật Phẩm / Trang Bị
+- [ ] Bảng DB: `items` (id, name, type, rarity, stats JSONB, worldSlug, description, icon)
+- [ ] Bảng DB: `inventory` (id, characterId, itemId, quantity, equippedSlot)
+- [ ] API: `GET /api/inventory/:characterId`, `POST /api/inventory/equip`
+- [ ] Drop item sau khi thắng battle (tỉ lệ theo rarity)
+- [ ] Trang `/inventory` — hiển thị item, nút trang bị, tác động stats
 
-#### 2.3 Hệ thống Quest / Nhiệm vụ ✅
-- [x] Bảng DB: `quests` (id, character_id, world_slug, title, description, status, exp_reward, quest_type, created_at, completed_at)
-- [x] API routes: `GET /api/quests/:characterId`, `POST /api/quests/generate/:characterId`, `POST /api/quests/:questId/complete`
-- [x] UI: Danh sách quest trong Dashboard (tối đa 3 active), nút hoàn thành, EXP flash animation
-- [x] 5 quest template per thế giới (Tu Tiên / Cyberpunk / Hoang Phế), tự động generate khi chưa đủ 3
+#### 2.3 AI Narrative (Phase 2 — cần Gemini API key)
+- [ ] Set secret `GEMINI_API_KEY` (Google AI Studio free)
+- [ ] `POST /api/narrative/generate` — sinh story node động từ context nhân vật
+- [ ] PlayPage dùng AI khi chọn "Khám phá tự do"
 
-#### 2.4 Hệ thống Tiến trình / Level ✅
-- [x] Cột mới trong `characters`: `level` (integer, default 1), `exp` (integer, default 0)
-- [x] Công thức: mỗi 100 EXP = 1 level, level = floor(totalExp / 100) + 1
-- [x] Animation thăng cấp trên Dashboard (overlay fullscreen)
-- [x] EXP được lưu DB khi: hoàn thành quest, chọn lựa trong PlayPage
-- [x] API: `POST /api/characters/:characterId/exp` — cộng EXP + tự tính level
-- [x] Danh hiệu/cảnh giới theo thế giới đã có sẵn (REALM_TITLES trong worlds.ts)
+#### 2.4 Trang Cài đặt (`/settings`)
+- [ ] Hiển thị thông tin tài khoản Replit (từ `/api/auth/user`)
+- [ ] Chọn nhân vật mặc định
+- [ ] Xoá nhân vật (với confirm dialog)
 
 ---
 
-### 🟡 ƯU TIÊN 3 — TÍNH NĂNG NÂNG CAO
+### 🟡 ƯU TIÊN 3 — HOÀN THIỆN UX
 
-#### 3.1 Trang Hồ Sơ Nhân Vật (`/character/:id`) ✅
-- [x] Xem đầy đủ thông tin nhân vật (cấp, EXP, cảnh giới, ngày tham gia, tổng quest)
-- [x] Lịch sử quest đã hoàn thành (tab riêng, sort theo status)
-- [x] Biểu đồ radar 6 chỉ số (recharts) + bar chart quest theo loại
-- [x] Lộ trình cảnh giới — highlight vị trí hiện tại
-- [x] Nút "XEM HỒ SƠ ĐẦY ĐỦ" trên Dashboard → `/character/:id`
+#### 3.1 Error Handling toàn diện
+- [ ] React Error Boundary bao toàn app
+- [ ] Toast khi lỗi network (đã có `sonner` cài sẵn)
+- [ ] Loading skeleton cho Dashboard + Battle + Leaderboard
 
-#### 3.2 Hệ thống Chiến Đấu
-- [ ] Bảng DB: `battles` (id, character_id, enemy, result, timestamp)
-- [ ] API: `POST /api/battle/start`, `POST /api/battle/action`
-- [ ] Cơ chế turn-based hoặc auto-battle
-- [ ] AI sinh enemy phù hợp với thế giới + level
-
-#### 3.3 Hệ thống Vật Phẩm / Trang Bị
-- [ ] Bảng DB: `items`, `inventory` (character_id, item_id, quantity)
-- [ ] Phần thưởng quest có thể là item
-- [ ] Trang bị ảnh hưởng stats
-
-#### 3.4 Bảng Xếp Hạng (`/leaderboard`) ✅
-- [x] Top 20 nhân vật theo level + EXP toàn server
-- [x] Lọc theo thế giới (TẤT CẢ / TU TIÊN / CYBERPUNK / HOANG PHẾ)
-- [x] Top 3 có icon vàng/bạc/đồng + hiệu ứng riêng
-- [x] Nút "XẾP HẠNG" trong nav Dashboard
-
-#### 3.5 Cài đặt & Hồ sơ Người Dùng (`/settings`)
-- [ ] Đổi username
-- [ ] Đổi mật khẩu
-- [ ] Xoá tài khoản
-- [ ] Tuỳ chỉnh giao diện (nếu cần)
+#### 3.2 Mobile Responsive
+- [ ] Kiểm tra và fix layout trên màn hình nhỏ (< 375px)
+- [ ] Battle components — đảm bảo tap target đủ lớn
 
 ---
 
-### 🟢 ƯU TIÊN 4 — HOÀN THIỆN & TRIỂN KHAI
+### 🟢 ƯU TIÊN 4 — TRIỂN KHAI
 
-#### 4.1 API Routes Backend (Hiện chỉ có /health)
-- [ ] `GET /api/characters` — lấy nhân vật của user
-- [ ] `POST /api/characters` — tạo nhân vật mới (hiện đang gọi Supabase trực tiếp từ FE)
-- [ ] `GET /api/worlds` — lấy danh sách thế giới
-- [ ] `GET /api/quests` — lấy quest
-- [ ] `POST /api/ai/narrative` — AI kể chuyện
-- [ ] Middleware xác thực JWT Supabase cho tất cả routes
-
-#### 4.2 Xử lý lỗi toàn diện
-- [ ] Error boundary React
-- [ ] Toast thông báo khi lỗi network
-- [ ] Loading skeleton cho tất cả trang
-- [ ] Offline state handling
-
-#### 4.3 Responsive / Mobile
-- [ ] Kiểm tra giao diện trên mobile
-- [ ] Điều chỉnh layout cho màn hình nhỏ
-
-#### 4.4 Triển khai (Deploy)
-- [ ] Cấu hình deployment trên Replit
-- [ ] Kiểm tra biến môi trường production
-- [ ] Test end-to-end trước khi publish
+#### 4.1 Deploy / Publish
+- [ ] Verify tất cả env vars đúng cho production
+- [ ] Test end-to-end sau khi publish
+- [ ] Cấu hình domain tùy chỉnh (nếu cần)
 
 ---
 
-## 📦 BẢNG DB HIỆN TẠI vs CẦN THÊM
+## 📦 TRẠNG THÁI BẢNG DB
 
 | Bảng | Trạng thái | Mô tả |
 |---|---|---|
-| `users` | ✅ Có SQL | Profile người dùng |
-| `worlds` | ✅ Có SQL | 3 thế giới |
-| `characters` | ✅ Có SQL | Nhân vật người chơi |
-| `quests` | ❌ Chưa có | Nhiệm vụ / quest |
-| `battles` | ❌ Chưa có | Lịch sử chiến đấu |
+| `users` | ✅ Trong DB | Profile Replit user |
+| `sessions` | ✅ Trong DB | Server-side sessions |
+| `worlds` | ✅ Trong DB | 3 thế giới |
+| `characters` | ✅ Trong DB | Nhân vật người chơi |
+| `quests` | ✅ Trong DB | Nhiệm vụ |
+| `battles` | ✅ Trong DB | Lịch sử chiến đấu |
 | `items` | ❌ Chưa có | Vật phẩm |
 | `inventory` | ❌ Chưa có | Túi đồ nhân vật |
-| `game_events` | ❌ Chưa có | Log sự kiện narrative AI |
-| `sessions` | ❌ Chưa có | Phiên chơi (cho AI context) |
 
 ---
 
-## 🗺️ CÁC TRANG HIỆN TẠI vs CẦN THÊM
+## 🗺️ TRẠNG THÁI ROUTE
 
 | Route | Trang | Trạng thái |
 |---|---|---|
 | `/` | Landing Page | ✅ Xong |
-| `/login` | Đăng nhập | ✅ Xong |
+| `/login` | Đăng nhập (Replit Auth) | ✅ Xong |
 | `/worlds` | Chọn thế giới | ✅ Xong |
 | `/create-character/:worldId` | Tạo nhân vật | ✅ Xong |
 | `/dashboard` | Dashboard nhân vật | ✅ Xong |
-| `/play` | Màn chơi / Narrative (Phase 1) | ✅ Xong |
-| `/quest/:id` | Chi tiết quest | ❌ Chưa có |
-| `/character/:id` | Hồ sơ nhân vật | ❌ Chưa có |
-| `/battle` | Chiến đấu | ❌ Chưa có |
-| `/leaderboard` | Bảng xếp hạng | ❌ Chưa có |
-| `/settings` | Cài đặt | ❌ Chưa có |
+| `/play` | Narrative / Khám phá | ✅ Xong |
+| `/character/:id` | Hồ sơ nhân vật | ✅ Xong |
+| `/leaderboard` | Bảng xếp hạng | ✅ Xong |
+| `/battle` | Chiến trường (6 mode) | ✅ Xong |
+| `/battle/history` | Lịch sử chiến đấu | ❌ Chưa có |
+| `/inventory` | Túi đồ / Trang bị | ❌ Chưa có |
+| `/settings` | Cài đặt tài khoản | ❌ Chưa có |
 
 ---
 
-## ⚡ KHI MỞ DỰ ÁN — LÀM NGAY THEO THỨ TỰ NÀY
+## 📝 GHI CHÚ KỸ THUẬT (QUAN TRỌNG)
+
+- **Auth:** Replit Auth OIDC — KHÔNG dùng Supabase. Cookie session qua `express-session`.
+- **DB:** Drizzle ORM + PostgreSQL. Schema thay đổi → chạy `pnpm --filter @workspace/db run push`.
+- **API codegen:** Thay đổi OpenAPI spec → chạy `pnpm --filter @workspace/api-spec run codegen`.
+- **World constants:** `artifacts/ai-world-system/src/lib/worlds.ts`
+- **Enemy templates:** `artifacts/ai-world-system/src/lib/enemies.ts`
+- **Narrative data:** `artifacts/ai-world-system/src/lib/narrative.ts` — 3 cây chuyện ~40 node
+- **EXP formula:** 100 EXP = 1 level. `level = floor(totalExp / 100) + 1`
+- **Battle EXP:** win = enemyLevel × 10, draw = ×3, lose = 0
+
+---
+
+## ⚡ HƯỚNG DẪN AGENT KHI MỞ DỰ ÁN
 
 ```
-1. Kiểm tra workflow đã chạy chưa (Frontend + API Server)
-2. Kiểm tra SUPABASE_URL và SUPABASE_ANON_KEY đã set chưa
-3. Nhìn vào cột "Trạng thái" ở trên → tìm ❌ gần nhất ở Ưu tiên thấp nhất
-4. Build tính năng đó
-5. Cập nhật file này sau khi xong
+1. Đọc file này (TIENTRINHHETHONG.md) trước tiên
+2. Kiểm tra workflow Frontend + API Server đang chạy
+3. Tìm task [ ] đầu tiên theo thứ tự ưu tiên (2 → 3 → 4)
+4. Build task đó
+5. Sau khi xong: đánh [x], cập nhật bảng DB và bảng Route nếu cần
+6. Ghi ngày cập nhật ở đầu file
 ```
 
----
-
-## 📝 GHI CHÚ KỸ THUẬT
-
-- **Supabase client** được init tại `artifacts/ai-world-system/src/lib/supabase.ts`
-- **World constants** (danh sách hệ thống, mô tả thế giới) tại `artifacts/ai-world-system/src/lib/worlds.ts`
-- **Hiện tại FE gọi Supabase trực tiếp** — cần chuyển dần sang API Server để bảo mật hơn
-- **Narrative data** tại `artifacts/ai-world-system/src/lib/narrative.ts` — 3 cây chuyện ~40 node tổng, pure frontend, không cần AI key
-- **AI Integration** — Replit AI Integration yêu cầu nâng cấp tài khoản. Thay thế miễn phí: Google AI Studio → https://aistudio.google.com (lấy Gemini API key free) → set secret `GEMINI_API_KEY` → tích hợp vào `/api/narrative`
-- **Font chữ**: Orbitron (tiêu đề), Rajdhani (nội dung) — cyber aesthetic
-
----
-
-*File này cần được cập nhật mỗi khi hoàn thành một tính năng mới.*
+*Cập nhật file này ngay sau khi hoàn thành mỗi tính năng.*
