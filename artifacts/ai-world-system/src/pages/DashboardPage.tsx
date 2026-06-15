@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import {
   LogOut, Globe, Zap, User, Shield, Swords,
-  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy,
+  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -230,6 +230,14 @@ export default function DashboardPage() {
             className="font-mono text-xs text-muted-foreground hover:text-primary rounded-none border border-transparent hover:border-primary/30 transition-all"
           >
             <Trophy className="w-4 h-4 mr-1" /> XẾP HẠNG
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setLocation("/settings")}
+            className="font-mono text-xs text-muted-foreground hover:text-primary rounded-none border border-transparent hover:border-primary/30 transition-all"
+          >
+            <Settings className="w-4 h-4 mr-1" /> CÀI ĐẶT
           </Button>
           <Button
             variant="ghost"

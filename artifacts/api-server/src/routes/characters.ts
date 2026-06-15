@@ -62,4 +62,28 @@ router.post("/characters", isAuthenticated, async (req: any, res) => {
   }
 });
 
+router.delete("/characters/:characterId", isAuthenticated, async (req: any, res) => {
+  try {
+    const userId = req.user.claims.sub;
+    const { characterId } = req.params;
+
+    const [char] = await db
+      .select()
+      .from(characters)
+      .where(and(eq(characters.id, characterId), eq(characters.userId, userId)));
+
+    if (!char) {
+      return res.status(404).json({ message: "Character not found" });
+    }
+
+    await db
+      .delete(characters)
+      .where(and(eq(characters.id, characterId), eq(characters.userId, userId)));
+
+    res.json({ message: "Character deleted" });
+  } catch {
+    res.status(500).json({ message: "Failed to delete character" });
+  }
+});
+
 export default router;
