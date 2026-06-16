@@ -27,6 +27,9 @@ import FactionsPage from "@/pages/FactionsPage";
 import MarketPage from "@/pages/MarketPage";
 import AdminPage from "@/pages/AdminPage";
 import NPCsPage from "@/pages/NPCsPage";
+import WorldCreatorPage from "@/pages/WorldCreatorPage";
+import WorldDiscoverPage from "@/pages/WorldDiscoverPage";
+import MultiversePage from "@/pages/MultiversePage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -62,6 +65,9 @@ function Router() {
       <Route path="/market" component={MarketPage} />
       <Route path="/admin" component={AdminPage} />
       <Route path="/npcs" component={NPCsPage} />
+      <Route path="/world-creator" component={WorldCreatorPage} />
+      <Route path="/world-discover" component={WorldDiscoverPage} />
+      <Route path="/multiverse" component={MultiversePage} />
       <Route component={NotFound} />
     </Switch>
   );

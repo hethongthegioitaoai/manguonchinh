@@ -13,7 +13,7 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 16/06/2026 — Phase 7 Multi Agent NPC xong (npcs DB, 7 vai trò, seed 3 NPC/world, AI tick loop, hội thoại tự do, trade offer, trang /npcs)
+> **Cập nhật lần cuối:** 16/06/2026 — Phase 10 Multiverse xong (cross_world_events + character_world_travel DB, multiverse routes, MultiversePage /multiverse, nút Dashboard)
 
 ---
 
@@ -219,9 +219,9 @@ lib/
 
 **Mục tiêu:** Người chơi tạo thế giới riêng.
 
-- [ ] Form tạo thế giới: tên, thể loại, luật, mô tả
-- [ ] AI nhận input → sinh lịch sử, NPC gốc, Boss đầu, phe phái
-- [ ] World được lưu vào DB, người khác có thể vào chơi
+- [x] Form tạo thế giới: tên, thể loại, luật, mô tả
+- [x] AI nhận input → sinh lịch sử, NPC gốc, Boss đầu, phe phái
+- [x] World được lưu vào DB, người khác có thể vào chơi
 
 ---
 
@@ -231,8 +231,8 @@ lib/
 
 **Mục tiêu:** AI tự tạo thế giới hoàn chỉnh không cần input.
 
-- [ ] AI generate World #XXXXX với lore/NPC/Quest/Boss/Dungeon/Items đầy đủ
-- [ ] World discovery feed — người chơi browse các AI-generated worlds
+- [x] AI generate World #XXXXX với lore/NPC/Quest/Boss/Dungeon/Items đầy đủ
+- [x] World discovery feed — người chơi browse các AI-generated worlds
 
 ---
 
@@ -242,9 +242,9 @@ lib/
 
 **Mục tiêu:** Nhiều thế giới cùng tồn tại trên một nền tảng.
 
-- [ ] Cross-world events (World War, Portal Events)
-- [ ] Nhân vật có thể di chuyển giữa các thế giới
-- [ ] World merge events
+- [x] Cross-world events (World War, Portal Events)
+- [x] Nhân vật có thể di chuyển giữa các thế giới
+- [x] World merge events
 
 ---
 
@@ -291,6 +291,9 @@ lib/
 | `character_skills` | ✅ | P2 | Skill tree per system (6 hệ thống × 5 kỹ năng) |
 | `factions` | ✅ | P2 | 4 phe phái × 3 thế giới (seeded tự động) |
 | `character_faction` | ✅ | P2 | Tư cách thành viên + điểm uy tín |
+| `custom_worlds` | ✅ | P8 | Thế giới do người chơi/AI tạo |
+| `cross_world_events` | ✅ | P10 | Sự kiện xuyên thế giới (portal/war/merge) |
+| `character_world_travel` | ✅ | P10 | Lịch sử di chuyển nhân vật giữa thế giới |
 
 ---
 
@@ -318,6 +321,9 @@ lib/
 | `/factions` | Phe phái thế giới | P2 | ✅ |
 | `/market` | Chợ đen — mua/bán | P4 | ✅ |
 | `/world/:slug/state` | Trạng thái thế giới | P4 | ❌ |
+| `/world-creator` | Tạo thế giới (AI) | P8 | ✅ |
+| `/world-discover` | Khám phá thế giới AI + cộng đồng | P9 | ✅ |
+| `/multiverse` | Đa vũ trụ — du hành, sự kiện xuyên TG | P10 | ✅ |
 | `/pvp` | PvP thách đấu | P1+ | ❌ |
 | `/admin` | World Monitor | P6 | ✅ |
 

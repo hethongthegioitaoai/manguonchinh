@@ -538,6 +538,30 @@ export default function DashboardPage() {
                           setLocation(`/world/${slug}/state`);
                         },
                       },
+                      {
+                        icon: Sparkles,
+                        label: "WORLD CREATOR",
+                        sub: "Tạo thế giới riêng — AI sinh lore, boss, phe phái",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/world-creator"),
+                      },
+                      {
+                        icon: Globe,
+                        label: "KHÁM PHÁ VŨ TRỤ",
+                        sub: "Browse thế giới AI sinh + cộng đồng tạo",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/world-discover"),
+                      },
+                      {
+                        icon: Globe,
+                        label: "ĐA VŨ TRỤ",
+                        sub: "Du hành thế giới — chiến tranh vũ trụ, hợp nhất",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/multiverse"),
+                      },
                     ].map((action) => (
                       <motion.div
                         key={action.label}
