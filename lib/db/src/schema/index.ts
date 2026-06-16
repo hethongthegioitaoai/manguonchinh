@@ -13,3 +13,4 @@ export * from "./worldEvents";
 export * from "./npcs";
 export * from "./customWorlds";
 export * from "./multiverse";
+export * from "./pvpRankings";

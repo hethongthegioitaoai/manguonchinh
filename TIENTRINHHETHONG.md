@@ -13,7 +13,7 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 16/06/2026 — /pvp PvP thách đấu xong (PvPPage + API routes pvp/opponents|challenge|history), /world/:slug/state đánh dấu ✅. Tất cả routes đã hoàn thành Phase 1–10.
+> **Cập nhật lần cuối:** 16/06/2026 — PvP Ranking xong: bảng pvp_rankings (RP Elo, tier Bronze→Bất Tử, streak), leaderboard /api/pvp/leaderboard, PvPPage 3 tab (Đấu Trường / BXH / Lịch Sử).
 
 ---
 
