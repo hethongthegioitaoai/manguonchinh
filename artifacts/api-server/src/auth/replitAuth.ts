@@ -3,6 +3,7 @@ import { Strategy, type VerifyFunction } from "openid-client/passport";
 import passport from "passport";
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
+import { logger } from "../lib/logger.js";
 import connectPg from "connect-pg-simple";
 import { db } from "@workspace/db";
 import { users } from "@workspace/db/schema";
@@ -140,9 +141,22 @@ export async function setupAuth(app: Express) {
   app.get("/api/callback", (req, res, next) => {
     const domain = getRealDomain(req);
     ensureStrategy(domain);
-    passport.authenticate(`replitauth:${domain}`, {
-      successReturnToOrRedirect: "/",
-      failureRedirect: "/api/login",
+    passport.authenticate(`replitauth:${domain}`, (err: any, user: any, info: any) => {
+      if (err) {
+        logger.error({ err }, "OIDC callback error");
+        return res.redirect(`/login?error=${encodeURIComponent(err.message ?? "auth_error")}`);
+      }
+      if (!user) {
+        logger.warn({ info }, "OIDC callback no user");
+        return res.redirect(`/login?error=${encodeURIComponent(JSON.stringify(info) ?? "no_user")}`);
+      }
+      req.logIn(user, (loginErr) => {
+        if (loginErr) {
+          logger.error({ loginErr }, "Session login error");
+          return res.redirect(`/login?error=${encodeURIComponent(loginErr.message ?? "login_failed")}`);
+        }
+        return res.redirect("/");
+      });
     })(req, res, next);
   });
 

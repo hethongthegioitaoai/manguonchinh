@@ -3,6 +3,11 @@ import { useLocation } from "wouter";
 import { motion, useAnimationFrame } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 
+function useSearchParam(key: string) {
+  if (typeof window === "undefined") return null;
+  return new URLSearchParams(window.location.search).get(key);
+}
+
 function HologramOrb() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const angleRef = useRef(0);
@@ -175,6 +180,7 @@ function FloatingParticles() {
 export default function LoginPage() {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
+  const authError = useSearchParam("error");
 
   useEffect(() => {
     if (!loading && user) {
@@ -213,6 +219,17 @@ export default function LoginPage() {
 
       {/* Main content */}
       <div className="relative z-10 flex flex-col items-center gap-10">
+
+        {/* Auth error banner */}
+        {authError && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute top-6 left-1/2 -translate-x-1/2 w-max max-w-sm px-4 py-2 border border-red-500/50 bg-red-900/30 font-mono text-xs text-red-400 tracking-wider text-center"
+          >
+            ⚠ LỖI XÁC THỰC: {decodeURIComponent(authError)}
+          </motion.div>
+        )}
 
         {/* Title */}
         <motion.div
