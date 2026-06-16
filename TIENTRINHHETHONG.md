@@ -352,6 +352,26 @@ lib/
 ---
 
 ### ════════════════════════════════════════
+### PHASE 21 — ISEKAI PORTAL (CỔNG XUYÊN KHÔNG) ✅
+### ════════════════════════════════════════
+
+**Mục tiêu:** Người chơi kích hoạt cổng xuyên không — bị cuốn ngẫu nhiên vào thế giới khác, AI sinh tên mới + cảnh mở đầu cinematic + System grant thiên phú đặc biệt.
+
+- [x] Bảng DB `isekai_records` (id, userId, fromCharacterId, fromWorldSlug, toWorldSlug, isekaiName, isekaiClass, openingNarrative, systemGrant, systemAbility, worldReaction, metadata jsonb)
+- [x] API GET /api/isekai/worlds — nhân vật của user (nguồn xuyên không)
+- [x] API GET /api/isekai/my — lịch sử xuyên không
+- [x] API GET /api/isekai/record/:id — chi tiết 1 record
+- [x] API POST /api/isekai/enter — kích hoạt cổng: random thế giới đích (builtin + custom public), AI sinh identity mới + narrative + system grant + thiên phú
+- [x] Pool đích: 3 builtin worlds + tất cả customWorlds public của người khác (loại trừ world hiện tại)
+- [x] AI sinh isekaiName phù hợp văn hóa thế giới đích
+- [x] AI sinh openingNarrative 4-5 câu cinematic (cảnh bị hút vào cổng, tỉnh dậy, phản ứng xung quanh)
+- [x] AI sinh systemGrant (thông báo System kiểu isekai anime) + systemAbility (1 thiên phú đặc biệt)
+- [x] Tạo world_event "⚡ Dị Khách Xuyên Không" ở thế giới đích khi có người isekai đến
+- [x] Trang `/isekai` — portal visual xoay 360°, chọn nhân vật, kích hoạt, hiển thị result card + history accordion
+- [x] Nút Dashboard "CỔNG XUYÊN KHÔNG" tag "ISEKAI"
+
+---
+
 ### PHASE 20 — DIVINE PROPHECY & ORACLE (THẦN KHẢI & TIÊN TRI) ✅
 ### ════════════════════════════════════════
 
@@ -418,6 +438,7 @@ lib/
 | `world_entry_log` | ✅ | P19 | Log mỗi lần nhân vật enter/exit thế giới |
 | `prophecies` | ✅ | P20 | Lời tiên tri AI sinh — thơ/ẩn dụ + hiddenCondition |
 | `prophecy_claims` | ✅ | P20 | Claim + AI scoring 0-100 + auto-approve ≥80 |
+| `isekai_records` | ✅ | P21 | Lịch sử xuyên không — identity mới + narrative + system grant |
 
 ---
 
@@ -461,6 +482,7 @@ lib/
 | `/world-trade` | Giao Thương Liên Thế Giới | P18 | ✅ |
 | `/passport` | Hộ Chiếu Du Hành | P19 | ✅ |
 | `/prophecy` | Thần Khải & Tiên Tri | P20 | ✅ |
+| `/isekai` | Cổng Xuyên Không | P21 | ✅ |
 
 ---
 

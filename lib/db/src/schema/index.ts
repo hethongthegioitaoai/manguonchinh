@@ -24,3 +24,4 @@ export * from "./godMode";
 export * from "./worldTrade";
 export * from "./worldPassport";
 export * from "./prophecy";
+export * from "./isekai";
