@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { isAuthenticated } from "../auth/replitAuth.js";
 import { db } from "@workspace/db";
-import { characters, characterMemories, worldMemories } from "@workspace/db/schema";
+import { characters, characterMemories, worldMemories, worldState, worldResources } from "@workspace/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -31,6 +31,37 @@ const REALM_MAP: Record<string, string[]> = {
   zombie:      ["Scavenger", "Survivor", "Raider", "Warlord", "Overlord", "Mutant Lord", "Wasteland King", "God of Ruin", "Apocalypse"],
   wasteland:   ["Scavenger", "Survivor", "Raider", "Warlord", "Overlord", "Mutant Lord", "Wasteland King", "God of Ruin", "Apocalypse"],
 };
+
+async function getWorldStateContext(worldSlug: string): Promise<string> {
+  try {
+    const stateRows = await db.select().from(worldState).where(eq(worldState.worldSlug, worldSlug));
+    const resourceRows = await db.select().from(worldResources).where(eq(worldResources.worldSlug, worldSlug));
+    if (stateRows.length === 0 && resourceRows.length === 0) return "";
+
+    const bossParts = stateRows
+      .filter(s => (s.value as any)?.type === "boss")
+      .map(s => {
+        const v = s.value as any;
+        const now = Date.now();
+        const respawnAt = v.respawnAt ? new Date(v.respawnAt).getTime() : null;
+        const alive = v.alive || (respawnAt !== null && now >= respawnAt);
+        return alive ? `${v.name} (Lv${v.level}) còn sống` : `${v.name} đã bị tiêu diệt`;
+      });
+
+    const resParts = resourceRows.map(r => {
+      const pct = Math.round((r.quantity / r.maxQuantity) * 100);
+      const label = pct >= 70 ? "dồi dào" : pct >= 30 ? "vừa phải" : "cạn kiệt";
+      return `${r.resourceType}: ${label} (${pct}%)`;
+    });
+
+    const lines: string[] = [];
+    if (bossParts.length > 0) lines.push(`Boss: ${bossParts.join(" | ")}`);
+    if (resParts.length > 0) lines.push(`Tài nguyên: ${resParts.join(", ")}`);
+    return lines.join("\n");
+  } catch {
+    return "";
+  }
+}
 
 async function getTopMemories(characterId: string, limit = 5): Promise<string[]> {
   try {
@@ -91,6 +122,7 @@ function buildSystemPrompt(
   worldSlug: string,
   history: string[],
   memories: string[],
+  worldStateCtx: string,
   freeInput?: string
 ): string {
   const worldCtx = WORLD_CONTEXT[worldSlug] ?? WORLD_CONTEXT.cultivation;
@@ -108,9 +140,13 @@ function buildSystemPrompt(
     ? `\nKÝ ỨC QUAN TRỌNG CỦA NHÂN VẬT:\n${memories.map(m => `• ${m}`).join("\n")}`
     : "";
 
+  const worldStateSection = worldStateCtx
+    ? `\nTRẠNG THÁI THẾ GIỚI HIỆN TẠI:\n${worldStateCtx}\n(Dùng thông tin này để sinh câu chuyện phù hợp: boss đang sống/chết, tài nguyên dồi dào/cạn kiệt ảnh hưởng tới hành trình)`
+    : "";
+
   const modeInstruction = freeInput
     ? `Người chơi nhập tự do: "${freeInput}". Phản hồi theo hành động này, tiếp tục câu chuyện.`
-    : `Sinh tình huống mới DỰA TRÊN ký ức và lịch sử hành động.`;
+    : `Sinh tình huống mới DỰA TRÊN ký ức, lịch sử hành động và trạng thái thế giới.`;
 
   return `Mày là AI Game Master của một text RPG tối tăm. ${worldCtx}
 
@@ -120,12 +156,13 @@ NHÂN VẬT:
 - Hệ Thống: ${char.stats?.system ?? "Không rõ"}${systemFlavor ? `\n- Đặc điểm: ${systemFlavor}` : ""}
 ${memorySection}
 ${historySection}
+${worldStateSection}
 
 NHIỆM VỤ: ${modeInstruction}
 
 FORMAT BẮT BUỘC — JSON thuần túy, KHÔNG giải thích:
 {
-  "text": "...(3-5 câu mô tả tình huống, có tham chiếu ký ức nếu phù hợp)...",
+  "text": "...(3-5 câu mô tả tình huống, có tham chiếu ký ức và trạng thái thế giới nếu phù hợp)...",
   "choices": [
     {"id": "c1", "label": "...(tối đa 10 chữ)...", "expGain": 25, "tag": "combat"},
     {"id": "c2", "label": "...", "expGain": 20, "tag": "explore"},
@@ -138,7 +175,9 @@ LUẬT:
 - expGain: 10-50 (hành động nguy hiểm = nhiều hơn)
 - Giọng điệu: tối tăm, dramatic, hệ thống đang theo dõi từng bước
 - Xưng "ngươi" (tu tiên/hoang phế) hoặc "mày" (cyberpunk)
-- Nếu có ký ức: THAM CHIẾU tự nhiên vào câu chuyện (NPC nhớ, địa điểm đã qua, kẻ thù cũ)`;
+- Nếu có ký ức: THAM CHIẾU tự nhiên vào câu chuyện (NPC nhớ, địa điểm đã qua, kẻ thù cũ)
+- Nếu tài nguyên cạn kiệt: câu chuyện phản ánh khan hiếm, khó khăn
+- Nếu boss đã chết: không cho boss đó xuất hiện, NPC biết sự kiện này`;
 }
 
 router.post("/api/narrative/generate", isAuthenticated, async (req: any, res) => {
@@ -161,12 +200,15 @@ router.post("/api/narrative/generate", isAuthenticated, async (req: any, res) =>
       return res.status(503).json({ message: "GEMINI_API_KEY chưa được cấu hình", fallback: true });
     }
 
-    const memories = await getTopMemories(characterId, 5);
+    const [memories, worldStateCtx] = await Promise.all([
+      getTopMemories(characterId, 5),
+      getWorldStateContext(worldSlug),
+    ]);
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
-    const systemPrompt = buildSystemPrompt(char, worldSlug, history ?? [], memories, freeInput);
+    const systemPrompt = buildSystemPrompt(char, worldSlug, history ?? [], memories, worldStateCtx, freeInput);
     const userTurn = freeInput
       ? `Người chơi hành động: "${freeInput}"`
       : choiceLabel

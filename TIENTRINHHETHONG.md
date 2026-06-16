@@ -5,7 +5,7 @@
 > 2. Tìm task `[ ]` đầu tiên theo thứ tự Phase 1 → 2 → 3...
 > 3. Build xong → đánh `[x]` → cập nhật bảng trạng thái → ghi ngày cập nhật
 
-> **Cập nhật lần cuối:** 15/06/2026 — Phase 2 (Tử Linh), Phase 3 (Memory Engine), Phase 5 (Free Exploration) xong
+> **Cập nhật lần cuối:** 16/06/2026 — Phase 4 (Persistent World: world_state, world_resources, boss respawn, harvest API, AI world context) xong
 
 ---
 
@@ -133,14 +133,17 @@ lib/
 **Mục tiêu:** Thế giới không reset.
 
 #### World State
-- [ ] Bảng DB `world_state` (worldSlug, key, value, updatedAt) — key-value store
-- [ ] Boss state: alive/dead, respawn timer
-- [ ] Resource nodes: gỗ/đá/linh thạch — bị khai thác thì giảm, hồi dần theo thời gian
+- [x] Bảng DB `world_state` (worldSlug, key, value, updatedAt) — key-value store
+- [x] Boss state: alive/dead, respawn timer (24h auto-respawn)
+- [x] Resource nodes: linh_thach/linh_thao/moc_ban/thiet_quang — bị khai thác thì giảm, hồi dần theo giờ
 
 #### Resource System
-- [ ] Bảng DB `world_resources` (worldSlug, resourceType, quantity, maxQuantity, regenRate)
-- [ ] API `GET /api/world/state/:worldSlug` — lấy trạng thái thế giới hiện tại
-- [ ] Tích hợp vào `/play` — AI phản hồi dựa trên resource hiện tại
+- [x] Bảng DB `world_resources` (worldSlug, resourceType, quantity, maxQuantity, regenRatePerHour)
+- [x] API `GET /api/world/state/:worldSlug` — lấy trạng thái thế giới hiện tại
+- [x] API `POST /api/world/resources/:worldSlug/harvest` — thu thập tài nguyên
+- [x] API `POST /api/world/boss/:worldSlug/:bossKey/kill` — đánh dấu boss chết
+- [x] Tích hợp vào `/play` — AI phản hồi dựa trên boss alive/dead + resource level
+- [x] Trang `/world/:slug/state` — dashboard boss + resource với countdown hồi sinh
 
 #### Economy System
 - [ ] Item price fluctuate theo supply/demand
@@ -272,8 +275,8 @@ lib/
 | `character_memories` | ✅ | P3 | Ký ức nhân vật |
 | `npc_memories` | ✅ | P3 | NPC nhớ người chơi |
 | `world_memories` | ✅ | P3 | Lịch sử thế giới |
-| `world_state` | ❌ | P4 | Trạng thái thế giới persistent |
-| `world_resources` | ❌ | P4 | Tài nguyên thế giới |
+| `world_state` | ✅ | P4 | Boss alive/dead + respawn timer |
+| `world_resources` | ✅ | P4 | Tài nguyên thế giới + regen tự động |
 | `world_events` | ❌ | P6 | Sự kiện AI sinh |
 | `npcs` | ❌ | P7 | NPC agents |
 | `character_skills` | ❌ | P2 | Skill tree per system |

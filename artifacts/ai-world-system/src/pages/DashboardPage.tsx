@@ -448,6 +448,18 @@ export default function DashboardPage() {
                         disabled: false,
                         onClick: () => setLocation("/memories"),
                       },
+                      {
+                        icon: Globe,
+                        label: "THẾ GIỚI",
+                        sub: "Boss, tài nguyên & trạng thái thế giới",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => {
+                          const slug = (character?.stats as any)?.world_slug ?? "cultivation";
+                          localStorage.setItem("activeWorldSlug", slug);
+                          setLocation(`/world/${slug}/state`);
+                        },
+                      },
                     ].map((action) => (
                       <motion.div
                         key={action.label}

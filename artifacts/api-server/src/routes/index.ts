@@ -10,6 +10,7 @@ import cultivateRouter from "./cultivate.js";
 import guildsRouter from "./guilds.js";
 import narrativeRouter from "./narrative.js";
 import memoriesRouter from "./memories.js";
+import worldStateRouter from "./worldState.js";
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use(cultivateRouter);
 router.use(guildsRouter);
 router.use(narrativeRouter);
 router.use(memoriesRouter);
+router.use(worldStateRouter);
 
 export default router;
