@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import {
   LogOut, Globe, Zap, User, Shield, Swords, Users,
-  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain, Sparkles, Skull, Hammer,
+  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain, Sparkles, Skull, Hammer, Newspaper,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -609,6 +609,14 @@ export default function DashboardPage() {
                         tag: null,
                         disabled: false,
                         onClick: () => setLocation("/daily"),
+                      },
+                      {
+                        icon: Newspaper,
+                        label: "DÒNG THỜI GIAN",
+                        sub: "Chia sẻ hành trình — xem khoảnh khắc của toàn server",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/feed"),
                       },
                     ].map((action) => (
                       <motion.div

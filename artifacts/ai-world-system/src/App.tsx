@@ -36,6 +36,7 @@ import DailyPage from "@/pages/DailyPage";
 import DungeonPage from "@/pages/DungeonPage";
 import CraftPage from "@/pages/CraftPage";
 import GuildWarPage from "@/pages/GuildWarPage";
+import FeedPage from "@/pages/FeedPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -80,6 +81,7 @@ function Router() {
       <Route path="/dungeon" component={DungeonPage} />
       <Route path="/craft" component={CraftPage} />
       <Route path="/guild-war" component={GuildWarPage} />
+      <Route path="/feed" component={FeedPage} />
       <Route component={NotFound} />
     </Switch>
   );

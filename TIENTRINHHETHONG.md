@@ -13,7 +13,7 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 16/06/2026 — Phase 11–15 HOÀN TẤT: Achievement System, Daily Rewards, Dungeon System, Crafting System, Clan War — 15/15 phases [x]
+> **Cập nhật lần cuối:** 16/06/2026 — Phase 16 HOÀN TẤT: Social Feed (Dòng Thời Gian) — 16/20 phases [x], Phase 17–20 mới được thêm vào roadmap
 
 ---
 
@@ -191,7 +191,7 @@ lib/
 ---
 
 ### ════════════════════════════════════════
-### PHASE 11 — ACHIEVEMENT SYSTEM ⬅️ BUILD TIẾP
+### PHASE 11 — ACHIEVEMENT SYSTEM ✅
 ### ════════════════════════════════════════
 
 **Mục tiêu:** Người chơi có mục tiêu dài hạn — mở khóa thành tựu, flex với bạn bè.
@@ -256,7 +256,7 @@ lib/
 ---
 
 ### ════════════════════════════════════════
-### PHASE 15 — CLAN WAR
+### PHASE 15 — CLAN WAR ✅
 ### ════════════════════════════════════════
 
 **Mục tiêu:** Bang hội thách đấu bang hội khác, điểm từ PvP thành viên.
@@ -269,6 +269,97 @@ lib/
 - [x] Trang `/guild-war` — tuyên chiến, bảng điểm realtime, lịch sử
 - [x] Reward: bang thắng nhận +50 uy tín phe phái cho tất cả thành viên
 - [x] Nút Dashboard "CHIẾN TRANH BANG"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 16 — SOCIAL FEED (DÒNG THỜI GIAN) ✅
+### ════════════════════════════════════════
+
+**Mục tiêu:** Người chơi chia sẻ khoảnh khắc hành trình — toàn server thấy, like, react.
+
+- [x] Bảng DB `story_posts` (id, characterId, userId, worldSlug, authorName, authorSystem, authorLevel, content, postType, metadata, likes, createdAt)
+- [x] Bảng DB `post_likes` (id, postId, userId, createdAt)
+- [x] API GET /api/feed — lấy tất cả posts, filter theo world, phân trang
+- [x] API POST /api/feed — đăng bài thủ công (manual)
+- [x] API POST /api/feed/auto — auto-post từ sự kiện game (battle/quest/achievement/dungeon/levelup)
+- [x] API POST /api/feed/:postId/like — like / unlike toggle
+- [x] API DELETE /api/feed/:postId — xoá bài của mình
+- [x] 8 loại postType: manual/battle/quest/achievement/dungeon/levelup/pvp/craft
+- [x] Trang `/feed` — compose box, filter theo world, timeline, like, xoá, load more
+- [x] Nút Dashboard "DÒNG THỜI GIAN"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 17 — GOD MODE (THẦN CHỦ HỆ THỐNG) ⬅️ BUILD TIẾP
+### ════════════════════════════════════════
+
+**Mục tiêu:** User là Thần của thế giới họ tạo — can thiệp trực tiếp, NPC thờ phụng creator.
+
+- [ ] Bảng DB `divine_actions` (id, worldId, creatorUserId, actionType, targetNpcId, content, createdAt)
+- [ ] Bảng DB `npc_prayers` (id, npcId, worldId, prayerContent, answeredAt, answerContent)
+- [ ] API POST /api/god/intervene/:worldId — Thần gửi "thần khải" vào thế giới (AI áp dụng vào narrative)
+- [ ] API POST /api/god/bless/:npcId — ban phước cho NPC (buff stats 24h)
+- [ ] API POST /api/god/smite/:npcId — trừng phạt NPC (debuff hoặc xoá khỏi thế giới)
+- [ ] API GET /api/god/prayers/:worldId — xem danh sách NPC đang cầu nguyện
+- [ ] NPC tự động sinh prayer khi HP thấp hoặc bị tấn công (AI tick)
+- [ ] Trang `/god/:worldId` — bảng điều khiển Thần: map NPC, prayers, intervene panel
+- [ ] Nút Dashboard "CHẾ ĐỘ THẦN"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 18 — INTER-WORLD TRADE (GIAO THƯƠNG LIÊN THẾ GIỚI)
+### ════════════════════════════════════════
+
+**Mục tiêu:** Các thế giới của các user khác nhau trao đổi item qua "Cổng Thương Mại".
+
+- [ ] Bảng DB `world_trade_listings` (id, sellerCharacterId, fromWorldSlug, toWorldSlug, itemId, quantity, priceGold, expiresAt, status)
+- [ ] Bảng DB `world_trade_history` (id, listingId, buyerCharacterId, soldAt, priceGold)
+- [ ] API GET /api/world-trade — xem danh sách listing từ các thế giới khác
+- [ ] API POST /api/world-trade/list — đăng bán item sang thế giới khác (phí cổng 5%)
+- [ ] API POST /api/world-trade/:listingId/buy — mua item cross-world
+- [ ] Hiệu ứng "rào cản thế giới" — item từ Cyberpunk vào Tu Tiên bị rename theo lore
+- [ ] Trang `/world-trade` — chợ liên thế giới, filter theo world nguồn, item type
+- [ ] Nút Dashboard "GIAO THƯƠNG LIÊN THẾ GIỚI"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 19 — WORLD PASSPORT (HỘ CHIẾU DU HÀNH)
+### ════════════════════════════════════════
+
+**Mục tiêu:** Nhân vật có "hộ chiếu" du hành — vào thế giới người khác với identity riêng, creator kiểm soát ai được vào.
+
+- [ ] Bảng DB `world_passports` (id, characterId, worldId, status, entryCount, bannedAt, createdAt)
+- [ ] Bảng DB `world_entry_log` (id, characterId, worldId, enteredAt, leftAt, reason)
+- [ ] API POST /api/passport/request/:worldId — xin nhập cảnh thế giới người khác
+- [ ] API POST /api/passport/approve/:passportId — creator approve/ban
+- [ ] API GET /api/passport/visitors/:worldId — creator xem khách đang trong thế giới
+- [ ] Creator có thể kick/ban visitor bất kỳ lúc nào
+- [ ] Visitor thấy thế giới qua "mắt khách" — không can thiệp world state
+- [ ] Trang `/passport` — danh sách thế giới đang visit, xin nhập cảnh, trạng thái
+- [ ] Nút Dashboard "HỘ CHIẾU"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 20 — DIVINE PROPHECY & ORACLE (THẦN KHẢI & TIÊN TRI)
+### ════════════════════════════════════════
+
+**Mục tiêu:** AI sinh ra "thần khải" định kỳ cho từng thế giới — dự báo sự kiện lớn, người chơi giải mã lời tiên tri để nhận thưởng.
+
+- [ ] Bảng DB `prophecies` (id, worldId, content, fulfilledAt, reward, clue, isActive, createdAt)
+- [ ] Bảng DB `prophecy_claims` (id, prophecyId, characterId, claimedAt, proof)
+- [ ] AI (Gemini) sinh prophecy định kỳ 48h/lần dựa trên world history + karma
+- [ ] Prophecy có dạng ẩn dụ/thơ — AI sinh kèm "đáp án ẩn" cho Game Master xác nhận
+- [ ] API GET /api/prophecy/:worldSlug — xem tiên tri đang active
+- [ ] API POST /api/prophecy/claim/:prophecyId — nhân vật claim hoàn thành + giải thích
+- [ ] AI chấm điểm claim (similarity với fulfilled condition) — auto-approve nếu > 80%
+- [ ] Reward: prophecy hoàn thành → +EXP lớn, item legendary, title đặc biệt
+- [ ] Trang `/prophecy` — xem tiên tri, submit claim, lịch sử đã hoàn thành
+- [ ] Nút Dashboard "TIÊN TRI"
 
 ---
 
@@ -308,6 +399,8 @@ lib/
 | `dungeon_runs` | ✅ | P13 | Lịch sử run dungeon (loot jsonb) |
 | `recipes` | ✅ | P14 | Công thức chế tạo — 7–8 per world |
 | `clan_wars` | ✅ | P15 | Chiến tranh bang hội 24h, auto-end |
+| `story_posts` | ✅ | P16 | Bài đăng hành trình — 8 loại postType, likes |
+| `post_likes` | ✅ | P16 | Like toggle per user per post |
 
 ---
 
@@ -345,6 +438,7 @@ lib/
 | `/dungeon` | Ngục Tối — multi-floor | P13 | ✅ |
 | `/craft` | Chế Tạo vật phẩm | P14 | ✅ |
 | `/guild-war` | Chiến Tranh Bang Hội | P15 | ✅ |
+| `/feed` | Dòng Thời Gian (Social Feed) | P16 | ✅ |
 
 ---
 

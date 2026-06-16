@@ -19,3 +19,4 @@ export * from "./dailyLogins";
 export * from "./dungeons";
 export * from "./recipes";
 export * from "./clanWars";
+export * from "./feed";

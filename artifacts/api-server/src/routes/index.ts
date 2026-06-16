@@ -24,6 +24,7 @@ import dailyRouter from "./daily.js";
 import dungeonRouter from "./dungeon.js";
 import craftRouter from "./craft.js";
 import guildWarRouter from "./guildWar.js";
+import feedRouter from "./feed.js";
 
 const router: IRouter = Router();
 
@@ -52,5 +53,6 @@ router.use(dailyRouter);
 router.use(dungeonRouter);
 router.use(craftRouter);
 router.use(guildWarRouter);
+router.use(feedRouter);
 
 export default router;
