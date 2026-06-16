@@ -30,6 +30,7 @@ import NPCsPage from "@/pages/NPCsPage";
 import WorldCreatorPage from "@/pages/WorldCreatorPage";
 import WorldDiscoverPage from "@/pages/WorldDiscoverPage";
 import MultiversePage from "@/pages/MultiversePage";
+import PvPPage from "@/pages/PvPPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -68,6 +69,7 @@ function Router() {
       <Route path="/world-creator" component={WorldCreatorPage} />
       <Route path="/world-discover" component={WorldDiscoverPage} />
       <Route path="/multiverse" component={MultiversePage} />
+      <Route path="/pvp" component={PvPPage} />
       <Route component={NotFound} />
     </Switch>
   );

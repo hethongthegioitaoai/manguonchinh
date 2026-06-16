@@ -13,7 +13,7 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 16/06/2026 — Phase 10 Multiverse xong (cross_world_events + character_world_travel DB, multiverse routes, MultiversePage /multiverse, nút Dashboard)
+> **Cập nhật lần cuối:** 16/06/2026 — /pvp PvP thách đấu xong (PvPPage + API routes pvp/opponents|challenge|history), /world/:slug/state đánh dấu ✅. Tất cả routes đã hoàn thành Phase 1–10.
 
 ---
 
@@ -320,11 +320,11 @@ lib/
 | `/skills` | Cây kỹ năng hệ thống | P2 | ✅ |
 | `/factions` | Phe phái thế giới | P2 | ✅ |
 | `/market` | Chợ đen — mua/bán | P4 | ✅ |
-| `/world/:slug/state` | Trạng thái thế giới | P4 | ❌ |
+| `/world/:slug/state` | Trạng thái thế giới | P4 | ✅ |
 | `/world-creator` | Tạo thế giới (AI) | P8 | ✅ |
 | `/world-discover` | Khám phá thế giới AI + cộng đồng | P9 | ✅ |
 | `/multiverse` | Đa vũ trụ — du hành, sự kiện xuyên TG | P10 | ✅ |
-| `/pvp` | PvP thách đấu | P1+ | ❌ |
+| `/pvp` | PvP thách đấu | P1+ | ✅ |
 | `/admin` | World Monitor | P6 | ✅ |
 
 ---

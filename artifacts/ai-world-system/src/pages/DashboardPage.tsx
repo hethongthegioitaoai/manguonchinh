@@ -562,6 +562,14 @@ export default function DashboardPage() {
                         disabled: false,
                         onClick: () => setLocation("/multiverse"),
                       },
+                      {
+                        icon: Swords,
+                        label: "PvP THÁCH ĐẤU",
+                        sub: "Thách đấu người chơi khác — tranh tài chiến lực",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/pvp"),
+                      },
                     ].map((action) => (
                       <motion.div
                         key={action.label}

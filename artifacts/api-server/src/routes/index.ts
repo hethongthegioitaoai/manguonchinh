@@ -18,6 +18,7 @@ import worldEventsRouter from "./worldEvents.js";
 import npcsRouter from "./npcs.js";
 import worldCreatorRouter from "./worldCreator.js";
 import multiverseRouter from "./multiverse.js";
+import pvpRouter from "./pvp.js";
 
 const router: IRouter = Router();
 
@@ -40,5 +41,6 @@ router.use(worldEventsRouter);
 router.use(npcsRouter);
 router.use(worldCreatorRouter);
 router.use(multiverseRouter);
+router.use(pvpRouter);
 
 export default router;
