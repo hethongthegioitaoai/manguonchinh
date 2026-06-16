@@ -662,6 +662,10 @@ importers:
         version: 0.31.10
 
   scripts:
+    dependencies:
+      '@google/generative-ai':
+        specifier: ^0.24.1
+        version: 0.24.1
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
