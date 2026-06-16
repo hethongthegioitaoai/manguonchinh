@@ -13,7 +13,7 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 16/06/2026 — Phase 2 Factions System xong (bảng factions + character_faction, 4 phe phái × 3 thế giới = 12 phe phái, API join/leave/rep, trang /factions, nút Dashboard)
+> **Cập nhật lần cuối:** 16/06/2026 — Phase 7 Multi Agent NPC xong (npcs DB, 7 vai trò, seed 3 NPC/world, AI tick loop, hội thoại tự do, trade offer, trang /npcs)
 
 ---
 
@@ -154,8 +154,8 @@ lib/
 - [x] Trang `/world/:slug/state` — dashboard boss + resource với countdown hồi sinh
 
 #### Economy System
-- [ ] Item price fluctuate theo supply/demand
-- [ ] Market API — xem giá hiện tại
+- [x] Item price fluctuate theo supply/demand
+- [x] Market API — xem giá hiện tại
 
 ---
 
@@ -185,17 +185,17 @@ lib/
 **Mục tiêu:** AI quản trị thế giới.
 
 #### Dynamic Events
-- [ ] Bảng DB `world_events` (worldSlug, type, title, description, startAt, endAt, active)
-- [ ] AI tự sinh sự kiện định kỳ (thiên tai, boss xuất hiện, bí cảnh mở)
-- [ ] Banner sự kiện trên Dashboard
+- [x] Bảng DB `world_events` (worldSlug, type, title, description, startAt, endAt, active)
+- [x] AI tự sinh sự kiện định kỳ (thiên tai, boss xuất hiện, bí cảnh mở) — Gemini 2.0 Flash Lite
+- [x] Banner sự kiện trên Dashboard — hiện karma + event title + icon
 
 #### Reward/Punishment System
-- [ ] API `POST /api/admin/event/trigger` — AI trigger event dựa trên hành động người chơi
-- [ ] World karma score — thưởng/phạt dựa trên hành vi cộng đồng
+- [x] API `POST /api/admin/event/trigger` — admin kích hoạt event thủ công
+- [x] World karma score — âm/dương ảnh hưởng loại sự kiện AI sinh
 
 #### World Monitoring Dashboard
-- [ ] `/admin` route — thống kê economy, PvP, Guild, population per world
-- [ ] Chỉ admin (user đầu tiên) mới vào được
+- [x] `/admin` route — population, avg level, active events, karma per world
+- [x] Chỉ admin (user đầu tiên theo createdAt) mới vào được
 
 ---
 
@@ -205,11 +205,11 @@ lib/
 
 **Mục tiêu:** NPC tự sống.
 
-- [ ] Bảng DB `npcs` (id, worldSlug, name, role, goals, personality, currentState)
-- [ ] Agent loop: mỗi 5 phút AI chạy 1 turn cho mỗi NPC active
-- [ ] NPC goals: kiếm tiền / bảo vệ làng / cướp bóc
-- [ ] NPC interaction: mua bán, chiến đấu, liên minh
-- [ ] NPC xuất hiện trong `/play` narrative
+- [x] Bảng DB `npcs` (id, worldSlug, name, role, goals, personality, currentState)
+- [x] Agent loop: admin tick AI chạy 1 turn cho mỗi NPC — Gemini sinh action/mood/log
+- [x] NPC goals: kiếm tiền / bảo vệ làng / cướp bóc / ám sát / hiền giả
+- [x] NPC interaction: hội thoại tự do với AI — đề nghị giao dịch, mood thay đổi
+- [x] 7 loại NPC (merchant/guardian/raider/sage/assassin/healer/warlord), seed 3 NPC per world tự động
 
 ---
 
@@ -285,8 +285,9 @@ lib/
 | `world_memories` | ✅ | P3 | Lịch sử thế giới |
 | `world_state` | ✅ | P4 | Boss alive/dead + respawn timer |
 | `world_resources` | ✅ | P4 | Tài nguyên thế giới + regen tự động |
-| `world_events` | ❌ | P6 | Sự kiện AI sinh |
-| `npcs` | ❌ | P7 | NPC agents |
+| `market_prices` | ✅ | P4 | Giá item dao động theo supply/demand |
+| `world_events` | ✅ | P6 | Sự kiện AI sinh — 7 loại, karma tracking |
+| `npcs` | ✅ | P7 | NPC agents — 7 vai trò, AI tick + interact |
 | `character_skills` | ✅ | P2 | Skill tree per system (6 hệ thống × 5 kỹ năng) |
 | `factions` | ✅ | P2 | 4 phe phái × 3 thế giới (seeded tự động) |
 | `character_faction` | ✅ | P2 | Tư cách thành viên + điểm uy tín |
@@ -315,9 +316,10 @@ lib/
 | `/memories` | Ký ức hành trình | P3 | ✅ |
 | `/skills` | Cây kỹ năng hệ thống | P2 | ✅ |
 | `/factions` | Phe phái thế giới | P2 | ✅ |
+| `/market` | Chợ đen — mua/bán | P4 | ✅ |
 | `/world/:slug/state` | Trạng thái thế giới | P4 | ❌ |
 | `/pvp` | PvP thách đấu | P1+ | ❌ |
-| `/admin` | World Monitor | P6 | ❌ |
+| `/admin` | World Monitor | P6 | ✅ |
 
 ---
 

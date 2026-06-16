@@ -13,6 +13,10 @@ import memoriesRouter from "./memories.js";
 import worldStateRouter from "./worldState.js";
 import skillsRouter from "./skills.js";
 import factionsRouter from "./factions.js";
+import marketRouter from "./market.js";
+import worldEventsRouter from "./worldEvents.js";
+import npcsRouter from "./npcs.js";
+import worldCreatorRouter from "./worldCreator.js";
 
 const router: IRouter = Router();
 
@@ -30,5 +34,9 @@ router.use(memoriesRouter);
 router.use(worldStateRouter);
 router.use(skillsRouter);
 router.use(factionsRouter);
+router.use(marketRouter);
+router.use(worldEventsRouter);
+router.use(npcsRouter);
+router.use(worldCreatorRouter);
 
 export default router;

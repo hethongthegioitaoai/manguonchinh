@@ -62,6 +62,8 @@ export default function DashboardPage() {
   const [completingId, setCompletingId] = useState<string | null>(null);
   const [levelUpFlash, setLevelUpFlash] = useState(false);
   const [expFlash, setExpFlash] = useState<number | null>(null);
+  const [activeEvent, setActiveEvent] = useState<{ title: string; description: string; type: string; karmaEffect: number } | null>(null);
+  const [worldKarma, setWorldKarma] = useState<number>(0);
 
   useEffect(() => {
     if (!loading && !user) setLocation("/login");
@@ -71,6 +73,18 @@ export default function DashboardPage() {
     if (!user) return;
     loadCharacters();
   }, [user]);
+
+  useEffect(() => {
+    if (!characters.length) return;
+    const slug = characters[activeIdx]?.stats?.world_slug;
+    if (!slug) return;
+    fetch(`/api/world-events/${slug}`, { credentials: "include" })
+      .then(r => r.json())
+      .then(data => {
+        if (data.events?.length > 0) setActiveEvent(data.events[0]);
+        if (typeof data.karma === "number") setWorldKarma(data.karma);
+      }).catch(() => {});
+  }, [characters, activeIdx]);
 
   async function loadCharacters() {
     setFetching(true);
@@ -234,6 +248,14 @@ export default function DashboardPage() {
           <Button
             variant="ghost"
             size="sm"
+            onClick={() => setLocation("/admin")}
+            className="font-mono text-xs text-muted-foreground hover:text-primary rounded-none border border-transparent hover:border-primary/30 transition-all"
+          >
+            <Settings className="w-4 h-4 mr-1" /> ADMIN
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setLocation("/settings")}
             className="font-mono text-xs text-muted-foreground hover:text-primary rounded-none border border-transparent hover:border-primary/30 transition-all"
           >
@@ -251,6 +273,30 @@ export default function DashboardPage() {
       </nav>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 md:px-8 py-8">
+
+        {activeEvent && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 border px-5 py-3 flex items-start gap-4 relative overflow-hidden"
+            style={{ borderColor: worldColor, backgroundColor: `${worldColor}08` }}
+          >
+            <div className="text-xl flex-shrink-0">
+              {activeEvent.type === "calamity" ? "⚡" : activeEvent.type === "boss_spawn" ? "👹" : activeEvent.type === "dungeon_open" ? "🚪" : activeEvent.type === "festival" ? "🎉" : activeEvent.type === "war" ? "⚔" : activeEvent.type === "treasure" ? "💰" : "☣"}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="font-orbitron text-xs font-bold tracking-widest" style={{ color: worldColor }}>SỰ KIỆN THẾ GIỚI</span>
+                <span className="font-mono text-xs text-muted-foreground/40">
+                  KARMA: {worldKarma > 0 ? "+" : ""}{worldKarma}
+                </span>
+              </div>
+              <div className="font-orbitron text-sm font-bold mt-0.5">{activeEvent.title}</div>
+              <div className="font-mono text-xs text-muted-foreground/60 mt-0.5 line-clamp-1">{activeEvent.description}</div>
+            </div>
+            <button onClick={() => setActiveEvent(null)} className="font-mono text-xs text-muted-foreground/30 hover:text-muted-foreground flex-shrink-0 self-center">✕</button>
+          </motion.div>
+        )}
 
         {fetching && (
           <div className="flex items-center justify-center py-32">
@@ -463,6 +509,22 @@ export default function DashboardPage() {
                         tag: null,
                         disabled: false,
                         onClick: () => setLocation("/factions"),
+                      },
+                      {
+                        icon: Zap,
+                        label: "CHỢ ĐEN",
+                        sub: "Mua bán vật phẩm — giá dao động theo thị trường",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/market"),
+                      },
+                      {
+                        icon: Users,
+                        label: "NPC AGENTS",
+                        sub: "Hội thoại với NPC — mua bán, liên minh, thông tin",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/npcs"),
                       },
                       {
                         icon: Globe,

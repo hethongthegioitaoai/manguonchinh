@@ -24,6 +24,9 @@ import MemoriesPage from "@/pages/MemoriesPage";
 import WorldStatePage from "@/pages/WorldStatePage";
 import SkillsPage from "@/pages/SkillsPage";
 import FactionsPage from "@/pages/FactionsPage";
+import MarketPage from "@/pages/MarketPage";
+import AdminPage from "@/pages/AdminPage";
+import NPCsPage from "@/pages/NPCsPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -56,6 +59,9 @@ function Router() {
       <Route path="/world/:slug/state" component={WorldStatePage} />
       <Route path="/skills" component={SkillsPage} />
       <Route path="/factions" component={FactionsPage} />
+      <Route path="/market" component={MarketPage} />
+      <Route path="/admin" component={AdminPage} />
+      <Route path="/npcs" component={NPCsPage} />
       <Route component={NotFound} />
     </Switch>
   );
