@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import {
   LogOut, Globe, Zap, User, Shield, Swords, Users,
-  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain,
+  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain, Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -447,6 +447,14 @@ export default function DashboardPage() {
                         tag: null,
                         disabled: false,
                         onClick: () => setLocation("/memories"),
+                      },
+                      {
+                        icon: Sparkles,
+                        label: "KỸ NĂNG",
+                        sub: "Học kỹ năng đặc biệt của hệ thống",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/skills"),
                       },
                       {
                         icon: Globe,

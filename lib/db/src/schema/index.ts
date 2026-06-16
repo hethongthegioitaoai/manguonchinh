@@ -6,3 +6,4 @@ export * from "./items";
 export * from "./guilds";
 export * from "./memories";
 export * from "./worldState";
+export * from "./skills";

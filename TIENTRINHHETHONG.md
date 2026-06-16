@@ -5,7 +5,7 @@
 > 2. Tìm task `[ ]` đầu tiên theo thứ tự Phase 1 → 2 → 3...
 > 3. Build xong → đánh `[x]` → cập nhật bảng trạng thái → ghi ngày cập nhật
 
-> **Cập nhật lần cuối:** 16/06/2026 — Phase 4 (Persistent World: world_state, world_resources, boss respawn, harvest API, AI world context) xong
+> **Cập nhật lần cuối:** 16/06/2026 — Phase 2 Skills System xong (bảng character_skills, skill tree 6 hệ thống × 5 kỹ năng, API unlock, trang /skills, nút Dashboard)
 
 ---
 
@@ -92,7 +92,7 @@ lib/
 #### Rule Engine
 - [x] Level + EXP (100 EXP/level)
 - [x] Inventory + Equip
-- [ ] Skills — bảng DB `character_skills`, mỗi system có skill tree riêng
+- [x] Skills — bảng DB `character_skills`, mỗi system có skill tree riêng
 - [ ] Factions — bảng DB `factions`, `character_faction`
 
 ---
@@ -279,7 +279,7 @@ lib/
 | `world_resources` | ✅ | P4 | Tài nguyên thế giới + regen tự động |
 | `world_events` | ❌ | P6 | Sự kiện AI sinh |
 | `npcs` | ❌ | P7 | NPC agents |
-| `character_skills` | ❌ | P2 | Skill tree per system |
+| `character_skills` | ✅ | P2 | Skill tree per system (6 hệ thống × 5 kỹ năng) |
 | `factions` | ❌ | P2 | Phe phái |
 
 ---
@@ -304,6 +304,7 @@ lib/
 | `/guilds` | Danh sách bang hội | P1+ | ✅ |
 | `/guilds/:id` | Chi tiết bang hội | P1+ | ✅ |
 | `/memories` | Ký ức hành trình | P3 | ✅ |
+| `/skills` | Cây kỹ năng hệ thống | P2 | ✅ |
 | `/world/:slug/state` | Trạng thái thế giới | P4 | ❌ |
 | `/pvp` | PvP thách đấu | P1+ | ❌ |
 | `/admin` | World Monitor | P6 | ❌ |

@@ -11,6 +11,7 @@ import guildsRouter from "./guilds.js";
 import narrativeRouter from "./narrative.js";
 import memoriesRouter from "./memories.js";
 import worldStateRouter from "./worldState.js";
+import skillsRouter from "./skills.js";
 
 const router: IRouter = Router();
 
@@ -26,5 +27,6 @@ router.use(guildsRouter);
 router.use(narrativeRouter);
 router.use(memoriesRouter);
 router.use(worldStateRouter);
+router.use(skillsRouter);
 
 export default router;
