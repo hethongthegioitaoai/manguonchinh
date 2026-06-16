@@ -19,6 +19,11 @@ import npcsRouter from "./npcs.js";
 import worldCreatorRouter from "./worldCreator.js";
 import multiverseRouter from "./multiverse.js";
 import pvpRouter from "./pvp.js";
+import achievementsRouter from "./achievements.js";
+import dailyRouter from "./daily.js";
+import dungeonRouter from "./dungeon.js";
+import craftRouter from "./craft.js";
+import guildWarRouter from "./guildWar.js";
 
 const router: IRouter = Router();
 
@@ -42,5 +47,10 @@ router.use(npcsRouter);
 router.use(worldCreatorRouter);
 router.use(multiverseRouter);
 router.use(pvpRouter);
+router.use(achievementsRouter);
+router.use(dailyRouter);
+router.use(dungeonRouter);
+router.use(craftRouter);
+router.use(guildWarRouter);
 
 export default router;

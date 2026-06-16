@@ -1,1 +1,2 @@
 - [Đọc TIENTRINHHETHONG.md trước](tientrinhhethong-protocol.md) — file tracking tiến trình build, LUÔN đọc đầu tiên khi mở dự án, build task [ ] đầu tiên rồi cập nhật file
+- [Schema export naming](schema-export-naming.md) — guildMembers (không phải guild_members), characterFaction (không phải character_faction) — camelCase trong Drizzle schema exports

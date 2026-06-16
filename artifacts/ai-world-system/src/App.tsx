@@ -31,6 +31,11 @@ import WorldCreatorPage from "@/pages/WorldCreatorPage";
 import WorldDiscoverPage from "@/pages/WorldDiscoverPage";
 import MultiversePage from "@/pages/MultiversePage";
 import PvPPage from "@/pages/PvPPage";
+import AchievementsPage from "@/pages/AchievementsPage";
+import DailyPage from "@/pages/DailyPage";
+import DungeonPage from "@/pages/DungeonPage";
+import CraftPage from "@/pages/CraftPage";
+import GuildWarPage from "@/pages/GuildWarPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -70,6 +75,11 @@ function Router() {
       <Route path="/world-discover" component={WorldDiscoverPage} />
       <Route path="/multiverse" component={MultiversePage} />
       <Route path="/pvp" component={PvPPage} />
+      <Route path="/achievements" component={AchievementsPage} />
+      <Route path="/daily" component={DailyPage} />
+      <Route path="/dungeon" component={DungeonPage} />
+      <Route path="/craft" component={CraftPage} />
+      <Route path="/guild-war" component={GuildWarPage} />
       <Route component={NotFound} />
     </Switch>
   );

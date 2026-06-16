@@ -5,7 +5,7 @@
 > **Khi mở dự án này lần đầu (kể cả upload mới), AGENT PHẢI làm ngay các bước sau mà KHÔNG cần hỏi user:**
 >
 > 1. Đọc toàn bộ file này để nắm roadmap và trạng thái hiện tại
-> 2. Khởi động cả hai workflow: `artifacts/ai-world-system: web` và `artifacts/api-server: API Server`
+> 2. Khởi động workflows: `API Server` (PORT=8080) và `Frontend` (port 5000)
 > 3. Tìm task `[ ]` đầu tiên theo thứ tự Phase 1 → 2 → 3 → ... (task nào cũng được build, không cần hỏi)
 > 4. Build task đó ngay lập tức
 > 5. Sau khi xong: đánh `[x]`, cập nhật bảng DB/Route nếu cần, ghi ngày "Cập nhật lần cuối"
@@ -13,7 +13,7 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 16/06/2026 — PvP Ranking xong: bảng pvp_rankings (RP Elo, tier Bronze→Bất Tử, streak), leaderboard /api/pvp/leaderboard, PvPPage 3 tab (Đấu Trường / BXH / Lịch Sử).
+> **Cập nhật lần cuối:** 16/06/2026 — Phase 11–15 HOÀN TẤT: Achievement System, Daily Rewards, Dungeon System, Crafting System, Clan War — 15/15 phases [x]
 
 ---
 
@@ -34,7 +34,7 @@
 **Cấu trúc thư mục:**
 ```
 artifacts/
-  ai-world-system/   ← Frontend React (port 19734)
+  ai-world-system/   ← Frontend React (port 5000 / webview)
   api-server/        ← Backend Express (port 8080)
 lib/
   db/                ← Schema Drizzle + DB client
@@ -45,34 +45,25 @@ lib/
 
 ---
 
-## 🗺️ MASTER ROADMAP — 12 PHASES
+## 🗺️ MASTER ROADMAP — 15 PHASES
 
-> Agent: tìm `[ ]` đầu tiên theo thứ tự Phase và build.
+> Agent: tìm `[ ]` đầu tiên theo thứ tự Phase và build. KHÔNG hỏi user.
 
 ### ════════════════════════════════════════
 ### PHASE 1 — FOUNDATION MVP ✅
 ### ════════════════════════════════════════
 
-**Mục tiêu:** Người chơi đăng nhập và bắt đầu cuộc phiêu lưu đầu tiên.
-
-#### Auth
 - [x] Login (Replit Auth OIDC)
 - [x] Session (PostgreSQL)
 - [x] Profile (`/settings`)
-
-#### Character
 - [x] Tạo nhân vật
 - [x] Chọn thế giới
 - [x] Chỉ số cơ bản (6 stats)
 - [x] Level + EXP system
-
-#### Core Systems
 - [x] Inventory (`/inventory`)
 - [x] Quest system (`/play`)
 - [x] Battle (6 modes, `/battle`)
 - [x] Leaderboard (`/leaderboard`)
-
-#### Worlds
 - [x] Cultivation World (Tu Tiên)
 - [x] Cyberpunk World
 - [x] Wasteland World (Hoang Phế)
@@ -83,21 +74,14 @@ lib/
 ### PHASE 2 — SYSTEM ENGINE ✅
 ### ════════════════════════════════════════
 
-**Mục tiêu:** Mỗi người chơi có trải nghiệm khác nhau.
-
-#### System Database
 - [x] Kiếm Thần Hệ Thống
 - [x] Luyện Đan Hệ Thống (Alchemy)
 - [x] Thương Nhân Hệ Thống (Merchant)
 - [x] Triệu Hồi Hệ Thống (Summoner)
 - [x] Thần Thú Hệ Thống (Beast Taming)
-- [x] Tử Linh Hệ Thống (Necromancer) — icon 💀, desc, SYSTEM_ICONS, SYSTEM_DESC, narrative flavor
-
-#### System Assignment
+- [x] Tử Linh Hệ Thống (Necromancer)
 - [x] Random khi tạo nhân vật (roulette animation)
 - [x] System bonus áp dụng vào battle + narrative
-
-#### Rule Engine
 - [x] Level + EXP (100 EXP/level)
 - [x] Inventory + Equip
 - [x] Skills — bảng DB `character_skills`, mỗi system có skill tree riêng
@@ -106,118 +90,80 @@ lib/
 ---
 
 ### ════════════════════════════════════════
-### PHASE 3 — MEMORY ENGINE ⬅️ BUILD TIẾP
+### PHASE 3 — MEMORY ENGINE ✅
 ### ════════════════════════════════════════
 
-**Mục tiêu:** Thế giới nhớ người chơi.
-
-#### Character Memory
-- [x] Bảng DB `character_memories` (id, characterId, memoryType, content, importance, createdAt)
-- [x] Tự động lưu memory sau mỗi AI narrative (fire-and-forget, keywords: giết/chết/boss/đột phá/cứu/phản bội...)
-- [x] API `GET /api/memories/:characterId` — lấy memories, `DELETE /api/memories/:id`
-
-#### NPC Memory
-- [x] Bảng DB `npc_memories` (id, npcKey, characterId, relationship, lastInteraction, notes)
-
-#### World Memory
-- [x] Bảng DB `world_memories` (id, worldSlug, eventType, content, happenedAt)
-- [x] Tự động lưu world event khi story chứa từ khóa lớn (boss bị tiêu diệt/đại chiến...)
-- [x] API `GET /api/world-memories/:worldSlug`
-
-#### AI Integration
-- [x] Feed top 5 memories quan trọng nhất vào Gemini prompt (sorted by importance + createdAt)
-- [x] AI sinh story có tham chiếu tự nhiên đến ký ức người chơi
-
-#### UI
-- [x] Trang `/memories` — xem ký ức cá nhân + lịch sử thế giới, xóa ký ức
-- [x] Dashboard button "KÝ ỨC" → `/memories`
+- [x] Bảng DB `character_memories`
+- [x] Tự động lưu memory sau mỗi AI narrative
+- [x] API GET /api/memories/:characterId + DELETE /api/memories/:id
+- [x] Bảng DB `npc_memories`
+- [x] Bảng DB `world_memories`
+- [x] Tự động lưu world event khi story chứa từ khóa lớn
+- [x] API GET /api/world-memories/:worldSlug
+- [x] Feed top 5 memories vào Gemini prompt
+- [x] Trang `/memories` — xem ký ức cá nhân + lịch sử thế giới
 
 ---
 
 ### ════════════════════════════════════════
-### PHASE 4 — PERSISTENT WORLD
+### PHASE 4 — PERSISTENT WORLD ✅
 ### ════════════════════════════════════════
 
-**Mục tiêu:** Thế giới không reset.
-
-#### World State
-- [x] Bảng DB `world_state` (worldSlug, key, value, updatedAt) — key-value store
-- [x] Boss state: alive/dead, respawn timer (24h auto-respawn)
-- [x] Resource nodes: linh_thach/linh_thao/moc_ban/thiet_quang — bị khai thác thì giảm, hồi dần theo giờ
-
-#### Resource System
-- [x] Bảng DB `world_resources` (worldSlug, resourceType, quantity, maxQuantity, regenRatePerHour)
-- [x] API `GET /api/world/state/:worldSlug` — lấy trạng thái thế giới hiện tại
-- [x] API `POST /api/world/resources/:worldSlug/harvest` — thu thập tài nguyên
-- [x] API `POST /api/world/boss/:worldSlug/:bossKey/kill` — đánh dấu boss chết
-- [x] Tích hợp vào `/play` — AI phản hồi dựa trên boss alive/dead + resource level
-- [x] Trang `/world/:slug/state` — dashboard boss + resource với countdown hồi sinh
-
-#### Economy System
-- [x] Item price fluctuate theo supply/demand
-- [x] Market API — xem giá hiện tại
+- [x] Bảng DB `world_state` — key-value store
+- [x] Boss state: alive/dead, respawn timer 24h
+- [x] Bảng DB `world_resources` — regen theo giờ
+- [x] API GET /api/world/state/:worldSlug
+- [x] API POST /api/world/resources/:worldSlug/harvest
+- [x] API POST /api/world/boss/:worldSlug/:bossKey/kill
+- [x] Tích hợp vào `/play`
+- [x] Trang `/world/:slug/state` — dashboard boss + resource + countdown
+- [x] Item price fluctuate — bảng `market_prices`
+- [x] Market API
 
 ---
 
 ### ════════════════════════════════════════
-### PHASE 5 — AI NARRATIVE ENGINE ⚠️ PARTIAL
+### PHASE 5 — AI NARRATIVE ENGINE ✅
 ### ════════════════════════════════════════
 
-**Mục tiêu:** Quest và cốt truyện được AI sinh động.
-
-#### Dynamic Story
 - [x] AI (Gemini) sinh story node theo context nhân vật + world
 - [x] 3 lựa chọn per node, expGain + tag
 - [x] Fallback về static tree khi AI lỗi
 - [x] Feed character memory + world state vào prompt
-
-#### Free Exploration
-- [x] Input text tự do trong `/play` — người chơi gõ "Tôi muốn vào rừng phía Bắc"
-- [x] AI phản hồi theo `freeInput`, sinh tiếp story, +25 EXP mỗi lần gửi
-- [x] Toggle giữa "Chọn" (3 buttons) và "Tự Do" (textarea + Enter/Gửi) trong nav bar
+- [x] Input text tự do trong `/play`
+- [x] AI phản hồi theo freeInput, +25 EXP mỗi lần gửi
+- [x] Toggle "Chọn" (3 buttons) và "Tự Do" (textarea)
 
 ---
 
 ### ════════════════════════════════════════
-### PHASE 6 — AI GAME MASTER
+### PHASE 6 — AI GAME MASTER ✅
 ### ════════════════════════════════════════
 
-**Mục tiêu:** AI quản trị thế giới.
-
-#### Dynamic Events
-- [x] Bảng DB `world_events` (worldSlug, type, title, description, startAt, endAt, active)
-- [x] AI tự sinh sự kiện định kỳ (thiên tai, boss xuất hiện, bí cảnh mở) — Gemini 2.0 Flash Lite
-- [x] Banner sự kiện trên Dashboard — hiện karma + event title + icon
-
-#### Reward/Punishment System
-- [x] API `POST /api/admin/event/trigger` — admin kích hoạt event thủ công
-- [x] World karma score — âm/dương ảnh hưởng loại sự kiện AI sinh
-
-#### World Monitoring Dashboard
+- [x] Bảng DB `world_events`
+- [x] AI tự sinh sự kiện định kỳ (Gemini 2.0 Flash Lite)
+- [x] Banner sự kiện trên Dashboard
+- [x] API POST /api/admin/event/trigger
+- [x] World karma score
 - [x] `/admin` route — population, avg level, active events, karma per world
-- [x] Chỉ admin (user đầu tiên theo createdAt) mới vào được
 
 ---
 
 ### ════════════════════════════════════════
-### PHASE 7 — MULTI AGENT NPC
+### PHASE 7 — MULTI AGENT NPC ✅
 ### ════════════════════════════════════════
 
-**Mục tiêu:** NPC tự sống.
-
-- [x] Bảng DB `npcs` (id, worldSlug, name, role, goals, personality, currentState)
-- [x] Agent loop: admin tick AI chạy 1 turn cho mỗi NPC — Gemini sinh action/mood/log
+- [x] Bảng DB `npcs`
+- [x] Agent loop: admin tick AI chạy 1 turn cho mỗi NPC
 - [x] NPC goals: kiếm tiền / bảo vệ làng / cướp bóc / ám sát / hiền giả
-- [x] NPC interaction: hội thoại tự do với AI — đề nghị giao dịch, mood thay đổi
-- [x] 7 loại NPC (merchant/guardian/raider/sage/assassin/healer/warlord), seed 3 NPC per world tự động
+- [x] NPC interaction: hội thoại tự do với AI
+- [x] 7 loại NPC, seed 3 NPC per world tự động
 
 ---
 
 ### ════════════════════════════════════════
-### PHASE 8 — WORLD CREATOR
+### PHASE 8 — WORLD CREATOR ✅
 ### ════════════════════════════════════════
-
-**Mục tiêu:** Người chơi tạo thế giới riêng.
 
 - [x] Form tạo thế giới: tên, thể loại, luật, mô tả
 - [x] AI nhận input → sinh lịch sử, NPC gốc, Boss đầu, phe phái
@@ -226,10 +172,8 @@ lib/
 ---
 
 ### ════════════════════════════════════════
-### PHASE 9 — AI WORLD GENERATOR
+### PHASE 9 — AI WORLD GENERATOR ✅
 ### ════════════════════════════════════════
-
-**Mục tiêu:** AI tự tạo thế giới hoàn chỉnh không cần input.
 
 - [x] AI generate World #XXXXX với lore/NPC/Quest/Boss/Dungeon/Items đầy đủ
 - [x] World discovery feed — người chơi browse các AI-generated worlds
@@ -237,10 +181,8 @@ lib/
 ---
 
 ### ════════════════════════════════════════
-### PHASE 10 — MULTIVERSE
+### PHASE 10 — MULTIVERSE ✅
 ### ════════════════════════════════════════
-
-**Mục tiêu:** Nhiều thế giới cùng tồn tại trên một nền tảng.
 
 - [x] Cross-world events (World War, Portal Events)
 - [x] Nhân vật có thể di chuyển giữa các thế giới
@@ -249,20 +191,84 @@ lib/
 ---
 
 ### ════════════════════════════════════════
-### PHASE 11 — 3D WORLD
+### PHASE 11 — ACHIEVEMENT SYSTEM ⬅️ BUILD TIẾP
 ### ════════════════════════════════════════
 
-- [ ] Unity hoặc Unreal Engine 5 client
-- [ ] AI vẫn điều khiển NPC, Quest, Story, Events qua API
+**Mục tiêu:** Người chơi có mục tiêu dài hạn — mở khóa thành tựu, flex với bạn bè.
+
+- [x] Bảng DB `achievements` (key, title, desc, icon, category, xpReward, condition)
+- [x] Bảng DB `character_achievements` (characterId, achievementKey, unlockedAt)
+- [x] Seed 30 thành tựu theo 5 danh mục: Chiến Đấu / Tu Luyện / Khám Phá / Xã Hội / Bí Ẩn
+- [x] API GET /api/achievements/:characterId — trả về tất cả + trạng thái unlocked
+- [x] API POST /api/achievements/check/:characterId — auto-check + unlock ngay
+- [x] Trigger check sau: battle win, pvp win, quest complete, level up, harvest
+- [x] Trang `/achievements` — grid thành tựu, badge đã mở, tiến độ, EXP nhận được
+- [x] Nút Dashboard "THÀNH TỰU"
 
 ---
 
 ### ════════════════════════════════════════
-### PHASE 12 — VR / AR / MR / XR
+### PHASE 12 — DAILY REWARDS
 ### ════════════════════════════════════════
 
-- [ ] Meta Quest / Vision Pro / Android XR support
-- [ ] AI đóng vai Thiên Đạo / Chủ Thần / Hệ Thống trực tiếp trong VR
+**Mục tiêu:** Người chơi quay lại mỗi ngày để nhận thưởng.
+
+- [x] Bảng DB `daily_logins` (userId, loginDate, streak, rewardClaimed)
+- [x] Daily reward theo streak: ngày 1=50 EXP, 2=100 EXP, 3=150 EXP, 4=200 EXP, 5=item thường, 6=300 EXP, 7=item hiếm
+- [x] API POST /api/daily/claim — nhận thưởng hôm nay, tính streak
+- [x] API GET /api/daily/status — xem streak hiện tại + phần thưởng hôm nay
+- [x] Trang `/daily` — lịch 7 ngày, xem streak, nút claim
+- [x] Nút Dashboard "ĐIỂM DANH"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 13 — DUNGEON SYSTEM
+### ════════════════════════════════════════
+
+**Mục tiêu:** Thách thức nhiều tầng liên tiếp, HP không hồi giữa các tầng.
+
+- [x] Bảng DB `dungeons` (id, worldSlug, name, floors, minLevel, description)
+- [x] Bảng DB `dungeon_runs` (id, characterId, dungeonId, floor, status, loot, createdAt)
+- [x] Seed 9 dungeon (3 per world: dễ/vừa/khó, 5–10 tầng)
+- [x] API POST /api/dungeon/start/:dungeonId — bắt đầu run, lưu HP hiện tại
+- [x] API POST /api/dungeon/advance — chiến tầng tiếp, HP giảm tích lũy
+- [x] Loot system: mỗi tầng drop item ngẫu nhiên theo tier (common→epic)
+- [x] API GET /api/dungeon/list/:worldSlug + /api/dungeon/active + /api/dungeon/history/:characterId
+- [x] Trang `/dungeon` — chọn dungeon, xem tầng, chiến đấu multi-floor, lịch sử
+- [x] Nút Dashboard "NGỤC TỐI"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 14 — CRAFTING SYSTEM
+### ════════════════════════════════════════
+
+**Mục tiêu:** Người chơi kết hợp vật phẩm để tạo đồ mạnh hơn.
+
+- [x] Bảng DB `recipes` (id, name, worldSlug, materials jsonb, resultItem, resultRarity, requiredLevel)
+- [x] Seed 7–8 recipe per world (weapon/armor/accessory/consumable/special × basic/mid/high)
+- [x] API GET /api/craft/recipes/:worldSlug — trả về availability dựa trên inventory
+- [x] API POST /api/craft/make — kiểm tra materials trong inventory, tạo item mới, +EXP
+- [x] Trang `/craft` — xem recipes theo category, filter, nút craft
+- [x] Nút Dashboard "CHẾ TẠO"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 15 — CLAN WAR
+### ════════════════════════════════════════
+
+**Mục tiêu:** Bang hội thách đấu bang hội khác, điểm từ PvP thành viên.
+
+- [x] Bảng DB `clan_wars` (id, guildId1, guildId2, startAt, endAt, score1, score2, active, winnerId)
+- [x] API POST /api/guild-war/declare/:targetGuildId — guild leader khai chiến
+- [x] API GET /api/guild-war/status — xem chiến tranh đang diễn ra + lịch sử + danh sách bang
+- [x] Auto-end sau 24h, tính tổng điểm, xác định kẻ thắng (trigger khi GET status)
+- [x] PvP thành viên 2 bang tự động cộng điểm qua `addPvpScoreToWar()`
+- [x] Trang `/guild-war` — tuyên chiến, bảng điểm realtime, lịch sử
+- [x] Reward: bang thắng nhận +50 uy tín phe phái cho tất cả thành viên
+- [x] Nút Dashboard "CHIẾN TRANH BANG"
 
 ---
 
@@ -294,6 +300,14 @@ lib/
 | `custom_worlds` | ✅ | P8 | Thế giới do người chơi/AI tạo |
 | `cross_world_events` | ✅ | P10 | Sự kiện xuyên thế giới (portal/war/merge) |
 | `character_world_travel` | ✅ | P10 | Lịch sử di chuyển nhân vật giữa thế giới |
+| `pvp_rankings` | ✅ | P1+ | PvP ranking: RP Elo, tier, streak |
+| `achievements` | ✅ | P11 | 30 thành tựu theo 5 danh mục |
+| `character_achievements` | ✅ | P11 | Thành tựu đã mở khóa của nhân vật |
+| `daily_logins` | ✅ | P12 | Daily login streak + reward |
+| `dungeons` | ✅ | P13 | 9 dungeon (3 per world: easy/normal/hard) |
+| `dungeon_runs` | ✅ | P13 | Lịch sử run dungeon (loot jsonb) |
+| `recipes` | ✅ | P14 | Công thức chế tạo — 7–8 per world |
+| `clan_wars` | ✅ | P15 | Chiến tranh bang hội 24h, auto-end |
 
 ---
 
@@ -306,7 +320,7 @@ lib/
 | `/worlds` | Chọn thế giới | P1 | ✅ |
 | `/create-character/:worldId` | Tạo nhân vật | P1 | ✅ |
 | `/dashboard` | Dashboard nhân vật | P1 | ✅ |
-| `/play` | AI Narrative + Khám phá | P5 | ✅ (AI mode) |
+| `/play` | AI Narrative + Khám phá | P5 | ✅ |
 | `/character/:id` | Hồ sơ nhân vật | P1 | ✅ |
 | `/leaderboard` | Bảng xếp hạng | P1 | ✅ |
 | `/battle` | Chiến trường (6 mode) | P1 | ✅ |
@@ -324,8 +338,13 @@ lib/
 | `/world-creator` | Tạo thế giới (AI) | P8 | ✅ |
 | `/world-discover` | Khám phá thế giới AI + cộng đồng | P9 | ✅ |
 | `/multiverse` | Đa vũ trụ — du hành, sự kiện xuyên TG | P10 | ✅ |
-| `/pvp` | PvP thách đấu | P1+ | ✅ |
+| `/pvp` | PvP thách đấu + ranking | P1+ | ✅ |
 | `/admin` | World Monitor | P6 | ✅ |
+| `/achievements` | Thành tựu | P11 | ✅ |
+| `/daily` | Daily Login Rewards | P12 | ✅ |
+| `/dungeon` | Ngục Tối — multi-floor | P13 | ✅ |
+| `/craft` | Chế Tạo vật phẩm | P14 | ✅ |
+| `/guild-war` | Chiến Tranh Bang Hội | P15 | ✅ |
 
 ---
 
@@ -347,8 +366,8 @@ lib/
 
 ### Bước 1 — Khởi động môi trường
 ```
-- restart_workflow("artifacts/ai-world-system: web")
-- restart_workflow("artifacts/api-server: API Server")
+configureWorkflow("API Server", "PORT=8080 pnpm --filter @workspace/api-server run dev", port 8080)
+configureWorkflow("Frontend", "pnpm --filter @workspace/ai-world-system run dev", port 5000, webview)
 ```
 
 ### Bước 2 — Xác định task tiếp theo
@@ -375,7 +394,7 @@ lib/
 - Cập nhật bảng "TRẠNG THÁI BẢNG DB" nếu có bảng mới
 - Cập nhật bảng "TRẠNG THÁI ROUTE" nếu có route mới
 - Cập nhật dòng "Cập nhật lần cuối" ở đầu file
-- Tiếp tục task tiếp theo (không dừng lại hỏi user)
+- Tiếp tục task tiếp theo NGAY (không dừng lại hỏi user)
 ```
 
 ### Quy tắc bất biến

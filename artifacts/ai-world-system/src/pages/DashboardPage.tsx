@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import {
   LogOut, Globe, Zap, User, Shield, Swords, Users,
-  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain, Sparkles,
+  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain, Sparkles, Skull, Hammer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -569,6 +569,46 @@ export default function DashboardPage() {
                         tag: null,
                         disabled: false,
                         onClick: () => setLocation("/pvp"),
+                      },
+                      {
+                        icon: Hammer,
+                        label: "CHẾ TẠO",
+                        sub: "Kết hợp vật phẩm — tạo trang bị mạnh hơn",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/craft"),
+                      },
+                      {
+                        icon: Skull,
+                        label: "NGỤC TỐI",
+                        sub: "Chinh phục 5–10 tầng liên tiếp — loot item hiếm",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/dungeon"),
+                      },
+                      {
+                        icon: Trophy,
+                        label: "THÀNH TỰU",
+                        sub: "Mở khóa thành tựu — 30 mốc theo 5 danh mục",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/achievements"),
+                      },
+                      {
+                        icon: Swords,
+                        label: "CHIẾN TRANH BANG",
+                        sub: "Thủ lĩnh tuyên chiến — PvP thành viên tích điểm 24h",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/guild-war"),
+                      },
+                      {
+                        icon: Star,
+                        label: "ĐIỂM DANH",
+                        sub: "Nhận thưởng hằng ngày — streak 7 ngày item epic",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/daily"),
                       },
                     ].map((action) => (
                       <motion.div
