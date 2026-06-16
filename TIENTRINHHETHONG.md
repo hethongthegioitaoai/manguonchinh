@@ -13,7 +13,7 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 16/06/2026 — Phase 2 Skills System xong (bảng character_skills, skill tree 6 hệ thống × 5 kỹ năng, API unlock, trang /skills, nút Dashboard)
+> **Cập nhật lần cuối:** 16/06/2026 — Phase 2 Factions System xong (bảng factions + character_faction, 4 phe phái × 3 thế giới = 12 phe phái, API join/leave/rep, trang /factions, nút Dashboard)
 
 ---
 
@@ -101,7 +101,7 @@ lib/
 - [x] Level + EXP (100 EXP/level)
 - [x] Inventory + Equip
 - [x] Skills — bảng DB `character_skills`, mỗi system có skill tree riêng
-- [ ] Factions — bảng DB `factions`, `character_faction`
+- [x] Factions — bảng DB `factions`, `character_faction`
 
 ---
 
@@ -288,7 +288,8 @@ lib/
 | `world_events` | ❌ | P6 | Sự kiện AI sinh |
 | `npcs` | ❌ | P7 | NPC agents |
 | `character_skills` | ✅ | P2 | Skill tree per system (6 hệ thống × 5 kỹ năng) |
-| `factions` | ❌ | P2 | Phe phái |
+| `factions` | ✅ | P2 | 4 phe phái × 3 thế giới (seeded tự động) |
+| `character_faction` | ✅ | P2 | Tư cách thành viên + điểm uy tín |
 
 ---
 
@@ -313,6 +314,7 @@ lib/
 | `/guilds/:id` | Chi tiết bang hội | P1+ | ✅ |
 | `/memories` | Ký ức hành trình | P3 | ✅ |
 | `/skills` | Cây kỹ năng hệ thống | P2 | ✅ |
+| `/factions` | Phe phái thế giới | P2 | ✅ |
 | `/world/:slug/state` | Trạng thái thế giới | P4 | ❌ |
 | `/pvp` | PvP thách đấu | P1+ | ❌ |
 | `/admin` | World Monitor | P6 | ❌ |

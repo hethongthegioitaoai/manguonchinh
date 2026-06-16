@@ -23,6 +23,7 @@ import GuildDetailPage from "@/pages/GuildDetailPage";
 import MemoriesPage from "@/pages/MemoriesPage";
 import WorldStatePage from "@/pages/WorldStatePage";
 import SkillsPage from "@/pages/SkillsPage";
+import FactionsPage from "@/pages/FactionsPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -54,6 +55,7 @@ function Router() {
       <Route path="/memories" component={MemoriesPage} />
       <Route path="/world/:slug/state" component={WorldStatePage} />
       <Route path="/skills" component={SkillsPage} />
+      <Route path="/factions" component={FactionsPage} />
       <Route component={NotFound} />
     </Switch>
   );

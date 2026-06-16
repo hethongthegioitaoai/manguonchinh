@@ -457,6 +457,14 @@ export default function DashboardPage() {
                         onClick: () => setLocation("/skills"),
                       },
                       {
+                        icon: Shield,
+                        label: "PHE PHÁI",
+                        sub: "Gia nhập phe phái, nhận stat bonus",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/factions"),
+                      },
+                      {
                         icon: Globe,
                         label: "THẾ GIỚI",
                         sub: "Boss, tài nguyên & trạng thái thế giới",

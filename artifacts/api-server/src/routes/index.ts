@@ -12,6 +12,7 @@ import narrativeRouter from "./narrative.js";
 import memoriesRouter from "./memories.js";
 import worldStateRouter from "./worldState.js";
 import skillsRouter from "./skills.js";
+import factionsRouter from "./factions.js";
 
 const router: IRouter = Router();
 
@@ -28,5 +29,6 @@ router.use(narrativeRouter);
 router.use(memoriesRouter);
 router.use(worldStateRouter);
 router.use(skillsRouter);
+router.use(factionsRouter);
 
 export default router;

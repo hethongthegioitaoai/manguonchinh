@@ -7,3 +7,4 @@ export * from "./guilds";
 export * from "./memories";
 export * from "./worldState";
 export * from "./skills";
+export * from "./factions";
