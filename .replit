@@ -18,33 +18,35 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Story Generator"
+args = "API Server"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Game Roadmap"
+args = "Start application"
 
 [[workflows.workflow]]
-name = "Story Generator"
+name = "API Server"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "pnpm --filter @workspace/scripts run story:live"
+args = "PORT=8080 pnpm --filter @workspace/api-server run dev"
+waitForPort = 8080
 
 [workflows.workflow.metadata]
 outputType = "console"
 
 [[workflows.workflow]]
-name = "Game Roadmap"
+name = "Start application"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "pnpm --filter @workspace/scripts run roadmap:game"
+args = "PORT=5000 pnpm --filter @workspace/ai-world-system run dev"
+waitForPort = 5000
 
 [workflows.workflow.metadata]
-outputType = "console"
+outputType = "webview"
 
 [agent]
 stack = "BEST_EFFORT_FALLBACK"
@@ -57,15 +59,7 @@ timeoutMs = 20000
 
 [[ports]]
 localPort = 5000
-externalPort = 5000
-
-[[ports]]
-localPort = 8080
-externalPort = 8080
-
-[[ports]]
-localPort = 8081
-externalPort = 8081
+externalPort = 80
 
 [[ports]]
 localPort = 19734
