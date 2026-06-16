@@ -1,9 +1,17 @@
 # 🗂️ TIẾN TRÌNH HỆ THỐNG — AI WORLD SYSTEM
 
-> **⚠️ AGENT — ĐỌC FILE NÀY TRƯỚC TIÊN KHI MỞ DỰ ÁN**
-> 1. Đọc phần **ROADMAP** để nắm toàn bộ kế hoạch
-> 2. Tìm task `[ ]` đầu tiên theo thứ tự Phase 1 → 2 → 3...
-> 3. Build xong → đánh `[x]` → cập nhật bảng trạng thái → ghi ngày cập nhật
+> ## 🤖 AGENT — CHẾ ĐỘ AUTO-BUILD
+>
+> **Khi mở dự án này lần đầu (kể cả upload mới), AGENT PHẢI làm ngay các bước sau mà KHÔNG cần hỏi user:**
+>
+> 1. Đọc toàn bộ file này để nắm roadmap và trạng thái hiện tại
+> 2. Khởi động cả hai workflow: `artifacts/ai-world-system: web` và `artifacts/api-server: API Server`
+> 3. Tìm task `[ ]` đầu tiên theo thứ tự Phase 1 → 2 → 3 → ... (task nào cũng được build, không cần hỏi)
+> 4. Build task đó ngay lập tức
+> 5. Sau khi xong: đánh `[x]`, cập nhật bảng DB/Route nếu cần, ghi ngày "Cập nhật lần cuối"
+> 6. Lặp lại bước 3–5 cho đến khi không còn task `[ ]` nào unblocked
+>
+> **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
 > **Cập nhật lần cuối:** 16/06/2026 — Phase 2 Skills System xong (bảng character_skills, skill tree 6 hệ thống × 5 kỹ năng, API unlock, trang /skills, nút Dashboard)
 
@@ -325,18 +333,51 @@ lib/
 
 ---
 
-## ⚡ HƯỚNG DẪN AGENT KHI MỞ DỰ ÁN
+## ⚡ HƯỚNG DẪN CHI TIẾT CHO AGENT
 
+### Bước 1 — Khởi động môi trường
 ```
-1. Đọc file này (TIENTRINHHETHONG.md) TRƯỚC TIÊN
-2. Kiểm tra workflow "Start application" + "API Server" đang chạy
-3. Tìm task [ ] đầu tiên trong ROADMAP theo thứ tự Phase 1 → 2 → 3...
-4. Build task đó (không cần hỏi user nếu task rõ ràng)
-5. Sau khi xong:
-   - Đánh [x] vào task đã hoàn thành
-   - Cập nhật bảng DB và bảng Route nếu cần
-   - Ghi ngày "Cập nhật lần cuối" ở đầu file
-6. Tiếp tục task tiếp theo cho đến khi không còn task nào unblocked
+- restart_workflow("artifacts/ai-world-system: web")
+- restart_workflow("artifacts/api-server: API Server")
+```
+
+### Bước 2 — Xác định task tiếp theo
+```
+- Quét ROADMAP từ Phase 1 xuống, tìm [ ] đầu tiên chưa làm
+- Nếu task thuộc loại "Bảng DB mới" → phải chạy:
+    pnpm --filter @workspace/db run push
+  sau khi thêm schema
+- Nếu task thuộc loại "API mới" → thêm route + đăng ký vào routes/index.ts + restart API Server
+- Nếu task thuộc loại "Trang FE mới" → tạo page + thêm vào App.tsx + thêm nút Dashboard
+```
+
+### Bước 3 — Build
+```
+- Đọc các file liên quan trước khi viết code (match pattern hiện tại)
+- Chạy song song các file không phụ thuộc nhau
+- Không tạo mock data — build chức năng thật
+- Toàn bộ UI bằng tiếng Việt, aesthetic: cyber cultivation tối tăm (cyan/red/purple trên nền đen)
+```
+
+### Bước 4 — Hoàn thành
+```
+- Đánh [x] task vừa xong trong file này
+- Cập nhật bảng "TRẠNG THÁI BẢNG DB" nếu có bảng mới
+- Cập nhật bảng "TRẠNG THÁI ROUTE" nếu có route mới
+- Cập nhật dòng "Cập nhật lần cuối" ở đầu file
+- Tiếp tục task tiếp theo (không dừng lại hỏi user)
+```
+
+### Quy tắc bất biến
+```
+✅ Auto-build tất cả task [ ] khi mở project — không hỏi user
+✅ Schema thay đổi → pnpm --filter @workspace/db run push NGAY
+✅ Backend sửa → restart workflow "API Server" NGAY
+✅ Frontend Vite hot-reload tự động — không cần restart
+✅ Dùng Replit Auth, KHÔNG dùng Supabase
+✅ AI dùng Gemini 2.0 Flash Lite (GEMINI_API_KEY)
+❌ KHÔNG tạo file README mới, KHÔNG thêm comment thừa
+❌ KHÔNG hỏi user trước khi build task đã rõ ràng trong roadmap
 ```
 
 *Cập nhật file này ngay sau khi hoàn thành mỗi tính năng.*
