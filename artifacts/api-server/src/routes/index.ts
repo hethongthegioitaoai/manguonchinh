@@ -25,6 +25,10 @@ import dungeonRouter from "./dungeon.js";
 import craftRouter from "./craft.js";
 import guildWarRouter from "./guildWar.js";
 import feedRouter from "./feed.js";
+import godModeRouter from "./godMode.js";
+import worldTradeRouter from "./worldTrade.js";
+import worldPassportRouter from "./worldPassport.js";
+import prophecyRouter from "./prophecy.js";
 
 const router: IRouter = Router();
 
@@ -54,5 +58,9 @@ router.use(dungeonRouter);
 router.use(craftRouter);
 router.use(guildWarRouter);
 router.use(feedRouter);
+router.use(godModeRouter);
+router.use(worldTradeRouter);
+router.use(worldPassportRouter);
+router.use(prophecyRouter);
 
 export default router;

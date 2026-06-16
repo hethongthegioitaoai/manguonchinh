@@ -292,74 +292,83 @@ lib/
 ---
 
 ### ════════════════════════════════════════
-### PHASE 17 — GOD MODE (THẦN CHỦ HỆ THỐNG) ⬅️ BUILD TIẾP
+### PHASE 17 — GOD MODE (THẦN CHỦ HỆ THỐNG) ✅
 ### ════════════════════════════════════════
 
 **Mục tiêu:** User là Thần của thế giới họ tạo — can thiệp trực tiếp, NPC thờ phụng creator.
 
-- [ ] Bảng DB `divine_actions` (id, worldId, creatorUserId, actionType, targetNpcId, content, createdAt)
-- [ ] Bảng DB `npc_prayers` (id, npcId, worldId, prayerContent, answeredAt, answerContent)
-- [ ] API POST /api/god/intervene/:worldId — Thần gửi "thần khải" vào thế giới (AI áp dụng vào narrative)
-- [ ] API POST /api/god/bless/:npcId — ban phước cho NPC (buff stats 24h)
-- [ ] API POST /api/god/smite/:npcId — trừng phạt NPC (debuff hoặc xoá khỏi thế giới)
-- [ ] API GET /api/god/prayers/:worldId — xem danh sách NPC đang cầu nguyện
-- [ ] NPC tự động sinh prayer khi HP thấp hoặc bị tấn công (AI tick)
-- [ ] Trang `/god/:worldId` — bảng điều khiển Thần: map NPC, prayers, intervene panel
-- [ ] Nút Dashboard "CHẾ ĐỘ THẦN"
+- [x] Bảng DB `divine_actions` (id, worldSlug, creatorUserId, actionType, targetNpcId, content, aiEffect, createdAt)
+- [x] Bảng DB `npc_prayers` (id, npcId, worldSlug, prayerContent, answered, answerContent, answeredAt, createdAt)
+- [x] API GET /api/god/my-worlds — danh sách thế giới user đã tạo
+- [x] API GET /api/god/world/:worldSlug — NPC + prayers + recentActions
+- [x] API POST /api/god/prayers/generate/:worldSlug — AI sinh prayers từ NPC
+- [x] API POST /api/god/intervene/:worldSlug — Thần gửi thần khải (AI sinh hiệu ứng + tạo world event)
+- [x] API POST /api/god/bless/:npcId — ban phước cho NPC (buff stats 24h)
+- [x] API POST /api/god/smite/:npcId — trừng phạt NPC (debuff 12h hoặc khai trừ vĩnh viễn)
+- [x] API POST /api/god/answer-prayer/:prayerId — Thần đáp lại lời cầu nguyện
+- [x] Trang `/god` — chọn thế giới; `/god/:worldSlug` — bảng điều khiển Thần (3 tab: NPC / Cầu Nguyện / Thần Sử)
+- [x] Nút Dashboard "CHẾ ĐỘ THẦN"
 
 ---
 
 ### ════════════════════════════════════════
-### PHASE 18 — INTER-WORLD TRADE (GIAO THƯƠNG LIÊN THẾ GIỚI)
+### PHASE 18 — INTER-WORLD TRADE (GIAO THƯƠNG LIÊN THẾ GIỚI) ✅
 ### ════════════════════════════════════════
 
 **Mục tiêu:** Các thế giới của các user khác nhau trao đổi item qua "Cổng Thương Mại".
 
-- [ ] Bảng DB `world_trade_listings` (id, sellerCharacterId, fromWorldSlug, toWorldSlug, itemId, quantity, priceGold, expiresAt, status)
-- [ ] Bảng DB `world_trade_history` (id, listingId, buyerCharacterId, soldAt, priceGold)
-- [ ] API GET /api/world-trade — xem danh sách listing từ các thế giới khác
-- [ ] API POST /api/world-trade/list — đăng bán item sang thế giới khác (phí cổng 5%)
-- [ ] API POST /api/world-trade/:listingId/buy — mua item cross-world
-- [ ] Hiệu ứng "rào cản thế giới" — item từ Cyberpunk vào Tu Tiên bị rename theo lore
-- [ ] Trang `/world-trade` — chợ liên thế giới, filter theo world nguồn, item type
-- [ ] Nút Dashboard "GIAO THƯƠNG LIÊN THẾ GIỚI"
+- [x] Bảng DB `world_trade_listings` (id, sellerCharacterId, fromWorldSlug, toWorldSlug, itemId, quantity, priceGold, expiresAt, status)
+- [x] Bảng DB `world_trade_history` (id, listingId, buyerCharacterId, renamedItemName, soldAt, priceGold)
+- [x] API GET /api/world-trade — danh sách listing active, filter theo world
+- [x] API GET /api/world-trade/my-chars — nhân vật + gold + inventory của user
+- [x] API GET /api/world-trade/history — lịch sử giao dịch toàn server
+- [x] API POST /api/world-trade/list — đăng bán item (trừ inventory, hết hạn 48h)
+- [x] API POST /api/world-trade/:listingId/buy — mua item cross-world (phí cổng 5%)
+- [x] API DELETE /api/world-trade/:listingId/cancel — huỷ listing + hoàn item
+- [x] Hiệu ứng Rào Cản Thế Giới — AI rename item khi mua cross-world
+- [x] Trang `/world-trade` — CHỢ (filter + mua), ĐĂng BÁN (chọn char/item/qty/price), LỊCH SỬ
+- [x] Nút Dashboard "GIAO THƯƠNG LIÊN THẾ GIỚI"
 
 ---
 
 ### ════════════════════════════════════════
-### PHASE 19 — WORLD PASSPORT (HỘ CHIẾU DU HÀNH)
+### PHASE 19 — WORLD PASSPORT (HỘ CHIẾU DU HÀNH) ✅
 ### ════════════════════════════════════════
 
 **Mục tiêu:** Nhân vật có "hộ chiếu" du hành — vào thế giới người khác với identity riêng, creator kiểm soát ai được vào.
 
-- [ ] Bảng DB `world_passports` (id, characterId, worldId, status, entryCount, bannedAt, createdAt)
-- [ ] Bảng DB `world_entry_log` (id, characterId, worldId, enteredAt, leftAt, reason)
-- [ ] API POST /api/passport/request/:worldId — xin nhập cảnh thế giới người khác
-- [ ] API POST /api/passport/approve/:passportId — creator approve/ban
-- [ ] API GET /api/passport/visitors/:worldId — creator xem khách đang trong thế giới
-- [ ] Creator có thể kick/ban visitor bất kỳ lúc nào
-- [ ] Visitor thấy thế giới qua "mắt khách" — không can thiệp world state
-- [ ] Trang `/passport` — danh sách thế giới đang visit, xin nhập cảnh, trạng thái
-- [ ] Nút Dashboard "HỘ CHIẾU"
+- [x] Bảng DB `world_passports` (id, characterId, worldSlug, status, requestNote, creatorNote, entryCount, bannedAt, approvedAt, createdAt)
+- [x] Bảng DB `world_entry_log` (id, characterId, worldSlug, enteredAt, leftAt, reason)
+- [x] API GET /api/passport/worlds — danh sách custom worlds public (không phải của mình)
+- [x] API GET /api/passport/my — tất cả hộ chiếu của user (enriched với world + char)
+- [x] API GET /api/passport/visitors/:worldSlug — creator xem khách trong thế giới
+- [x] API POST /api/passport/request/:worldSlug — xin nhập cảnh + lời xin tuỳ chọn
+- [x] API POST /api/passport/approve/:passportId — creator phê duyệt
+- [x] API POST /api/passport/ban/:passportId — creator ban/kick + ghi lý do
+- [x] API GET /api/passport/visit/:worldSlug — xem thế giới qua mắt khách (AI welcome narrative, readonly)
+- [x] Trang `/passport` — KHÁM PHÁ, HỘ CHIẾU CỦA TÔI, QUẢN LÝ KHÁCH (3 tab)
+- [x] Nút Dashboard "HỘ CHIẾU DU HÀNH"
 
 ---
 
 ### ════════════════════════════════════════
-### PHASE 20 — DIVINE PROPHECY & ORACLE (THẦN KHẢI & TIÊN TRI)
+### PHASE 20 — DIVINE PROPHECY & ORACLE (THẦN KHẢI & TIÊN TRI) ✅
 ### ════════════════════════════════════════
 
 **Mục tiêu:** AI sinh ra "thần khải" định kỳ cho từng thế giới — dự báo sự kiện lớn, người chơi giải mã lời tiên tri để nhận thưởng.
 
-- [ ] Bảng DB `prophecies` (id, worldId, content, fulfilledAt, reward, clue, isActive, createdAt)
-- [ ] Bảng DB `prophecy_claims` (id, prophecyId, characterId, claimedAt, proof)
-- [ ] AI (Gemini) sinh prophecy định kỳ 48h/lần dựa trên world history + karma
-- [ ] Prophecy có dạng ẩn dụ/thơ — AI sinh kèm "đáp án ẩn" cho Game Master xác nhận
-- [ ] API GET /api/prophecy/:worldSlug — xem tiên tri đang active
-- [ ] API POST /api/prophecy/claim/:prophecyId — nhân vật claim hoàn thành + giải thích
-- [ ] AI chấm điểm claim (similarity với fulfilled condition) — auto-approve nếu > 80%
-- [ ] Reward: prophecy hoàn thành → +EXP lớn, item legendary, title đặc biệt
-- [ ] Trang `/prophecy` — xem tiên tri, submit claim, lịch sử đã hoàn thành
-- [ ] Nút Dashboard "TIÊN TRI"
+- [x] Bảng DB `prophecies` (id, worldSlug, content, hiddenCondition, clue, reward jsonb, isActive, fulfilledAt, fulfilledBy, generatedAt)
+- [x] Bảng DB `prophecy_claims` (id, prophecyId, characterId, proof, score, status, judgedAt, claimedAt)
+- [x] AI (Gemini) sinh prophecy dạng thơ/ẩn dụ + hiddenCondition + clue khi creator trigger
+- [x] API GET /api/prophecy/:worldSlug — active tiên tri + lịch sử đã ứng nghiệm
+- [x] API POST /api/prophecy/generate/:worldSlug — creator (hoặc bất kỳ user) triệu Oracle
+- [x] API POST /api/prophecy/claim/:prophecyId — submit claim + AI chấm 0-100
+- [x] Auto-approve ≥80 → trao reward ngay (EXP, gold, title) + mark fulfilled
+- [x] API GET /api/prophecy/claims/:prophecyId — creator xem tất cả claims
+- [x] API POST /api/prophecy/judge/:claimId — creator approve/reject thủ công
+- [x] Reward: +800 EXP, +300 vàng, title "Kẻ Giải Mã Tiên Tri"
+- [x] Trang `/prophecy` — sidebar world list, panel tiên tri active, clue, submit claim, lịch sử fulfilled
+- [x] Nút Dashboard "THẦN KHẢI & TIÊN TRI"
 
 ---
 
@@ -401,6 +410,14 @@ lib/
 | `clan_wars` | ✅ | P15 | Chiến tranh bang hội 24h, auto-end |
 | `story_posts` | ✅ | P16 | Bài đăng hành trình — 8 loại postType, likes |
 | `post_likes` | ✅ | P16 | Like toggle per user per post |
+| `divine_actions` | ✅ | P17 | Thần can thiệp thế giới: intervene/bless/smite/answer |
+| `npc_prayers` | ✅ | P17 | Lời cầu nguyện NPC gửi lên creator — AI sinh tự động |
+| `world_trade_listings` | ✅ | P18 | Cross-world item listings (48h expire, phí cổng 5%) |
+| `world_trade_history` | ✅ | P18 | Lịch sử giao dịch + tên item sau khi qua Rào Cản |
+| `world_passports` | ✅ | P19 | Hộ chiếu du hành — pending/approved/banned |
+| `world_entry_log` | ✅ | P19 | Log mỗi lần nhân vật enter/exit thế giới |
+| `prophecies` | ✅ | P20 | Lời tiên tri AI sinh — thơ/ẩn dụ + hiddenCondition |
+| `prophecy_claims` | ✅ | P20 | Claim + AI scoring 0-100 + auto-approve ≥80 |
 
 ---
 
@@ -439,6 +456,11 @@ lib/
 | `/craft` | Chế Tạo vật phẩm | P14 | ✅ |
 | `/guild-war` | Chiến Tranh Bang Hội | P15 | ✅ |
 | `/feed` | Dòng Thời Gian (Social Feed) | P16 | ✅ |
+| `/god` | Chế Độ Thần — chọn thế giới | P17 | ✅ |
+| `/god/:worldSlug` | Bảng điều khiển Thần | P17 | ✅ |
+| `/world-trade` | Giao Thương Liên Thế Giới | P18 | ✅ |
+| `/passport` | Hộ Chiếu Du Hành | P19 | ✅ |
+| `/prophecy` | Thần Khải & Tiên Tri | P20 | ✅ |
 
 ---
 

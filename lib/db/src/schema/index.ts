@@ -20,3 +20,7 @@ export * from "./dungeons";
 export * from "./recipes";
 export * from "./clanWars";
 export * from "./feed";
+export * from "./godMode";
+export * from "./worldTrade";
+export * from "./worldPassport";
+export * from "./prophecy";

@@ -37,6 +37,10 @@ import DungeonPage from "@/pages/DungeonPage";
 import CraftPage from "@/pages/CraftPage";
 import GuildWarPage from "@/pages/GuildWarPage";
 import FeedPage from "@/pages/FeedPage";
+import GodModePage from "@/pages/GodModePage";
+import WorldTradePage from "@/pages/WorldTradePage";
+import WorldPassportPage from "@/pages/WorldPassportPage";
+import ProphecyPage from "@/pages/ProphecyPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -82,6 +86,11 @@ function Router() {
       <Route path="/craft" component={CraftPage} />
       <Route path="/guild-war" component={GuildWarPage} />
       <Route path="/feed" component={FeedPage} />
+      <Route path="/god" component={GodModePage} />
+      <Route path="/god/:worldSlug" component={GodModePage} />
+      <Route path="/world-trade" component={WorldTradePage} />
+      <Route path="/passport" component={WorldPassportPage} />
+      <Route path="/prophecy" component={ProphecyPage} />
       <Route component={NotFound} />
     </Switch>
   );

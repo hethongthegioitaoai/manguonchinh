@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import {
   LogOut, Globe, Zap, User, Shield, Swords, Users,
-  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain, Sparkles, Skull, Hammer, Newspaper,
+  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain, Sparkles, Skull, Hammer, Newspaper, Crown, ShoppingBag, Map, ScrollText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -617,6 +617,38 @@ export default function DashboardPage() {
                         tag: null,
                         disabled: false,
                         onClick: () => setLocation("/feed"),
+                      },
+                      {
+                        icon: Crown,
+                        label: "CHẾ ĐỘ THẦN",
+                        sub: "Kiểm soát thế giới bạn tạo — ban phước, trừng phạt, thần khải",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/god"),
+                      },
+                      {
+                        icon: ShoppingBag,
+                        label: "GIAO THƯƠNG LIÊN THẾ GIỚI",
+                        sub: "Mua bán item xuyên thế giới — AI rename khi vượt Rào Cản",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/world-trade"),
+                      },
+                      {
+                        icon: Map,
+                        label: "HỘ CHIẾU DU HÀNH",
+                        sub: "Du hành thế giới khác — xin nhập cảnh, creator kiểm soát",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/passport"),
+                      },
+                      {
+                        icon: ScrollText,
+                        label: "THẦN KHẢI & TIÊN TRI",
+                        sub: "AI sinh lời tiên tri bí ẩn — giải mã để nhận reward legendary",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/prophecy"),
                       },
                     ].map((action) => (
                       <motion.div
