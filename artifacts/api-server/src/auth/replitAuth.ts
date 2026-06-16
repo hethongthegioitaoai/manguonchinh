@@ -98,6 +98,16 @@ export async function setupAuth(app: Express) {
 
   const registeredStrategies = new Set<string>();
 
+  function getRealDomain(req: any): string {
+    // Vite proxy sets changeOrigin:true so req.hostname = "localhost"
+    // Use REPLIT_DEV_DOMAIN env var for the real public domain
+    const envDomain = process.env.REPLIT_DEV_DOMAIN;
+    if (envDomain) return envDomain;
+    const fwdHost = req.headers["x-forwarded-host"];
+    if (fwdHost) return Array.isArray(fwdHost) ? fwdHost[0] : fwdHost;
+    return req.hostname;
+  }
+
   const ensureStrategy = (domain: string) => {
     const strategyName = `replitauth:${domain}`;
     if (!registeredStrategies.has(strategyName)) {
@@ -119,28 +129,31 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
-    ensureStrategy(req.hostname);
-    passport.authenticate(`replitauth:${req.hostname}`, {
+    const domain = getRealDomain(req);
+    ensureStrategy(domain);
+    passport.authenticate(`replitauth:${domain}`, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
     })(req, res, next);
   });
 
   app.get("/api/callback", (req, res, next) => {
-    ensureStrategy(req.hostname);
-    passport.authenticate(`replitauth:${req.hostname}`, {
+    const domain = getRealDomain(req);
+    ensureStrategy(domain);
+    passport.authenticate(`replitauth:${domain}`, {
       successReturnToOrRedirect: "/",
       failureRedirect: "/api/login",
     })(req, res, next);
   });
 
   app.get("/api/logout", (req, res) => {
+    const domain = getRealDomain(req);
     req.logout(async () => {
       const config = await getOidcConfig();
       res.redirect(
         client.buildEndSessionUrl(config, {
           client_id: process.env.REPL_ID!,
-          post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
+          post_logout_redirect_uri: `https://${domain}`,
         }).href
       );
     });
