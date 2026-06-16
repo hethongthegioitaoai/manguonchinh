@@ -6,6 +6,7 @@
   "scripts": {
     "hello": "tsx ./src/hello.ts",
     "roadmap": "tsx ./src/generate-roadmap.ts",
+    "story": "tsx ./src/story-fill.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

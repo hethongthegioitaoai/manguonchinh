@@ -12,3 +12,9 @@ id = "k9U4OFFVXWSjfmmWQ4uia"
 uri = "file://scripts/output/roadmap-học-lập-trình-web-từ-zero-đến-có-việc-làm-2026-06-16.txt"
 type = "text"
 title = "Roadmap: Học lập trình web từ zero đến có việc làm"
+
+[[outputs]]
+id = "vLDySqWqX6tHPjqZ1oKhS"
+uri = "file://scripts/output/story-hai-người-yêu-nhau-2026-06-16.txt"
+type = "text"
+title = "Story: Hai người yêu nhau → Họ cưới nhau (3 kịch bản)"
