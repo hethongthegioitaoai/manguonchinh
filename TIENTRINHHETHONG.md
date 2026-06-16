@@ -352,6 +352,27 @@ lib/
 ---
 
 ### ════════════════════════════════════════
+### PHASE 22 — FATE SYSTEM (MỆNH SỐ & VẬN MỆNH) ✅
+### ════════════════════════════════════════
+
+**Mục tiêu:** Mỗi nhân vật có Mệnh Số riêng (1-9) do hệ thống tính từ tên + level + ngày tạo. Mệnh Số quyết định xác suất Cát/Hung khi kích hoạt Mệnh Cục. AI sinh mô tả sự kiện + giải quẻ Thiên Cơ.
+
+- [x] Bảng DB `fate_events` (id, characterId, fateNumber, eventType: cat/hung/trung_binh, title, description, effect jsonb, duration, active, expiresAt)
+- [x] Bảng DB `fate_readings` (id, characterId, fateNumber, hexagram, hexagramName, reading, advice, luckyElement)
+- [x] Tính Mệnh Số từ tên + level + ngày tạo (1–9, loại số học)
+- [x] 8 quẻ Bát Quái (☰☱☲☳☴☵☶☷) gắn với Mệnh Số + Ngũ Hành
+- [x] Weights Cát/Hung khác nhau theo từng Mệnh Số (Mệnh 3 phúc nhiều, Mệnh 7 hung nhiều)
+- [x] 13 template event Cát (5), Hung (5), Bình (3) với effect thực tế (EXP bonus/penalty, gold, crit%, drop%)
+- [x] Apply immediate effect ngay khi trigger (EXP/gold cộng/trừ thực sự)
+- [x] API GET /api/fate/char/:characterId — Mệnh Số + active events + last reading + history
+- [x] API GET /api/fate/my-chars — nhân vật của user
+- [x] API POST /api/fate/trigger/:characterId — kích hoạt Mệnh Cục (cooldown 1h, AI sinh description)
+- [x] API POST /api/fate/consult/:characterId — giải quẻ AI Thiên Cơ Tiên (cooldown 2h)
+- [x] Trang `/fate` — hexagram visual xoay, Mệnh Số card, active events, lịch sử
+- [x] Nút Dashboard "MỆNH SỐ & VẬN MỆNH"
+
+---
+
 ### PHASE 21 — ISEKAI PORTAL (CỔNG XUYÊN KHÔNG) ✅
 ### ════════════════════════════════════════
 
@@ -439,6 +460,8 @@ lib/
 | `prophecies` | ✅ | P20 | Lời tiên tri AI sinh — thơ/ẩn dụ + hiddenCondition |
 | `prophecy_claims` | ✅ | P20 | Claim + AI scoring 0-100 + auto-approve ≥80 |
 | `isekai_records` | ✅ | P21 | Lịch sử xuyên không — identity mới + narrative + system grant |
+| `fate_events` | ✅ | P22 | Mệnh Cục Cát/Hung — effect thực tế, cooldown 1h |
+| `fate_readings` | ✅ | P22 | Giải quẻ Bát Quái AI — Thiên Cơ Tiên phán, cooldown 2h |
 
 ---
 
@@ -483,6 +506,7 @@ lib/
 | `/passport` | Hộ Chiếu Du Hành | P19 | ✅ |
 | `/prophecy` | Thần Khải & Tiên Tri | P20 | ✅ |
 | `/isekai` | Cổng Xuyên Không | P21 | ✅ |
+| `/fate` | Mệnh Số & Vận Mệnh | P22 | ✅ |
 
 ---
 

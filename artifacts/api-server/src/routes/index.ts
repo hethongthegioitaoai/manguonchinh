@@ -30,6 +30,7 @@ import worldTradeRouter from "./worldTrade.js";
 import worldPassportRouter from "./worldPassport.js";
 import prophecyRouter from "./prophecy.js";
 import isekaiRouter from "./isekai.js";
+import fateRouter from "./fate.js";
 
 const router: IRouter = Router();
 
@@ -64,5 +65,6 @@ router.use(worldTradeRouter);
 router.use(worldPassportRouter);
 router.use(prophecyRouter);
 router.use(isekaiRouter);
+router.use(fateRouter);
 
 export default router;

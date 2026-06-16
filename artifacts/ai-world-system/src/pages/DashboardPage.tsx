@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import {
   LogOut, Globe, Zap, User, Shield, Swords, Users,
-  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain, Sparkles, Skull, Hammer, Newspaper, Crown, ShoppingBag, Map, ScrollText, Infinity,
+  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain, Sparkles, Skull, Hammer, Newspaper, Crown, ShoppingBag, Map, ScrollText, Infinity, Orbit,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -657,6 +657,14 @@ export default function DashboardPage() {
                         tag: "ISEKAI",
                         disabled: false,
                         onClick: () => setLocation("/isekai"),
+                      },
+                      {
+                        icon: Orbit,
+                        label: "MỆNH SỐ & VẬN MỆNH",
+                        sub: "AI tính Mệnh Số, kích hoạt Mệnh Cục Cát/Hung, giải quẻ Thiên Cơ Tiên",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/fate"),
                       },
                     ].map((action) => (
                       <motion.div

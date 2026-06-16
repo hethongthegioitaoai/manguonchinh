@@ -25,3 +25,4 @@ export * from "./worldTrade";
 export * from "./worldPassport";
 export * from "./prophecy";
 export * from "./isekai";
+export * from "./fate";
