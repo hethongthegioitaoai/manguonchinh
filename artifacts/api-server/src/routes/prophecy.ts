@@ -82,7 +82,7 @@ router.post("/api/prophecy/generate/:worldSlug", isAuthenticated, async (req, re
       return res.status(400).json({ error: "Đã có lời tiên tri đang hoạt động. Chờ hoàn thành rồi mới có lời mới." });
     }
 
-    const data = await generateProphecy(worldSlug);
+    const data = await generateProphecy(worldSlug as string);
     if (!data) return res.status(500).json({ error: "AI không thể tạo tiên tri lúc này" });
 
     const [prophecy] = await db.insert(prophecies).values({

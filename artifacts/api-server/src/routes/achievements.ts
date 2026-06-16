@@ -160,8 +160,8 @@ router.post("/achievements/check/:characterId", isAuthenticated, async (req: any
     const [char] = await db.select().from(characters).where(eq(characters.id, characterId));
     if (!char || char.userId !== userId) return res.status(403).json({ message: "Không có quyền" });
 
-    const { battles, pvpRankings, quests, characterWorldTravel, npc_memories,
-      character_memories, guild_members, character_faction, inventory, custom_worlds } =
+    const { battles, pvpRankings, quests, characterWorldTravel, npcMemories,
+      characterMemories, guildMembers, characterFaction, inventory, customWorlds } =
       await import("@workspace/db/schema");
     const { count } = await import("drizzle-orm");
 
@@ -180,12 +180,12 @@ router.post("/achievements/check/:characterId", isAuthenticated, async (req: any
     const pvpWins = pvpBattles.filter(b => b.result === "win").length;
 
     const [pvpRank] = await db.select().from(pvpRankings).where(eq(pvpRankings.characterId, characterId));
-    const [guildMem] = await db.select().from(guild_members).where(eq(guild_members.characterId, characterId));
-    const [factionMem] = await db.select().from(character_faction).where(eq(character_faction.characterId, characterId));
+    const [guildMem] = await db.select().from(guildMembers).where(eq(guildMembers.characterId, characterId));
+    const [factionMem] = await db.select().from(characterFaction).where(eq(characterFaction.characterId, characterId));
     const travelCount = (await db.select().from(characterWorldTravel).where(eq(characterWorldTravel.characterId, characterId))).length;
-    const memCount = (await db.select().from(character_memories).where(eq(character_memories.characterId, characterId))).length;
+    const memCount = (await db.select().from(characterMemories).where(eq(characterMemories.characterId, characterId))).length;
     const invCount = (await db.select().from(inventory).where(eq(inventory.characterId, characterId))).length;
-    const worldsCreated = (await db.select().from(custom_worlds).where(eq(custom_worlds.createdBy, userId))).length;
+    const worldsCreated = (await db.select().from(customWorlds).where(eq(customWorlds.createdBy, userId))).length;
 
     const newlyUnlocked = await checkAndUnlockAchievements(characterId, {
       battle_wins: wins, battle_losses: losses,

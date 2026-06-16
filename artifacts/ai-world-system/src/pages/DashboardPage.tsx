@@ -533,7 +533,7 @@ export default function DashboardPage() {
                         tag: null,
                         disabled: false,
                         onClick: () => {
-                          const slug = (character?.stats as any)?.world_slug ?? "cultivation";
+                          const slug = (characters[activeIdx]?.stats as any)?.world_slug ?? "cultivation";
                           localStorage.setItem("activeWorldSlug", slug);
                           setLocation(`/world/${slug}/state`);
                         },

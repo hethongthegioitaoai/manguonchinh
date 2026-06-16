@@ -6,10 +6,14 @@
 >
 > 1. Đọc toàn bộ file này để nắm roadmap và trạng thái hiện tại
 > 2. Khởi động workflows: `API Server` (PORT=8080) và `Frontend` (port 5000)
-> 3. Tìm task `[ ]` đầu tiên theo thứ tự Phase 1 → 2 → 3 → ... (task nào cũng được build, không cần hỏi)
-> 4. Build task đó ngay lập tức
-> 5. Sau khi xong: đánh `[x]`, cập nhật bảng DB/Route nếu cần, ghi ngày "Cập nhật lần cuối"
-> 6. Lặp lại bước 3–5 cho đến khi không còn task `[ ]` nào unblocked
+> 3. **Chạy ngay file kiểm tra lỗi:** `node kiểmtralỗitoànbộhệthống.js`
+>    - Nếu script báo ❌ có lỗi → fix hết lỗi trước rồi mới build tính năng mới
+>    - Nếu script báo ✅ hoặc ⚠ chỉ có warning → tiếp tục bước 4
+>    - Script tự động fix một số lỗi phổ biến — kiểm tra output để biết đã fix gì
+> 4. Tìm task `[ ]` đầu tiên theo thứ tự Phase 1 → 2 → 3 → ... (task nào cũng được build, không cần hỏi)
+> 5. Build task đó ngay lập tức
+> 6. Sau khi xong: đánh `[x]`, cập nhật bảng DB/Route nếu cần, ghi ngày "Cập nhật lần cuối"
+> 7. Lặp lại bước 4–6 cho đến khi không còn task `[ ]` nào unblocked
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
