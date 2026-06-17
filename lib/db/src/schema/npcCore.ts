@@ -34,7 +34,18 @@ export const npcCoreMemories = pgTable("npc_core_memories", {
   timestamp: timestamp("timestamp").defaultNow(),
 });
 
+export const npcRelationships = pgTable("npc_relationships", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  npcAId: uuid("npc_a_id").notNull().references(() => npcCores.id, { onDelete: "cascade" }),
+  npcBId: uuid("npc_b_id").notNull().references(() => npcCores.id, { onDelete: "cascade" }),
+  relationshipScore: integer("relationship_score").notNull().default(0),
+  relationshipType: varchar("relationship_type", { length: 32 }).notNull().default("người lạ"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export type NpcCore = typeof npcCores.$inferSelect;
 export type InsertNpcCore = typeof npcCores.$inferInsert;
 export type NpcPersonality = typeof npcPersonalities.$inferSelect;
 export type NpcCoreMemory = typeof npcCoreMemories.$inferSelect;
+export type NpcRelationship = typeof npcRelationships.$inferSelect;

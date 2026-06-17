@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { isAuthenticated } from "../auth/replitAuth.js";
 import { db } from "@workspace/db";
-import { npcCores, npcPersonalities, npcCoreMemories } from "@workspace/db/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { npcCores, npcPersonalities, npcCoreMemories, npcRelationships } from "@workspace/db/schema";
+import { eq, desc, and, or } from "drizzle-orm";
 
 const router = Router();
 
@@ -25,6 +25,15 @@ function generateGoal(npc: typeof npcCores.$inferSelect): string {
   return "Khám phá — không có việc gì cấp bách";
 }
 
+function scoreToType(score: number): string {
+  if (score <= -61) return "kẻ thù";
+  if (score <= -21) return "đối thủ";
+  if (score <= 20)  return "người lạ";
+  if (score <= 50)  return "người quen";
+  if (score <= 75)  return "bạn bè";
+  return "đồng minh";
+}
+
 function describeAction(npc: typeof npcCores.$inferSelect, personality: typeof npcPersonalities.$inferSelect | null): string {
   if (npc.currentGoal?.includes("Kiếm tiền")) {
     return personality?.greed && personality.greed > 0.7
@@ -45,6 +54,135 @@ function describeAction(npc: typeof npcCores.$inferSelect, personality: typeof n
   return personality?.curiosity && personality.curiosity > 0.7
     ? `${npc.name} đang tò mò khám phá xung quanh, đôi mắt sáng rực`
     : `${npc.name} đang đi lang thang qua khu vực`;
+}
+
+/* ── Tính delta quan hệ khi 2 NPC gặp nhau ── */
+function calcRelationshipDelta(
+  a: typeof npcCores.$inferSelect,
+  b: typeof npcCores.$inferSelect,
+  pA: typeof npcPersonalities.$inferSelect | null,
+  pB: typeof npcPersonalities.$inferSelect | null,
+): { delta: number; memory: string; importance: number } {
+  let delta = 0;
+  let memory = "";
+  let importance = 2;
+
+  const kA = pA?.kindness ?? 0.5;
+  const kB = pB?.kindness ?? 0.5;
+  const gA = pA?.greed ?? 0.5;
+  const gB = pB?.greed ?? 0.5;
+  const brA = pA?.bravery ?? 0.5;
+  const brB = pB?.bravery ?? 0.5;
+  const cA = pA?.curiosity ?? 0.5;
+  const cB = pB?.curiosity ?? 0.5;
+
+  // Cả hai tốt bụng → tích cực
+  if (kA > 0.6 && kB > 0.6) {
+    delta += rand(8, 15);
+    const events = [
+      `Gặp ${b.name} và chia sẻ bữa ăn ấm áp`,
+      `Giúp ${b.name} giải quyết khó khăn`,
+      `${b.name} và tôi trò chuyện chân thành, cảm thấy tin tưởng`,
+    ];
+    memory = events[rand(0, events.length - 1)];
+    importance = 3;
+  }
+  // A tham lam, B nghèo → tiêu cực
+  else if (gA > 0.7 && b.money < 50) {
+    delta += rand(-20, -8);
+    const events = [
+      `Tranh cãi với ${b.name} về tiền bạc, cảm thấy bực bội`,
+      `Cố tình gây khó dễ cho ${b.name} trong việc mua bán`,
+      `Xung đột với ${b.name} vì chênh lệch của cải`,
+    ];
+    memory = events[rand(0, events.length - 1)];
+    importance = 3;
+  }
+  // Cả hai tò mò cao → nhiều tương tác hơn, tích cực vừa
+  else if (cA > 0.6 && cB > 0.6) {
+    delta += rand(5, 12);
+    const events = [
+      `Cùng ${b.name} khám phá một khu vực mới lạ`,
+      `Trao đổi thông tin thú vị với ${b.name}`,
+      `${b.name} chia sẻ bí mật về thế giới, tò mò tăng lên`,
+    ];
+    memory = events[rand(0, events.length - 1)];
+    importance = 2;
+  }
+  // Cả hai dũng cảm cao → ganh đua, tiêu cực nhẹ
+  else if (brA > 0.75 && brB > 0.75) {
+    delta += rand(-10, -3);
+    const events = [
+      `Tranh giành địa bàn với ${b.name}, không ai chịu nhường`,
+      `Thách đấu ${b.name} để xem ai mạnh hơn`,
+      `Xung đột với ${b.name} vì cả hai đều không chịu lùi bước`,
+    ];
+    memory = events[rand(0, events.length - 1)];
+    importance = 3;
+  }
+  // A tốt bụng, B nghèo → A giúp B
+  else if (kA > 0.6 && b.money < 50) {
+    delta += rand(5, 10);
+    const events = [
+      `Giúp ${b.name} tìm được việc làm tốt hơn`,
+      `Cho ${b.name} mượn tiền qua giai đoạn khó khăn`,
+      `${b.name} cảm ơn sự giúp đỡ chân thành`,
+    ];
+    memory = events[rand(0, events.length - 1)];
+    importance = 3;
+  }
+  // Cả hai tham lam → cạnh tranh
+  else if (gA > 0.65 && gB > 0.65) {
+    delta += rand(-8, -2);
+    const events = [
+      `Cạnh tranh khốc liệt với ${b.name} trên thương trường`,
+      `${b.name} cố tình phá hợp đồng của tôi`,
+      `Tranh cãi với ${b.name} về việc chia chác lợi nhuận`,
+    ];
+    memory = events[rand(0, events.length - 1)];
+    importance = 2;
+  }
+  // Bình thường — gặp gỡ ngẫu nhiên
+  else {
+    delta += rand(-3, 5);
+    const events = [
+      `Chạm mặt ${b.name} trên đường, gật đầu chào`,
+      `Trao đổi vài câu thông tin với ${b.name}`,
+      `Gặp ${b.name} ở chợ, nhìn nhau một lúc rồi đi`,
+    ];
+    memory = events[rand(0, events.length - 1)];
+    importance = 1;
+  }
+
+  return { delta, memory, importance };
+}
+
+/* ── Upsert relationship giữa 2 NPC ── */
+async function upsertRelationship(
+  aId: string, bId: string, delta: number
+): Promise<void> {
+  const [idA, idB] = aId < bId ? [aId, bId] : [bId, aId];
+
+  const [existing] = await db
+    .select()
+    .from(npcRelationships)
+    .where(and(eq(npcRelationships.npcAId, idA), eq(npcRelationships.npcBId, idB)));
+
+  if (existing) {
+    const newScore = clamp(existing.relationshipScore + delta, -100, 100);
+    await db
+      .update(npcRelationships)
+      .set({ relationshipScore: newScore, relationshipType: scoreToType(newScore), updatedAt: new Date() })
+      .where(eq(npcRelationships.id, existing.id));
+  } else {
+    const initScore = clamp(delta, -100, 100);
+    await db.insert(npcRelationships).values({
+      npcAId: idA,
+      npcBId: idB,
+      relationshipScore: initScore,
+      relationshipType: scoreToType(initScore),
+    });
+  }
 }
 
 const SEED_DATA: Record<string, Array<{
@@ -184,15 +322,17 @@ router.post("/api/npc-core/tick/:worldSlug", isAuthenticated, async (req, res) =
 
     const logs: Array<{ name: string; goal: string; action: string }> = [];
 
+    // Load all personalities once
+    const personalityMap = new Map<string, typeof npcPersonalities.$inferSelect>();
     for (const npc of npcs) {
-      const [personality] = await db
-        .select()
-        .from(npcPersonalities)
-        .where(eq(npcPersonalities.npcCoreId, npc.id));
+      const [p] = await db.select().from(npcPersonalities).where(eq(npcPersonalities.npcCoreId, npc.id));
+      if (p) personalityMap.set(npc.id, p);
+    }
 
-      // 1. Cập nhật độ đói (tăng mỗi tick)
+    for (const npc of npcs) {
+      const personality = personalityMap.get(npc.id) ?? null;
+
       const hungerDelta = rand(3, 8);
-      // 2. Cập nhật năng lượng (giảm mỗi tick)
       const energyDelta = rand(2, 6);
 
       let newHunger = clamp(npc.hunger + hungerDelta, 0, 100);
@@ -200,7 +340,6 @@ router.post("/api/npc-core/tick/:worldSlug", isAuthenticated, async (req, res) =
       let newMoney = npc.money;
       let newHappiness = npc.happiness;
 
-      // 3. Thực hiện hành động dựa vào mục tiêu hiện tại
       const goal = npc.currentGoal ?? "";
       let memoryEvent = "";
       let memoryImportance = 1;
@@ -229,57 +368,110 @@ router.post("/api/npc-core/tick/:worldSlug", isAuthenticated, async (req, res) =
         memoryEvent = `${npc.name} gặp gỡ và trò chuyện với người qua đường, tâm trạng khá hơn`;
         memoryImportance = 2;
       } else {
-        // Khám phá — tò mò khiến tăng hạnh phúc nhẹ
         const exploreBoost = Math.floor((personality?.curiosity ?? 0.5) * 10);
         newHappiness = clamp(newHappiness + exploreBoost, 0, 100);
         memoryEvent = `${npc.name} lang thang và khám phá ${worldSlug}`;
         memoryImportance = 1;
       }
 
-      // 4. Tạo mục tiêu mới dựa trên trạng thái sau hành động
       const updatedNpc = { ...npc, money: newMoney, energy: newEnergy, hunger: newHunger, happiness: newHappiness };
       const newGoal = generateGoal(updatedNpc);
-      const action = describeAction(updatedNpc, personality ?? null);
+      const action = describeAction(updatedNpc, personality);
 
-      // 5. Lưu vào DB
       await db
         .update(npcCores)
-        .set({
-          money: newMoney,
-          energy: newEnergy,
-          hunger: newHunger,
-          happiness: newHappiness,
-          currentGoal: newGoal,
-          lastTickAt: new Date(),
-        })
+        .set({ money: newMoney, energy: newEnergy, hunger: newHunger, happiness: newHappiness, currentGoal: newGoal, lastTickAt: new Date() })
         .where(eq(npcCores.id, npc.id));
 
-      // 6. Lưu bộ nhớ
-      await db.insert(npcCoreMemories).values({
-        npcCoreId: npc.id,
-        event: memoryEvent,
-        importance: memoryImportance,
-      });
+      await db.insert(npcCoreMemories).values({ npcCoreId: npc.id, event: memoryEvent, importance: memoryImportance });
 
-      // Dọn bộ nhớ cũ (giữ tối đa 50 ký ức)
-      const memories = await db
-        .select({ id: npcCoreMemories.id })
-        .from(npcCoreMemories)
-        .where(eq(npcCoreMemories.npcCoreId, npc.id))
-        .orderBy(desc(npcCoreMemories.timestamp));
+      // Dọn bộ nhớ cũ (giữ tối đa 50)
+      const memories = await db.select({ id: npcCoreMemories.id }).from(npcCoreMemories).where(eq(npcCoreMemories.npcCoreId, npc.id)).orderBy(desc(npcCoreMemories.timestamp));
       if (memories.length > 50) {
-        const toDelete = memories.slice(50).map((m) => m.id);
-        for (const id of toDelete) {
-          await db.delete(npcCoreMemories).where(eq(npcCoreMemories.id, id));
+        for (const m of memories.slice(50)) {
+          await db.delete(npcCoreMemories).where(eq(npcCoreMemories.id, m.id));
         }
       }
 
       logs.push({ name: npc.name, goal: newGoal, action });
     }
 
+    // ── Xử lý gặp gỡ ngẫu nhiên giữa các NPC ──
+    if (npcs.length >= 2) {
+      // Số cặp gặp nhau: 1 cặp nếu ≤3 NPC, 2 cặp nếu ≥4
+      const numEncounters = npcs.length >= 4 ? 2 : 1;
+      const shuffled = [...npcs].sort(() => Math.random() - 0.5);
+
+      for (let i = 0; i < numEncounters && i * 2 + 1 < shuffled.length; i++) {
+        const a = shuffled[i * 2];
+        const b = shuffled[i * 2 + 1];
+        const pA = personalityMap.get(a.id) ?? null;
+        const pB = personalityMap.get(b.id) ?? null;
+
+        const { delta, memory: memEvent, importance } = calcRelationshipDelta(a, b, pA, pB);
+
+        // Upsert quan hệ
+        await upsertRelationship(a.id, b.id, delta);
+
+        // Lưu ký ức cuộc gặp cho cả 2 NPC
+        await db.insert(npcCoreMemories).values({ npcCoreId: a.id, event: memEvent, importance });
+        // Ký ức của B (góc nhìn ngược lại)
+        const reverseMemory = memEvent
+          .replace(new RegExp(b.name, "g"), "___TMP___")
+          .replace(new RegExp(a.name, "g"), b.name)
+          .replace(/___TMP___/g, a.name);
+        await db.insert(npcCoreMemories).values({ npcCoreId: b.id, event: reverseMemory, importance });
+      }
+    }
+
     return res.json({ message: `Đã tick ${logs.length} NPC`, ticked: logs.length, logs });
   } catch (err) {
     console.error("[npcCore] tick error:", err);
+    return res.status(500).json({ message: "Lỗi server" });
+  }
+});
+
+/* ── GET relationships for a single NPC ── */
+router.get("/api/npc-relationships/:npcId", isAuthenticated, async (req, res) => {
+  try {
+    const { npcId } = req.params;
+
+    const rows = await db
+      .select()
+      .from(npcRelationships)
+      .where(or(eq(npcRelationships.npcAId, npcId), eq(npcRelationships.npcBId, npcId)))
+      .orderBy(desc(npcRelationships.updatedAt));
+
+    // Lấy tên NPC đối diện
+    const results = await Promise.all(
+      rows.map(async (rel) => {
+        const otherId = rel.npcAId === npcId ? rel.npcBId : rel.npcAId;
+        const [other] = await db.select({ id: npcCores.id, name: npcCores.name, occupation: npcCores.occupation }).from(npcCores).where(eq(npcCores.id, otherId));
+
+        // Lấy 3 ký ức gặp gỡ gần nhất liên quan
+        const recentMemories = await db
+          .select()
+          .from(npcCoreMemories)
+          .where(and(eq(npcCoreMemories.npcCoreId, npcId)))
+          .orderBy(desc(npcCoreMemories.timestamp))
+          .limit(50);
+
+        // Lọc ký ức có tên NPC kia
+        const relatedMemories = other
+          ? recentMemories.filter((m) => m.event.includes(other.name)).slice(0, 3)
+          : [];
+
+        return {
+          ...rel,
+          other: other ?? null,
+          recentEncounters: relatedMemories,
+        };
+      })
+    );
+
+    return res.json(results);
+  } catch (err) {
+    console.error("[npcCore] relationships error:", err);
     return res.status(500).json({ message: "Lỗi server" });
   }
 });
@@ -308,16 +500,8 @@ router.get("/api/npc-core/detail/:npcId", isAuthenticated, async (req, res) => {
     const [npc] = await db.select().from(npcCores).where(eq(npcCores.id, npcId));
     if (!npc) return res.status(404).json({ message: "Không tìm thấy NPC" });
 
-    const [personality] = await db
-      .select()
-      .from(npcPersonalities)
-      .where(eq(npcPersonalities.npcCoreId, npcId));
-    const memories = await db
-      .select()
-      .from(npcCoreMemories)
-      .where(eq(npcCoreMemories.npcCoreId, npcId))
-      .orderBy(desc(npcCoreMemories.timestamp))
-      .limit(10);
+    const [personality] = await db.select().from(npcPersonalities).where(eq(npcPersonalities.npcCoreId, npcId));
+    const memories = await db.select().from(npcCoreMemories).where(eq(npcCoreMemories.npcCoreId, npcId)).orderBy(desc(npcCoreMemories.timestamp)).limit(10);
 
     return res.json({ ...npc, personality: personality ?? null, recentMemories: memories });
   } catch (err) {

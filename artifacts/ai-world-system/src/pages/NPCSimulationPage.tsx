@@ -3,7 +3,8 @@ import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain, Zap, Utensils, Heart, Coins, User, Target,
-  BookOpen, Play, RefreshCw, ChevronLeft, Activity, Clock, Sparkles
+  BookOpen, Play, RefreshCw, ChevronLeft, Activity, Clock,
+  Sparkles, Users, Sword, Shield, Star, Handshake, Eye
 } from "lucide-react";
 
 const WORLDS = [
@@ -28,11 +29,32 @@ type NPCCore = {
   recentMemories: Memory[];
 };
 
+type RelationshipEntry = {
+  id: string;
+  npcAId: string; npcBId: string;
+  relationshipScore: number;
+  relationshipType: string;
+  updatedAt: string;
+  other: { id: string; name: string; occupation: string } | null;
+  recentEncounters: Memory[];
+};
+
 const COLOR_MAP: Record<string, string> = {
   cultivation: "#22d3ee",
   cyberpunk: "#a855f7",
   zombie: "#ef4444",
 };
+
+const REL_CONFIG: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
+  "đồng minh":  { color: "#22d3ee", icon: <Shield size={12} />,    label: "Đồng Minh" },
+  "bạn bè":     { color: "#22c55e", icon: <Handshake size={12} />, label: "Bạn Bè" },
+  "người quen": { color: "#3b82f6", icon: <Users size={12} />,     label: "Người Quen" },
+  "người lạ":   { color: "#6b7280", icon: <Eye size={12} />,       label: "Người Lạ" },
+  "đối thủ":    { color: "#f97316", icon: <Star size={12} />,      label: "Đối Thủ" },
+  "kẻ thù":     { color: "#ef4444", icon: <Sword size={12} />,     label: "Kẻ Thù" },
+};
+
+const REL_ORDER = ["đồng minh", "bạn bè", "người quen", "người lạ", "đối thủ", "kẻ thù"];
 
 function StatBar({ label, value, color, icon }: {
   label: string; value: number; color: string; icon: React.ReactNode
@@ -40,10 +62,7 @@ function StatBar({ label, value, color, icon }: {
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1 text-xs text-gray-400">
-          {icon}
-          <span>{label}</span>
-        </div>
+        <div className="flex items-center gap-1 text-xs text-gray-400">{icon}<span>{label}</span></div>
         <span className="text-xs font-bold" style={{ color }}>{value}</span>
       </div>
       <div className="h-1.5 rounded-full bg-gray-800 overflow-hidden">
@@ -65,18 +84,34 @@ function PersonalityDot({ label, value, color }: { label: string; value: number;
       <div className="relative w-10 h-10">
         <svg viewBox="0 0 36 36" className="w-10 h-10 -rotate-90">
           <circle cx="18" cy="18" r="14" fill="none" stroke="#1f2937" strokeWidth="4" />
-          <circle
-            cx="18" cy="18" r="14" fill="none"
-            stroke={color} strokeWidth="4"
-            strokeDasharray={`${value * 87.96} 87.96`}
-            strokeLinecap="round"
-          />
+          <circle cx="18" cy="18" r="14" fill="none" stroke={color} strokeWidth="4"
+            strokeDasharray={`${value * 87.96} 87.96`} strokeLinecap="round" />
         </svg>
         <span className="absolute inset-0 flex items-center justify-center text-xs font-bold" style={{ color }}>
           {Math.round(value * 100)}
         </span>
       </div>
       <span className="text-xs text-gray-500 text-center leading-tight">{label}</span>
+    </div>
+  );
+}
+
+function RelationshipScoreBar({ score }: { score: number }) {
+  const pct = (score + 100) / 2; // -100..100 → 0..100
+  const color = score > 50 ? "#22d3ee" : score > 20 ? "#22c55e" : score > -20 ? "#6b7280" : score > -50 ? "#f97316" : "#ef4444";
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex-1 h-1.5 rounded-full bg-gray-800 overflow-hidden">
+        <motion.div
+          className="h-full rounded-full"
+          style={{ background: color }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.5 }}
+        />
+      </div>
+      <span className="text-xs font-bold w-8 text-right" style={{ color }}>
+        {score > 0 ? `+${score}` : score}
+      </span>
     </div>
   );
 }
@@ -110,27 +145,20 @@ function NPCCard({ npc, worldColor, selected, onClick }: {
           </div>
           <div className="text-xs text-gray-500 mt-0.5">{npc.occupation} · {npc.age} tuổi</div>
         </div>
-        <div className="text-right">
-          <div className="flex items-center gap-1 text-xs" style={{ color: moneyColor }}>
-            <Coins size={11} />
-            <span>{npc.money}</span>
-          </div>
+        <div className="flex items-center gap-1 text-xs" style={{ color: moneyColor }}>
+          <Coins size={11} /><span>{npc.money}</span>
         </div>
       </div>
-
       <div className="grid grid-cols-2 gap-2 mb-3">
         <StatBar label="Năng lượng" value={npc.energy} color={energyColor} icon={<Zap size={10} />} />
         <StatBar label="Độ đói" value={npc.hunger} color={hungerColor} icon={<Utensils size={10} />} />
         <StatBar label="Hạnh phúc" value={npc.happiness} color={happinessColor} icon={<Heart size={10} />} />
         <StatBar label="Tiền" value={Math.min(100, Math.round(npc.money / 10))} color={moneyColor} icon={<Coins size={10} />} />
       </div>
-
       {npc.currentGoal && (
         <div className="flex items-start gap-1.5 rounded-lg p-2" style={{ background: `${worldColor}18` }}>
           <Target size={12} style={{ color: worldColor }} className="mt-0.5 shrink-0" />
-          <span className="text-xs leading-relaxed" style={{ color: worldColor }}>
-            {npc.currentGoal}
-          </span>
+          <span className="text-xs leading-relaxed" style={{ color: worldColor }}>{npc.currentGoal}</span>
         </div>
       )}
     </motion.div>
@@ -148,6 +176,9 @@ export default function NPCSimulationPage() {
   const [autoTick, setAutoTick] = useState(false);
   const [tickCount, setTickCount] = useState(0);
   const [lastTickTime, setLastTickTime] = useState<Date | null>(null);
+  const [relationships, setRelationships] = useState<RelationshipEntry[]>([]);
+  const [relLoading, setRelLoading] = useState(false);
+  const [detailTab, setDetailTab] = useState<"status" | "relations" | "memories">("status");
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const worldColor = COLOR_MAP[worldSlug] ?? "#22d3ee";
@@ -161,11 +192,18 @@ export default function NPCSimulationPage() {
       const data = await res.json();
       setNpcs(data);
       if (data.length > 0 && !selectedId) setSelectedId(data[0].id);
-    } catch {
-      setNpcs([]);
-    } finally {
-      setLoading(false);
-    }
+    } catch { setNpcs([]); }
+    finally { setLoading(false); }
+  }
+
+  async function loadRelationships(npcId: string) {
+    setRelLoading(true);
+    try {
+      const res = await fetch(`/api/npc-relationships/${npcId}`);
+      if (!res.ok) throw new Error("fetch failed");
+      setRelationships(await res.json());
+    } catch { setRelationships([]); }
+    finally { setRelLoading(false); }
   }
 
   async function seedNPCs() {
@@ -173,9 +211,7 @@ export default function NPCSimulationPage() {
     try {
       await fetch(`/api/npc-core/seed/${worldSlug}`, { method: "POST" });
       await loadNPCs();
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }
 
   async function runTick() {
@@ -188,23 +224,15 @@ export default function NPCSimulationPage() {
       setTickCount((c) => c + 1);
       setLastTickTime(new Date());
       await loadNPCs();
-    } finally {
-      setTicking(false);
-    }
+      if (selectedId) await loadRelationships(selectedId);
+    } finally { setTicking(false); }
   }
 
+  useEffect(() => { setSelectedId(null); setTickLog([]); setRelationships([]); loadNPCs(); }, [worldSlug]);
+  useEffect(() => { if (selectedId) { loadRelationships(selectedId); setDetailTab("status"); } }, [selectedId]);
   useEffect(() => {
-    setSelectedId(null);
-    setTickLog([]);
-    loadNPCs();
-  }, [worldSlug]);
-
-  useEffect(() => {
-    if (autoTick) {
-      intervalRef.current = setInterval(runTick, 60_000);
-    } else {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    }
+    if (autoTick) { intervalRef.current = setInterval(runTick, 60_000); }
+    else { if (intervalRef.current) clearInterval(intervalRef.current); }
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [autoTick, worldSlug]);
 
@@ -216,23 +244,25 @@ export default function NPCSimulationPage() {
     { key: "curiosity", label: "Tò Mò", color: "#a855f7" },
   ];
 
+  // Group relationships by type for summary
+  const relGroups = REL_ORDER.reduce<Record<string, RelationshipEntry[]>>((acc, type) => {
+    acc[type] = relationships.filter((r) => r.relationshipType === type);
+    return acc;
+  }, {});
+  const significantTypes = ["đồng minh", "bạn bè", "đối thủ", "kẻ thù"];
+
   return (
     <div className="min-h-screen bg-black text-white" style={{ fontFamily: "monospace" }}>
       {/* Header */}
       <div className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setLocation("/dashboard")}
-            className="text-gray-500 hover:text-white transition-colors"
-          >
+          <button onClick={() => setLocation("/dashboard")} className="text-gray-500 hover:text-white transition-colors">
             <ChevronLeft size={20} />
           </button>
           <Brain size={20} style={{ color: worldColor }} />
           <div>
-            <h1 className="text-lg font-bold tracking-widest" style={{ color: worldColor }}>
-              MÔ PHỎNG NPC LÕI
-            </h1>
-            <p className="text-xs text-gray-500">Hệ thống vòng đời tự động — chu kỳ 60 giây</p>
+            <h1 className="text-lg font-bold tracking-widest" style={{ color: worldColor }}>MÔ PHỎNG NPC LÕI</h1>
+            <p className="text-xs text-gray-500">Hệ thống vòng đời & quan hệ — chu kỳ 60 giây</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -277,26 +307,18 @@ export default function NPCSimulationPage() {
 
       <div className="flex h-[calc(100vh-129px)]">
         {/* Left — NPC list */}
-        <div className="w-[340px] shrink-0 border-r border-gray-800 overflow-y-auto p-4 flex flex-col gap-3">
-          {/* Toolbar */}
+        <div className="w-[320px] shrink-0 border-r border-gray-800 overflow-y-auto p-4 flex flex-col gap-3">
           <div className="flex gap-2">
             <button
-              onClick={seedNPCs}
-              disabled={loading}
+              onClick={seedNPCs} disabled={loading}
               className="flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-bold border border-gray-700 text-gray-400 hover:text-white hover:border-gray-500 transition-all"
             >
-              <Sparkles size={12} />
-              Khởi Tạo
+              <Sparkles size={12} />Khởi Tạo
             </button>
             <button
-              onClick={runTick}
-              disabled={ticking || npcs.length === 0}
+              onClick={runTick} disabled={ticking || npcs.length === 0}
               className="flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-bold transition-all border"
-              style={{
-                borderColor: ticking ? "#374151" : worldColor,
-                color: ticking ? "#6b7280" : worldColor,
-                background: ticking ? "transparent" : `${worldColor}18`,
-              }}
+              style={{ borderColor: ticking ? "#374151" : worldColor, color: ticking ? "#6b7280" : worldColor, background: ticking ? "transparent" : `${worldColor}18` }}
             >
               {ticking ? <RefreshCw size={12} className="animate-spin" /> : <Play size={12} />}
               {ticking ? "Đang Tick..." : "Chạy Tick"}
@@ -304,9 +326,7 @@ export default function NPCSimulationPage() {
           </div>
 
           {loading ? (
-            <div className="flex-1 flex items-center justify-center">
-              <RefreshCw size={20} className="animate-spin text-gray-600" />
-            </div>
+            <div className="flex-1 flex items-center justify-center"><RefreshCw size={20} className="animate-spin text-gray-600" /></div>
           ) : npcs.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center">
               <Brain size={40} className="text-gray-700" />
@@ -316,25 +336,15 @@ export default function NPCSimulationPage() {
           ) : (
             <AnimatePresence>
               {npcs.map((npc) => (
-                <motion.div
-                  key={npc.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                >
-                  <NPCCard
-                    npc={npc}
-                    worldColor={worldColor}
-                    selected={selectedId === npc.id}
-                    onClick={() => setSelectedId(npc.id)}
-                  />
+                <motion.div key={npc.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                  <NPCCard npc={npc} worldColor={worldColor} selected={selectedId === npc.id} onClick={() => setSelectedId(npc.id)} />
                 </motion.div>
               ))}
             </AnimatePresence>
           )}
         </div>
 
-        {/* Right — Detail panel */}
+        {/* Center — Detail panel */}
         <div className="flex-1 overflow-y-auto">
           {!selectedNpc ? (
             <div className="h-full flex items-center justify-center flex-col gap-4 text-center">
@@ -342,142 +352,222 @@ export default function NPCSimulationPage() {
               <p className="text-gray-600">Chọn một NPC để xem chi tiết</p>
             </div>
           ) : (
-            <div className="p-6 flex flex-col gap-6 max-w-2xl">
+            <div className="p-5 flex flex-col gap-5 max-w-xl">
               {/* NPC Header */}
-              <div className="rounded-2xl border p-5" style={{ borderColor: worldColor, background: `${worldColor}08` }}>
+              <div className="rounded-2xl border p-4" style={{ borderColor: worldColor, background: `${worldColor}08` }}>
                 <div className="flex items-start justify-between">
                   <div>
-                    <h2 className="text-2xl font-bold tracking-wide" style={{ color: worldColor }}>
-                      {selectedNpc.name}
-                    </h2>
-                    <div className="flex items-center gap-3 mt-1">
+                    <h2 className="text-xl font-bold tracking-wide" style={{ color: worldColor }}>{selectedNpc.name}</h2>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
                       <span className="text-sm text-gray-400">{selectedNpc.occupation}</span>
                       <span className="text-gray-700">·</span>
                       <span className="text-sm text-gray-400">{selectedNpc.age} tuổi</span>
-                      <span className="text-gray-700">·</span>
-                      <span className="text-sm text-gray-500 capitalize">{selectedNpc.worldSlug}</span>
                     </div>
                   </div>
                   {selectedNpc.lastTickAt && (
-                    <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                      <Clock size={11} />
-                      <span>Tick: {new Date(selectedNpc.lastTickAt).toLocaleTimeString("vi-VN")}</span>
+                    <div className="flex items-center gap-1 text-xs text-gray-600">
+                      <Clock size={10} /><span>{new Date(selectedNpc.lastTickAt).toLocaleTimeString("vi-VN")}</span>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Stats Grid */}
-              <div>
-                <h3 className="text-xs font-bold text-gray-500 tracking-widest mb-3">TRẠNG THÁI</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { label: "Năng Lượng", value: selectedNpc.energy, icon: <Zap size={14} />, color: selectedNpc.energy > 60 ? "#22c55e" : selectedNpc.energy > 30 ? "#eab308" : "#ef4444" },
-                    { label: "Độ Đói", value: selectedNpc.hunger, icon: <Utensils size={14} />, color: selectedNpc.hunger < 40 ? "#22c55e" : selectedNpc.hunger < 70 ? "#eab308" : "#ef4444" },
-                    { label: "Hạnh Phúc", value: selectedNpc.happiness, icon: <Heart size={14} />, color: selectedNpc.happiness > 60 ? "#22c55e" : selectedNpc.happiness > 30 ? "#eab308" : "#ef4444" },
-                    { label: "Tiền Vàng", value: selectedNpc.money, icon: <Coins size={14} />, color: selectedNpc.money > 200 ? "#22c55e" : selectedNpc.money > 50 ? "#eab308" : "#ef4444", raw: true },
-                  ].map((stat) => (
-                    <div key={stat.label} className="rounded-xl border border-gray-800 bg-gray-900/50 p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                          <span style={{ color: stat.color }}>{stat.icon}</span>
-                          {stat.label}
-                        </div>
-                        <span className="font-bold text-sm" style={{ color: stat.color }}>
-                          {stat.raw ? stat.value : `${stat.value}%`}
-                        </span>
-                      </div>
-                      {!stat.raw && (
-                        <div className="h-2 rounded-full bg-gray-800 overflow-hidden">
-                          <motion.div
-                            className="h-full rounded-full"
-                            style={{ background: stat.color }}
-                            animate={{ width: `${stat.value}%` }}
-                            transition={{ duration: 0.8, ease: "easeOut" }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+              {/* Tab navigation */}
+              <div className="flex rounded-lg overflow-hidden border border-gray-800">
+                {(["status", "relations", "memories"] as const).map((tab) => {
+                  const labels = { status: "TRẠNG THÁI", relations: "QUAN HỆ", memories: "BỘ NHỚ" };
+                  const icons = { status: <Activity size={11} />, relations: <Users size={11} />, memories: <BookOpen size={11} /> };
+                  return (
+                    <button
+                      key={tab}
+                      onClick={() => setDetailTab(tab)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold transition-all"
+                      style={{
+                        color: detailTab === tab ? worldColor : "#6b7280",
+                        background: detailTab === tab ? `${worldColor}15` : "transparent",
+                        borderRight: tab !== "memories" ? "1px solid #1f2937" : "none",
+                      }}
+                    >
+                      {icons[tab]}{labels[tab]}
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Current Goal */}
-              {selectedNpc.currentGoal && (
-                <div>
-                  <h3 className="text-xs font-bold text-gray-500 tracking-widest mb-3">MỤC TIÊU HIỆN TẠI</h3>
-                  <div className="rounded-xl border p-4 flex items-start gap-3" style={{ borderColor: `${worldColor}55`, background: `${worldColor}10` }}>
-                    <Target size={16} style={{ color: worldColor }} className="mt-0.5 shrink-0" />
-                    <span style={{ color: worldColor }} className="text-sm leading-relaxed">
-                      {selectedNpc.currentGoal}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Personality */}
-              {selectedNpc.personality && (
-                <div>
-                  <h3 className="text-xs font-bold text-gray-500 tracking-widest mb-3">TÍNH CÁCH</h3>
-                  <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-4">
-                    <div className="flex justify-around">
-                      {personalityLabels.map(({ key, label, color }) => (
-                        <PersonalityDot
-                          key={key}
-                          label={label}
-                          value={selectedNpc.personality![key]}
-                          color={color}
-                        />
+              {/* Tab: TRẠNG THÁI */}
+              {detailTab === "status" && (
+                <AnimatePresence mode="wait">
+                  <motion.div key="status" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { label: "Năng Lượng", value: selectedNpc.energy, icon: <Zap size={13} />, color: selectedNpc.energy > 60 ? "#22c55e" : selectedNpc.energy > 30 ? "#eab308" : "#ef4444" },
+                        { label: "Độ Đói", value: selectedNpc.hunger, icon: <Utensils size={13} />, color: selectedNpc.hunger < 40 ? "#22c55e" : selectedNpc.hunger < 70 ? "#eab308" : "#ef4444" },
+                        { label: "Hạnh Phúc", value: selectedNpc.happiness, icon: <Heart size={13} />, color: selectedNpc.happiness > 60 ? "#22c55e" : selectedNpc.happiness > 30 ? "#eab308" : "#ef4444" },
+                        { label: "Tiền Vàng", value: selectedNpc.money, icon: <Coins size={13} />, color: selectedNpc.money > 200 ? "#22c55e" : selectedNpc.money > 50 ? "#eab308" : "#ef4444", raw: true },
+                      ].map((stat) => (
+                        <div key={stat.label} className="rounded-xl border border-gray-800 bg-gray-900/50 p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                              <span style={{ color: stat.color }}>{stat.icon}</span>{stat.label}
+                            </div>
+                            <span className="font-bold text-sm" style={{ color: stat.color }}>
+                              {(stat as any).raw ? stat.value : `${stat.value}%`}
+                            </span>
+                          </div>
+                          {!(stat as any).raw && (
+                            <div className="h-2 rounded-full bg-gray-800 overflow-hidden">
+                              <motion.div className="h-full rounded-full" style={{ background: stat.color }} animate={{ width: `${stat.value}%` }} transition={{ duration: 0.8, ease: "easeOut" }} />
+                            </div>
+                          )}
+                        </div>
                       ))}
                     </div>
-                  </div>
-                </div>
+
+                    {selectedNpc.currentGoal && (
+                      <div className="rounded-xl border p-3 flex items-start gap-2" style={{ borderColor: `${worldColor}55`, background: `${worldColor}10` }}>
+                        <Target size={14} style={{ color: worldColor }} className="mt-0.5 shrink-0" />
+                        <span style={{ color: worldColor }} className="text-sm leading-relaxed">{selectedNpc.currentGoal}</span>
+                      </div>
+                    )}
+
+                    {selectedNpc.personality && (
+                      <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-4">
+                        <p className="text-xs font-bold text-gray-500 tracking-widest mb-3">TÍNH CÁCH</p>
+                        <div className="flex justify-around">
+                          {personalityLabels.map(({ key, label, color }) => (
+                            <PersonalityDot key={key} label={label} value={selectedNpc.personality![key]} color={color} />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
               )}
 
-              {/* Recent Memories */}
-              {selectedNpc.recentMemories.length > 0 && (
-                <div>
-                  <h3 className="text-xs font-bold text-gray-500 tracking-widest mb-3">BỘ NHỚ GẦN ĐÂY</h3>
-                  <div className="flex flex-col gap-2">
-                    {selectedNpc.recentMemories.map((mem) => (
-                      <motion.div
-                        key={mem.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="flex items-start gap-3 rounded-lg border border-gray-800 bg-gray-900/30 p-3"
-                      >
-                        <div className="flex flex-col items-center gap-1 shrink-0">
-                          <BookOpen size={12} className="text-gray-600" />
-                          <div
-                            className="text-xs font-bold"
-                            style={{ color: mem.importance >= 4 ? "#eab308" : mem.importance >= 2 ? "#6b7280" : "#374151" }}
-                          >
-                            ★{mem.importance}
+              {/* Tab: QUAN HỆ */}
+              {detailTab === "relations" && (
+                <AnimatePresence mode="wait">
+                  <motion.div key="relations" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-4">
+                    {relLoading ? (
+                      <div className="flex items-center justify-center py-8"><RefreshCw size={18} className="animate-spin text-gray-600" /></div>
+                    ) : relationships.length === 0 ? (
+                      <div className="flex flex-col items-center gap-3 py-10 text-center">
+                        <Users size={36} className="text-gray-800" />
+                        <p className="text-gray-600 text-sm">Chưa có quan hệ nào</p>
+                        <p className="text-gray-700 text-xs">Chạy một vài Tick để tạo gặp gỡ ngẫu nhiên</p>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Summary badges */}
+                        <div className="grid grid-cols-2 gap-2">
+                          {significantTypes.map((type) => {
+                            const cfg = REL_CONFIG[type];
+                            const count = relGroups[type]?.length ?? 0;
+                            return (
+                              <div key={type} className="rounded-xl border border-gray-800 p-3 flex items-center gap-2">
+                                <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${cfg.color}18` }}>
+                                  <span style={{ color: cfg.color }}>{cfg.icon}</span>
+                                </div>
+                                <div>
+                                  <div className="text-xs font-bold" style={{ color: cfg.color }}>{cfg.label}</div>
+                                  <div className="text-lg font-bold text-white leading-none">{count}</div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Full list sorted by type significance */}
+                        <div className="flex flex-col gap-2">
+                          {REL_ORDER.flatMap((type) =>
+                            (relGroups[type] ?? []).map((rel) => {
+                              const cfg = REL_CONFIG[type] ?? REL_CONFIG["người lạ"];
+                              return (
+                                <motion.div
+                                  key={rel.id}
+                                  initial={{ opacity: 0, x: -8 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  className="rounded-xl border border-gray-800 bg-gray-900/40 p-3"
+                                >
+                                  <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ background: `${cfg.color}20` }}>
+                                        <span style={{ color: cfg.color }}>{cfg.icon}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-sm font-bold text-white">{rel.other?.name ?? "Không rõ"}</span>
+                                        {rel.other && <span className="text-xs text-gray-600 ml-1.5">{rel.other.occupation}</span>}
+                                      </div>
+                                    </div>
+                                    <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ color: cfg.color, background: `${cfg.color}18` }}>
+                                      {cfg.label}
+                                    </span>
+                                  </div>
+                                  <RelationshipScoreBar score={rel.relationshipScore} />
+                                  {rel.recentEncounters.length > 0 && (
+                                    <div className="mt-2 pt-2 border-t border-gray-800 flex flex-col gap-1">
+                                      {rel.recentEncounters.map((enc) => (
+                                        <div key={enc.id} className="flex items-start gap-1.5">
+                                          <Eye size={10} className="text-gray-700 mt-0.5 shrink-0" />
+                                          <span className="text-xs text-gray-500 leading-relaxed">{enc.event}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </motion.div>
+                              );
+                            })
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              )}
+
+              {/* Tab: BỘ NHỚ */}
+              {detailTab === "memories" && (
+                <AnimatePresence mode="wait">
+                  <motion.div key="memories" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-2">
+                    {selectedNpc.recentMemories.length === 0 ? (
+                      <div className="flex flex-col items-center gap-3 py-10 text-center">
+                        <BookOpen size={36} className="text-gray-800" />
+                        <p className="text-gray-600 text-sm">Chưa có ký ức nào</p>
+                      </div>
+                    ) : (
+                      selectedNpc.recentMemories.map((mem) => (
+                        <motion.div
+                          key={mem.id}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="flex items-start gap-3 rounded-lg border border-gray-800 bg-gray-900/30 p-3"
+                        >
+                          <div className="flex flex-col items-center gap-1 shrink-0">
+                            <BookOpen size={12} className="text-gray-600" />
+                            <div className="text-xs font-bold" style={{ color: mem.importance >= 4 ? "#eab308" : mem.importance >= 2 ? "#6b7280" : "#374151" }}>
+                              ★{mem.importance}
+                            </div>
                           </div>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-300 leading-relaxed">{mem.event}</p>
-                          <p className="text-xs text-gray-700 mt-1">
-                            {new Date(mem.timestamp).toLocaleString("vi-VN")}
-                          </p>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
+                          <div>
+                            <p className="text-xs text-gray-300 leading-relaxed">{mem.event}</p>
+                            <p className="text-xs text-gray-700 mt-1">{new Date(mem.timestamp).toLocaleString("vi-VN")}</p>
+                          </div>
+                        </motion.div>
+                      ))
+                    )}
+                  </motion.div>
+                </AnimatePresence>
               )}
             </div>
           )}
         </div>
 
-        {/* Tick log sidebar */}
+        {/* Right — Tick log */}
         {tickLog.length > 0 && (
-          <div className="w-[280px] shrink-0 border-l border-gray-800 overflow-y-auto p-4">
+          <div className="w-[260px] shrink-0 border-l border-gray-800 overflow-y-auto p-4">
             <div className="flex items-center gap-2 mb-3">
               <Activity size={14} style={{ color: worldColor }} />
-              <h3 className="text-xs font-bold tracking-widest" style={{ color: worldColor }}>
-                NHẬT KÝ TICK #{tickCount}
-              </h3>
+              <h3 className="text-xs font-bold tracking-widest" style={{ color: worldColor }}>NHẬT KÝ TICK #{tickCount}</h3>
             </div>
             <div className="flex flex-col gap-2">
               {tickLog.map((log, i) => (
@@ -492,9 +582,7 @@ export default function NPCSimulationPage() {
                   <div className="text-xs text-gray-400 leading-relaxed">{log.action}</div>
                   <div className="mt-1.5 flex items-start gap-1">
                     <Target size={10} style={{ color: worldColor }} className="mt-0.5 shrink-0" />
-                    <span className="text-xs leading-relaxed" style={{ color: worldColor }}>
-                      {log.goal}
-                    </span>
+                    <span className="text-xs leading-relaxed" style={{ color: worldColor }}>{log.goal}</span>
                   </div>
                 </motion.div>
               ))}
