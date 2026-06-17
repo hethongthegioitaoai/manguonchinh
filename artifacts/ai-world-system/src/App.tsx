@@ -29,6 +29,9 @@ import MarketPage from "@/pages/MarketPage";
 import AdminPage from "@/pages/AdminPage";
 import NPCsPage from "@/pages/NPCsPage";
 import WorldCreatorPage from "@/pages/WorldCreatorPage";
+import WorldProfilePage from "@/pages/WorldProfilePage";
+import MyWorldsPage from "@/pages/MyWorldsPage";
+import CosmosPage from "@/pages/CosmosPage";
 import WorldDiscoverPage from "@/pages/WorldDiscoverPage";
 import MultiversePage from "@/pages/MultiversePage";
 import PvPPage from "@/pages/PvPPage";
@@ -101,6 +104,9 @@ function Router() {
       <Route path="/admin" component={AdminPage} />
       <Route path="/npcs" component={NPCsPage} />
       <Route path="/world-creator" component={WorldCreatorPage} />
+      <Route path="/world-profile/:worldSlug" component={WorldProfilePage} />
+      <Route path="/my-worlds" component={MyWorldsPage} />
+      <Route path="/cosmos" component={CosmosPage} />
       <Route path="/world-discover" component={WorldDiscoverPage} />
       <Route path="/multiverse" component={MultiversePage} />
       <Route path="/pvp" component={PvPPage} />

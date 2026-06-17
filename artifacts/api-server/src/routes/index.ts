@@ -52,6 +52,10 @@ import citizenshipRouter from "./citizenship.js";
 import expeditionRouter from "./expedition.js";
 import worldSkillRouter from "./worldSkill.js";
 import legendRouter from "./legend.js";
+import worldFrameworkRouter from "./worldFramework.js";
+import livingWorldRouter from "./livingWorld.js";
+import multiWorldRouter from "./multiWorld.js";
+import cosmicHierarchyRouter from "./cosmicHierarchy.js";
 
 const router: IRouter = Router();
 
@@ -108,5 +112,9 @@ router.use(citizenshipRouter);
 router.use(expeditionRouter);
 router.use(worldSkillRouter);
 router.use(legendRouter);
+router.use(worldFrameworkRouter);
+router.use(livingWorldRouter);
+router.use(multiWorldRouter);
+router.use(cosmicHierarchyRouter);
 
 export default router;

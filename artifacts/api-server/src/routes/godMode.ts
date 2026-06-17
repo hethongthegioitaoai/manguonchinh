@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
-import { divineActions, npcPrayers, npcs, customWorlds, worldEvents } from "@workspace/db/schema";
-import { eq, and, desc, isNull } from "drizzle-orm";
+import { divineActions, npcPrayers, npcs, customWorlds, worldEvents, worldPopulationLog, worldAutoEvents, characters, worldFrameworks } from "@workspace/db/schema";
+import { eq, and, desc, gte, avg, sum, count } from "drizzle-orm";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const router = Router();
@@ -285,6 +285,192 @@ router.post("/api/god/answer-prayer/:prayerId", isAuthenticated, async (req, res
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Lỗi trả lời prayer" });
+  }
+});
+
+// GET /api/god/observe/:worldSlug — full live snapshot của thế giới
+router.get("/api/god/observe/:worldSlug", isAuthenticated, async (req, res) => {
+  try {
+    const userId = (req as any).userId;
+    const { worldSlug } = req.params;
+
+    const [world] = await db.select().from(customWorlds)
+      .where(and(eq(customWorlds.slug, worldSlug), eq(customWorlds.createdBy, userId)));
+    if (!world) return res.status(403).json({ error: "Không có quyền" });
+
+    const [framework] = await db.select().from(worldFrameworks).where(eq(worldFrameworks.worldSlug, worldSlug));
+    const worldNpcs = await db.select().from(npcs).where(eq(npcs.worldSlug, worldSlug));
+    const activeNpcs = worldNpcs.filter((n: any) => n.active);
+
+    const [playerStats] = await db.select({
+      playerCount: count(),
+      totalGold: sum(characters.gold),
+      avgLevel: avg(characters.level),
+    }).from(characters).where(eq(characters.currentWorld, worldSlug));
+
+    const activeEvs = await db.select().from(worldEvents)
+      .where(and(eq(worldEvents.worldSlug, worldSlug), eq(worldEvents.active, true)))
+      .limit(5);
+
+    const recentActions = await db.select().from(divineActions)
+      .where(and(eq(divineActions.worldSlug, worldSlug), eq(divineActions.creatorUserId, userId)))
+      .orderBy(desc(divineActions.createdAt)).limit(5);
+
+    const autoEvs = await db.select().from(worldAutoEvents)
+      .where(eq(worldAutoEvents.worldSlug, worldSlug))
+      .orderBy(desc(worldAutoEvents.startedAt)).limit(10);
+
+    const latestLog = await db.select().from(worldPopulationLog)
+      .where(eq(worldPopulationLog.worldSlug, worldSlug))
+      .orderBy(desc(worldPopulationLog.timestamp)).limit(1);
+
+    const npcMoodMap = activeNpcs.slice(0, 8).map((n: any) => ({
+      id: n.id, name: n.name, role: n.role,
+      mood: (n.currentState as any)?.mood ?? "neutral",
+      blessed: !!(n.currentState as any)?.blessed,
+      smited: !!(n.currentState as any)?.smited,
+      wealthLevel: (n.currentState as any)?.wealthLevel ?? "middle",
+    }));
+
+    const snapshot = {
+      world: { id: world.id, slug: world.slug, name: world.name, genre: world.genre, lore: world.lore },
+      framework: framework ?? null,
+      npcCount: activeNpcs.length,
+      playerCount: Number(playerStats?.playerCount ?? 0),
+      totalGold: Number(playerStats?.totalGold ?? 0),
+      avgLevel: Number(playerStats?.avgLevel ?? 1).toFixed(1),
+      activeEventCount: activeEvs.length,
+      karmaScore: latestLog[0]?.karmaScore ?? 50,
+      npcMoodMap,
+      activeEvents: activeEvs,
+      recentDivineActions: recentActions,
+      autoEvents: autoEvs,
+    };
+
+    // Ghi population log
+    await db.insert(worldPopulationLog).values({
+      worldSlug,
+      npcCount: activeNpcs.length,
+      playerCount: Number(playerStats?.playerCount ?? 0),
+      totalGold: Number(playerStats?.totalGold ?? 0),
+      avgLevel: Number(playerStats?.avgLevel ?? 1),
+      activeEvents: activeEvs.length,
+      karmaScore: latestLog[0]?.karmaScore ?? 50,
+    });
+
+    res.json(snapshot);
+  } catch (err) {
+    console.error("[god/observe]", err);
+    res.status(500).json({ error: "Lỗi quan sát thế giới" });
+  }
+});
+
+// GET /api/god/population-history/:worldSlug — biểu đồ 24 điểm gần nhất
+router.get("/api/god/population-history/:worldSlug", isAuthenticated, async (req, res) => {
+  try {
+    const userId = (req as any).userId;
+    const { worldSlug } = req.params;
+
+    const [world] = await db.select().from(customWorlds)
+      .where(and(eq(customWorlds.slug, worldSlug), eq(customWorlds.createdBy, userId)));
+    if (!world) return res.status(403).json({ error: "Không có quyền" });
+
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const history = await db.select().from(worldPopulationLog)
+      .where(and(eq(worldPopulationLog.worldSlug, worldSlug), gte(worldPopulationLog.timestamp, since)))
+      .orderBy(desc(worldPopulationLog.timestamp)).limit(24);
+
+    res.json({ history: history.reverse() });
+  } catch {
+    res.status(500).json({ error: "Lỗi tải lịch sử" });
+  }
+});
+
+// POST /api/god/macro-intervene/:worldSlug — Thần can thiệp vĩ mô
+router.post("/api/god/macro-intervene/:worldSlug", isAuthenticated, async (req, res) => {
+  try {
+    const userId = (req as any).userId;
+    const { worldSlug } = req.params;
+    const { interventionType } = req.body;
+
+    const TYPES: Record<string, string> = {
+      bless_all: "ban phúc khí toàn thế giới — mọi NPC nhận buff tốt lành",
+      curse_all: "giáng thiên trách lên toàn thế giới — mọi NPC bị debuff",
+      golden_age: "khai mở thời đại hoàng kim — kinh tế phồn thịnh, EXP tăng, hòa bình",
+      catastrophe: "giáng đại kiếp — thiên tai thảm khốc tàn phá toàn thế giới",
+      mystery: "phán truyền thiên cơ bí ẩn — sự kiện không thể đoán trước xảy ra",
+    };
+    if (!TYPES[interventionType]) return res.status(400).json({ error: "Loại can thiệp không hợp lệ" });
+
+    const [world] = await db.select().from(customWorlds)
+      .where(and(eq(customWorlds.slug, worldSlug), eq(customWorlds.createdBy, userId)));
+    if (!world) return res.status(403).json({ error: "Không có quyền" });
+
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+    const prompt = `Bạn là AI Game Master của thế giới "${world.name}" (thể loại: ${world.genre}).
+Lore: ${world.lore?.slice(0, 200)}
+
+Thần Chủ vừa thực hiện can thiệp vĩ mô: "${TYPES[interventionType]}"
+
+Hãy mô tả sự kiện vĩ mô này xảy ra trong thế giới. Yêu cầu:
+- Quy mô TOÀN THẾ GIỚI, không phải một vùng
+- Phù hợp hoàn toàn với lore thế giới (dùng thuật ngữ của thế giới đó)
+- 3-4 câu, epic, dramatic, nhất quán với loại can thiệp
+- Tiếng Việt
+
+Chỉ trả về mô tả sự kiện, không giải thích.`;
+
+    const result = await model.generateContent(prompt);
+    const aiNarrative = result.response.text().trim();
+
+    const TITLE_MAP: Record<string, string> = {
+      bless_all: "🌟 Thiên Phúc Giáng Ban",
+      curse_all: "⚡ Thiên Lôi Giáng Trừng",
+      golden_age: "👑 Hoàng Kim Thời Đại",
+      catastrophe: "🌑 Đại Kiếp Giáng Thế",
+      mystery: "🌀 Thiên Cơ Huyền Bí",
+    };
+
+    const [autoEvent] = await db.insert(worldAutoEvents).values({
+      worldSlug,
+      eventType: interventionType,
+      title: TITLE_MAP[interventionType] ?? "Thần Khải Vĩ Mô",
+      description: aiNarrative,
+      triggeredBy: "god_macro",
+      effect: { type: interventionType, scale: "world_wide" },
+      endsAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    }).returning();
+
+    await db.insert(divineActions).values({
+      worldSlug,
+      creatorUserId: userId,
+      actionType: "macro_intervene",
+      content: `Can thiệp vĩ mô: ${interventionType}`,
+      aiEffect: aiNarrative,
+    });
+
+    res.json({ autoEvent, aiNarrative });
+  } catch (err) {
+    console.error("[god/macro-intervene]", err);
+    res.status(500).json({ error: "Lỗi can thiệp vĩ mô" });
+  }
+});
+
+// GET /api/god/auto-events/:worldSlug — sự kiện tự phát sinh
+router.get("/api/god/auto-events/:worldSlug", isAuthenticated, async (req, res) => {
+  try {
+    const userId = (req as any).userId;
+    const { worldSlug } = req.params;
+    const [world] = await db.select().from(customWorlds)
+      .where(and(eq(customWorlds.slug, worldSlug), eq(customWorlds.createdBy, userId)));
+    if (!world) return res.status(403).json({ error: "Không có quyền" });
+
+    const events = await db.select().from(worldAutoEvents)
+      .where(eq(worldAutoEvents.worldSlug, worldSlug))
+      .orderBy(desc(worldAutoEvents.startedAt)).limit(20);
+    res.json({ events });
+  } catch {
+    res.status(500).json({ error: "Lỗi tải sự kiện" });
   }
 });
 

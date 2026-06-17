@@ -586,6 +586,22 @@ export default function DashboardPage() {
                       },
                       {
                         icon: Globe,
+                        label: "CÁC THẾ GIỚI CỦA TÔI",
+                        sub: "Quản lý thế giới, cổng truyền tống, Tinh Vực",
+                        tag: "MỚI",
+                        disabled: false,
+                        onClick: () => setLocation("/my-worlds"),
+                      },
+                      {
+                        icon: Globe,
+                        label: "VŨ TRỤ PHÂN TẦNG",
+                        sub: "Thăng cấp Thế Giới → Tinh Vực → Ngân Hà → Vũ Trụ",
+                        tag: "MỚI",
+                        disabled: false,
+                        onClick: () => setLocation("/cosmos"),
+                      },
+                      {
+                        icon: Globe,
                         label: "KHÁM PHÁ VŨ TRỤ",
                         sub: "Browse thế giới AI sinh + cộng đồng tạo",
                         tag: null,

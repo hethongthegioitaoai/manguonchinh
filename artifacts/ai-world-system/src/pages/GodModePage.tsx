@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation, useParams } from "wouter";
 import {
   ChevronLeft, Loader2, Zap, Flame, Shield, MessageCircle,
-  Globe, Sparkles, Skull, Crown, RefreshCw, Send, Eye
+  Globe, Sparkles, Skull, Crown, RefreshCw, Send, Eye,
+  Activity, Users, Coins, TrendingUp, Swords, Star
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -41,6 +42,31 @@ interface WorldData {
   npcs: NPC[];
   prayers: Prayer[];
   recentActions: DivineAction[];
+}
+
+interface NpcMood {
+  id: string; name: string; role: string; mood: string;
+  blessed: boolean; smited: boolean; wealthLevel: string;
+}
+
+interface AutoEvent {
+  id: string; eventType: string; title: string; description: string;
+  triggeredBy: string; startedAt: string; endsAt?: string;
+}
+
+interface ObserveSnapshot {
+  world: { id: string; slug: string; name: string; genre: string; lore: string };
+  framework: { progressionSystem?: { name: string }; currency?: { primary: string }; tagline?: string } | null;
+  npcCount: number;
+  playerCount: number;
+  totalGold: number;
+  avgLevel: string;
+  activeEventCount: number;
+  karmaScore: number;
+  npcMoodMap: NpcMood[];
+  activeEvents: Array<{ id: string; title: string; description: string; eventType: string }>;
+  recentDivineActions: DivineAction[];
+  autoEvents: AutoEvent[];
 }
 
 const ROLE_ICONS: Record<string, string> = {
@@ -84,7 +110,12 @@ export default function GodModePage() {
   const [generatingPrayers, setGeneratingPrayers] = useState(false);
   const [answeringId, setAnsweringId] = useState<string | null>(null);
   const [answerDraft, setAnswerDraft] = useState("");
-  const [activeTab, setActiveTab] = useState<"npcs" | "prayers" | "log">("npcs");
+  const [activeTab, setActiveTab] = useState<"observe" | "npcs" | "prayers" | "log">("observe");
+  const [observeSnap, setObserveSnap] = useState<ObserveSnapshot | null>(null);
+  const [observeLoading, setObserveLoading] = useState(false);
+  const [macroType, setMacroType] = useState("bless_all");
+  const [macroLoading, setMacroLoading] = useState(false);
+  const [macroResult, setMacroResult] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) setLocation("/login");
@@ -108,6 +139,33 @@ export default function GodModePage() {
   }, [worldSlug]);
 
   useEffect(() => { if (user && worldSlug) loadWorld(); }, [user, worldSlug]);
+
+  const loadObserve = useCallback(async () => {
+    if (!worldSlug) return;
+    setObserveLoading(true);
+    try {
+      const r = await fetch(`/api/god/observe/${worldSlug}`);
+      if (r.ok) setObserveSnap(await r.json());
+    } finally { setObserveLoading(false); }
+  }, [worldSlug]);
+
+  useEffect(() => { if (user && worldSlug && activeTab === "observe") loadObserve(); }, [user, worldSlug, activeTab]);
+
+  const handleMacroIntervene = async () => {
+    if (!worldSlug) return;
+    setMacroLoading(true);
+    setMacroResult(null);
+    try {
+      const r = await fetch(`/api/god/macro-intervene/${worldSlug}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ interventionType: macroType }),
+      });
+      const d = await r.json();
+      setMacroResult(d.aiNarrative ?? d.error);
+      await loadObserve();
+    } finally { setMacroLoading(false); }
+  };
 
   const handleIntervene = async () => {
     if (!command.trim() || !worldSlug) return;
@@ -304,8 +362,9 @@ export default function GodModePage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 border-b border-border/40">
+        <div className="flex gap-1 border-b border-border/40 overflow-x-auto">
           {([
+            { id: "observe" as const, label: "QUAN SÁT", icon: Activity, count: 0 },
             { id: "npcs" as const, label: "NPC", icon: Eye, count: worldNpcs.filter(n => n.active).length },
             { id: "prayers" as const, label: "CẦU NGUYỆN", icon: MessageCircle, count: unansweredPrayers.length },
             { id: "log" as const, label: "THẦN SỬ", icon: Flame, count: recentActions.length },
@@ -327,6 +386,151 @@ export default function GodModePage() {
             </button>
           ))}
         </div>
+
+        {/* Tab: QUAN SÁT */}
+        {activeTab === "observe" && (
+          <div className="space-y-4">
+            {observeLoading && !observeSnap && (
+              <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin" style={{ color: GOD_COLOR }} /></div>
+            )}
+
+            {observeSnap && (
+              <>
+                {/* Stats grid */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {[
+                    { icon: Users, label: "NPC ĐANG SỐNG", value: observeSnap.npcCount, color: "#06b6d4" },
+                    { icon: Users, label: "NGƯỜI CHƠI", value: observeSnap.playerCount, color: "#a855f7" },
+                    { icon: Coins, label: "TỔNG GOLD", value: observeSnap.totalGold.toLocaleString(), color: "#f59e0b" },
+                    { icon: TrendingUp, label: "LEVEL TRUNG BÌNH", value: observeSnap.avgLevel, color: "#10b981" },
+                    { icon: Swords, label: "SỰ KIỆN ACTIVE", value: observeSnap.activeEventCount, color: "#ef4444" },
+                    { icon: Star, label: "KARMA THẾ GIỚI", value: `${observeSnap.karmaScore}/100`, color: observeSnap.karmaScore >= 60 ? "#10b981" : observeSnap.karmaScore >= 40 ? "#f59e0b" : "#ef4444" },
+                  ].map(s => (
+                    <div key={s.label} className="border border-border/40 bg-card/30 p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <s.icon className="w-3.5 h-3.5" style={{ color: s.color }} strokeWidth={1.5} />
+                        <span className="font-mono text-xs text-muted-foreground/40">{s.label}</span>
+                      </div>
+                      <div className="font-orbitron text-xl font-black" style={{ color: s.color }}>{s.value}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* NPC Mood Map */}
+                {observeSnap.npcMoodMap.length > 0 && (
+                  <div className="border border-border/40 bg-card/30 p-4">
+                    <div className="font-orbitron text-xs tracking-widest mb-3" style={{ color: GOD_COLOR }}>
+                      👁️ BẢN ĐỒ TÂM TRẠNG NPC
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {observeSnap.npcMoodMap.map(n => {
+                        const MOOD_COLOR: Record<string, string> = {
+                          happy: "#10b981", neutral: "#6b7280", anxious: "#f59e0b",
+                          angry: "#ef4444", fearful: "#8b5cf6",
+                        };
+                        const moodColor = MOOD_COLOR[n.mood] ?? "#6b7280";
+                        return (
+                          <div key={n.id} className="border border-border/30 bg-background/40 p-3"
+                            style={{ borderColor: n.blessed ? "#facc1540" : n.smited ? "#f8717140" : undefined }}>
+                            <div className="flex items-center gap-1 mb-1">
+                              <span className="font-mono text-xs font-bold truncate">{n.name}</span>
+                              {n.blessed && <span className="text-yellow-400 text-xs">💛</span>}
+                              {n.smited && <span className="text-red-400 text-xs">🔥</span>}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: moodColor }} />
+                              <span className="font-mono text-xs" style={{ color: moodColor }}>{n.mood}</span>
+                            </div>
+                            <div className="font-mono text-xs text-muted-foreground/30 mt-0.5">{ROLE_LABELS[n.role] ?? n.role}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Macro Intervene */}
+                <div className="border border-purple-500/30 bg-card/30 p-4 space-y-3">
+                  <div className="font-orbitron text-xs tracking-widest" style={{ color: GOD_COLOR }}>
+                    🪐 CAN THIỆP VĨ MÔ — TÁC ĐỘNG TOÀN THẾ GIỚI
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
+                    {[
+                      { id: "bless_all", label: "🌟 THIÊN PHÚC", desc: "Ban phúc toàn thế giới" },
+                      { id: "golden_age", label: "👑 HOÀNG KIM", desc: "Thời đại phồn thịnh" },
+                      { id: "mystery", label: "🌀 HUYỀN BÍ", desc: "Thiên cơ bất định" },
+                      { id: "curse_all", label: "⚡ THIÊN TRÁCH", desc: "Giáng trừng cả thế giới" },
+                      { id: "catastrophe", label: "🌑 ĐẠI KIẾP", desc: "Thiên tai thảm khốc" },
+                    ].map(m => (
+                      <button key={m.id} onClick={() => setMacroType(m.id)}
+                        className="p-3 border text-left transition-all"
+                        style={{
+                          borderColor: macroType === m.id ? GOD_COLOR : "hsl(var(--border))",
+                          backgroundColor: macroType === m.id ? `${GOD_COLOR}15` : "transparent",
+                        }}>
+                        <div className="font-orbitron text-xs font-bold">{m.label}</div>
+                        <div className="font-mono text-xs text-muted-foreground/40 mt-0.5">{m.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                  <Button disabled={macroLoading} onClick={handleMacroIntervene}
+                    className="w-full rounded-none font-orbitron text-xs tracking-widest border"
+                    style={{ borderColor: GOD_COLOR, color: GOD_COLOR, backgroundColor: `${GOD_COLOR}10` }}>
+                    {macroLoading ? <><Loader2 className="w-3 h-3 animate-spin mr-2" />ĐANG GIÁNG THẦN LỰC...</> : <><Zap className="w-3 h-3 mr-2" />GIÁNG XUỐNG TOÀN THẾ GIỚI</>}
+                  </Button>
+                  <AnimatePresence>
+                    {macroResult && (
+                      <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                        className="border border-purple-500/30 bg-purple-500/10 p-3 font-mono text-xs text-purple-200/90 leading-relaxed">
+                        <span className="text-purple-400/60 mr-2">🪐 HIỆU ỨNG VĨ MÔ:</span>{macroResult}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Auto Events Feed */}
+                {observeSnap.autoEvents.length > 0 && (
+                  <div className="border border-border/40 bg-card/30 p-4">
+                    <div className="font-orbitron text-xs tracking-widest mb-3" style={{ color: GOD_COLOR }}>
+                      📡 SỰ KIỆN TỰ PHÁT SINH ({observeSnap.autoEvents.length})
+                    </div>
+                    <div className="space-y-3">
+                      {observeSnap.autoEvents.slice(0, 5).map(e => (
+                        <div key={e.id} className="border border-border/30 bg-background/30 p-3">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-orbitron text-xs font-bold">{e.title}</span>
+                            <span className="font-mono text-xs text-muted-foreground/30 ml-auto">
+                              {timeAgo(e.startedAt)}
+                            </span>
+                          </div>
+                          <p className="font-mono text-xs text-muted-foreground/60 leading-relaxed">{e.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Refresh button */}
+                <div className="flex justify-center">
+                  <Button variant="ghost" size="sm" disabled={observeLoading} onClick={loadObserve}
+                    className="rounded-none font-mono text-xs border border-border/30">
+                    {observeLoading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <RefreshCw className="w-3 h-3 mr-1" strokeWidth={1.5} />}
+                    CẬP NHẬT QUAN SÁT
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {!observeLoading && !observeSnap && (
+              <div className="text-center py-12">
+                <Button onClick={loadObserve} className="rounded-none font-orbitron text-xs border"
+                  style={{ borderColor: GOD_COLOR, color: GOD_COLOR, backgroundColor: `${GOD_COLOR}10` }}>
+                  <Eye className="w-3.5 h-3.5 mr-2" /> BẮT ĐẦU QUAN SÁT THẾ GIỚI
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Tab: NPCs */}
         {activeTab === "npcs" && (
