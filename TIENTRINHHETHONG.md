@@ -1208,6 +1208,30 @@ configureWorkflow("Frontend", "pnpm --filter @workspace/ai-world-system run dev"
 ---
 
 ### ════════════════════════════════════════
+### ════════════════════════════════════════
+### PHASE 46.5 — WORLD SIMULATION ENGINE (THẾ GIỚI TỰ SỐNG) ✅
+### ════════════════════════════════════════
+
+**Mục tiêu:** Simulation engine chạy nền — thế giới tự vận hành mà không cần user trigger. Mỗi 60 phút: dân số biến động, kinh tế fluctuate, tâm trạng NPC thay đổi, 28% cơ hội sự kiện ngẫu nhiên (15 loại). AI sinh biên niên sử cho mỗi sự kiện. Đây là nền tảng để thế giới thực sự "sống".
+
+- [x] Bảng DB `world_sim_state` (worldSlug, worldName, theme, population, economyScore, avgMood, stability, totalTicks, lastTickAt, isActive)
+- [x] Bảng DB `world_sim_log` (worldSlug, tickNumber, eventType, eventName, summary, aiNarrative, deltaPopulation, deltaEconomy, deltaMood, deltaStability, happenedAt)
+- [x] 15 loại sự kiện: economic_boom/recession, political_crisis, rebellion, natural_wonder, plague, harvest_festival, mysterious_arrival, ancient_discovery, trade_boom, inter_world_war, hero_born, villain_rises, peace_treaty, migration_wave
+- [x] Mean reversion logic — chỉ số kéo về baseline (economyScore→50, avgMood→60, stability→70)
+- [x] Disaster + weather modifier — thiên tai/thời tiết ảnh hưởng delta trực tiếp
+- [x] AI (Gemini) sinh narrative 2-3 câu mỗi sự kiện theo lore thế giới
+- [x] Server heartbeat: `setInterval(tickAllWorlds, 60min)` trong index.ts — tự động sau 15s server start
+- [x] API GET /api/simulation/state/:worldSlug — trạng thái hiện tại
+- [x] API GET /api/simulation/logs/:worldSlug — lịch sử ticks (limit 20)
+- [x] API GET /api/simulation/feed — biên niên sử toàn cầu (60 sự kiện)
+- [x] API GET /api/simulation/all — tất cả world states
+- [x] API POST /api/simulation/tick/:worldSlug — tick thủ công 1 thế giới
+- [x] API POST /api/simulation/tick/all — tick toàn bộ thế giới
+- [x] Trang `/simulation` — 3 world cards (stats bars, dân số, ticks), biên niên sử global feed, nút TICK TẤT CẢ
+- [x] Nút Dashboard "SIM ENGINE — THẾ GIỚI TỰ SỐNG"
+
+---
+
 ### PHASE 47 — CARAVAN LIÊN THẾ GIỚI (INTER-WORLD CARAVAN)
 ### ════════════════════════════════════════
 

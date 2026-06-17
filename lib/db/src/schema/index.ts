@@ -51,3 +51,4 @@ export * from "./livingWorld";
 export * from "./multiWorld";
 export * from "./cosmicHierarchy";
 export * from "./worldWeather";
+export * from "./worldSimulation";

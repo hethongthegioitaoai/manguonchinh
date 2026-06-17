@@ -15,6 +15,15 @@ description: Phase 46 THỜI TIẾT ĐỘNG complete; phases 47-50 pending with 
 - Dashboard button added: CloudLightning icon, label "THỜI TIẾT THẾ GIỚI"
 - DashboardPage.tsx needed CloudLightning added to lucide-react imports (was missing)
 
+## Phase 46.5 — WORLD SIMULATION ENGINE ✅ (2026-06-17)
+
+- Tables: `world_sim_state` + `world_sim_log` (pushed to DB)
+- Route: `artifacts/api-server/src/routes/worldSimulation.ts` — exports `tickAllWorlds`
+- Heartbeat: `artifacts/api-server/src/index.ts` imports `tickAllWorlds`, setInterval 60min after 15s delay
+- Page: `/simulation` — WorldSimulationPage.tsx
+- Dashboard: Activity icon, "SIM ENGINE — THẾ GIỚI TỰ SỐNG"
+- Bug fix: `/api/simulation/all` was ordering by `worldSimLog.happenedAt` instead of `worldSimState.lastTickAt`
+
 ## Phases 47-50 — pending [ ] in TIENTRINHHETHONG.md
 
 - Phase 47: CARAVAN LIÊN THẾ GIỚI — tables: caravans, caravan_raids

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import {
   LogOut, Globe, Zap, User, Shield, Swords, Users,
-  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain, Sparkles, Skull, Hammer, Newspaper, Crown, ShoppingBag, Map, ScrollText, Infinity, Orbit, Mail, X, Gavel, Award, Handshake, Palette, Scale, AlertTriangle, Landmark, Target, Sword, Leaf, Compass, BookOpen, CloudLightning,
+  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain, Sparkles, Skull, Hammer, Newspaper, Crown, ShoppingBag, Map, ScrollText, Infinity, Orbit, Mail, X, Gavel, Award, Handshake, Palette, Scale, AlertTriangle, Landmark, Target, Sword, Leaf, Compass, BookOpen, CloudLightning, Activity,
 } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Button } from "@/components/ui/button";
@@ -871,6 +871,14 @@ export default function DashboardPage() {
                         tag: "NEW",
                         disabled: false,
                         onClick: () => setLocation("/weather"),
+                      },
+                      {
+                        icon: Activity,
+                        label: "SIM ENGINE — THẾ GIỚI TỰ SỐNG",
+                        sub: "Dân số / kinh tế / tâm trạng tự biến động mỗi 60 phút — AI sinh biên niên sử — 15 loại sự kiện",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/simulation"),
                       },
                     ].map((action) => (
                       <motion.div

@@ -67,6 +67,7 @@ import WorldSkillsPage from "@/pages/WorldSkillsPage";
 import LegendPage from "@/pages/LegendPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import WeatherPage from "@/pages/WeatherPage";
+import WorldSimulationPage from "@/pages/WorldSimulationPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";
 
@@ -143,6 +144,7 @@ function Router() {
       <Route path="/world-skills" component={WorldSkillsPage} />
       <Route path="/legends" component={LegendPage} />
       <Route path="/weather" component={WeatherPage} />
+      <Route path="/simulation" component={WorldSimulationPage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/reset-password" component={ResetPasswordPage} />
       <Route path="/verify-email" component={VerifyEmailPage} />
