@@ -46,6 +46,7 @@ import IsekaiPage from "@/pages/IsekaiPage";
 import FatePage from "@/pages/FatePage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
+import VerifyEmailPage from "@/pages/VerifyEmailPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -100,6 +101,7 @@ function Router() {
       <Route path="/fate" component={FatePage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/reset-password" component={ResetPasswordPage} />
+      <Route path="/verify-email" component={VerifyEmailPage} />
       <Route component={NotFound} />
     </Switch>
   );

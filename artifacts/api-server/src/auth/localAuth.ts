@@ -1,10 +1,12 @@
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import connectPg from "connect-pg-simple";
 import { db } from "@workspace/db";
 import { users } from "@workspace/db/schema";
 import { eq, or } from "drizzle-orm";
+import { sendVerificationEmail } from "../lib/mailer.js";
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000;
@@ -61,13 +63,43 @@ export function setupAuth(app: Express) {
       }
 
       const passwordHash = await bcrypt.hash(password, 12);
+      const verificationToken = crypto.randomBytes(32).toString("hex");
+      const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
       const [user] = await db
         .insert(users)
-        .values({ email, username, passwordHash, firstName: firstName ?? username, lastName: lastName ?? "" })
+        .values({
+          email,
+          username,
+          passwordHash,
+          firstName: firstName ?? username,
+          lastName: lastName ?? "",
+          emailVerified: false,
+          emailVerificationToken: verificationToken,
+          emailVerificationExpiry: verificationExpiry,
+        })
         .returning();
 
+      const domain = process.env.REPLIT_DEV_DOMAIN
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+        : `http://localhost:5000`;
+      const verifyUrl = `${domain}/verify-email?token=${verificationToken}`;
+
+      if (process.env.RESEND_API_KEY) {
+        sendVerificationEmail(email, verifyUrl, username).catch((err) =>
+          console.error("Failed to send verification email:", err)
+        );
+      }
+
       (req.session as any).userId = user.id;
-      return res.status(201).json({ id: user.id, email: user.email, username: user.username, firstName: user.firstName });
+      return res.status(201).json({
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        firstName: user.firstName,
+        emailVerified: false,
+        ...(process.env.RESEND_API_KEY ? {} : { devVerifyToken: verificationToken, verifyUrl }),
+      });
     } catch (err) {
       console.error("Register error:", err);
       return res.status(500).json({ message: "Lỗi máy chủ" });
@@ -98,7 +130,13 @@ export function setupAuth(app: Express) {
       }
 
       (req.session as any).userId = user.id;
-      return res.json({ id: user.id, email: user.email, username: user.username, firstName: user.firstName });
+      return res.json({
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        firstName: user.firstName,
+        emailVerified: user.emailVerified,
+      });
     } catch (err) {
       console.error("Login error:", err);
       return res.status(500).json({ message: "Lỗi máy chủ" });

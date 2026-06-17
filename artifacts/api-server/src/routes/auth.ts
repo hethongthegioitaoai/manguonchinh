@@ -12,7 +12,15 @@ router.get("/auth/user", isAuthenticated, async (req: any, res) => {
     const userId = req.userId;
     const user = await getAuthUser(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
-    res.json(user);
+    res.json({
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      profileImageUrl: user.profileImageUrl,
+      emailVerified: user.emailVerified,
+    });
   } catch {
     res.status(500).json({ message: "Failed to fetch user" });
   }

@@ -22,6 +22,7 @@ interface UserInfo {
   firstName?: string | null;
   lastName?: string | null;
   profileImageUrl?: string | null;
+  emailVerified?: boolean;
 }
 
 export default function SettingsPage() {
@@ -39,6 +40,30 @@ export default function SettingsPage() {
   const [pwLoading, setPwLoading] = useState(false);
   const [pwError, setPwError] = useState<string | null>(null);
   const [pwSuccess, setPwSuccess] = useState<string | null>(null);
+
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMsg, setResendMsg] = useState<{ type: "ok" | "err"; text: string; devUrl?: string } | null>(null);
+
+  async function handleResendVerification() {
+    setResendLoading(true);
+    setResendMsg(null);
+    try {
+      const res = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setResendMsg({ type: "err", text: data.message ?? "Lỗi" });
+      } else {
+        setResendMsg({ type: "ok", text: data.message, devUrl: data.verifyUrl });
+      }
+    } catch {
+      setResendMsg({ type: "err", text: "Không thể kết nối máy chủ" });
+    } finally {
+      setResendLoading(false);
+    }
+  }
 
   async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault();
@@ -177,7 +202,7 @@ export default function SettingsPage() {
         >
           <div className="px-6 py-4 border-b border-border/40 flex items-center gap-2">
             <User className="w-4 h-4 text-primary" strokeWidth={1.5} />
-            <span className="font-orbitron text-sm tracking-widest text-primary">TÀI KHOẢN REPLIT</span>
+            <span className="font-orbitron text-sm tracking-widest text-primary">TÀI KHOẢN</span>
           </div>
           <div className="p-6 space-y-4">
             {fetching ? (
@@ -199,6 +224,88 @@ export default function SettingsPage() {
             )}
           </div>
         </motion.section>
+
+        {/* Email Verification Section */}
+        {!fetching && userInfo && (
+          <motion.section
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className={`border backdrop-blur-md overflow-hidden ${
+              userInfo.emailVerified
+                ? "border-green-500/30 bg-green-950/20"
+                : "border-yellow-500/30 bg-yellow-950/20"
+            }`}
+          >
+            <div className="px-6 py-4 border-b border-border/30 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CheckCircle2
+                  className={`w-4 h-4 ${userInfo.emailVerified ? "text-green-400" : "text-yellow-400"}`}
+                  strokeWidth={1.5}
+                />
+                <span className="font-orbitron text-sm tracking-widest text-foreground">XÁC THỰC EMAIL</span>
+              </div>
+              <span
+                className={`font-mono text-[10px] tracking-widest px-2 py-0.5 border ${
+                  userInfo.emailVerified
+                    ? "text-green-400 border-green-500/40 bg-green-500/10"
+                    : "text-yellow-400 border-yellow-500/40 bg-yellow-500/10"
+                }`}
+              >
+                {userInfo.emailVerified ? "ĐÃ XÁC THỰC" : "CHƯA XÁC THỰC"}
+              </span>
+            </div>
+            <div className="p-6">
+              {userInfo.emailVerified ? (
+                <p className="font-mono text-xs text-green-400/70 leading-relaxed">
+                  ✓ Email <strong>{userInfo.email}</strong> đã được xác thực. Tài khoản của bạn an toàn.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  <p className="font-mono text-xs text-yellow-300/70 leading-relaxed">
+                    Email chưa được xác thực. Nhấn nút bên dưới để gửi lại email xác nhận đến{" "}
+                    <strong>{userInfo.email}</strong>.
+                  </p>
+
+                  <AnimatePresence>
+                    {resendMsg && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                        className={`px-3 py-2 border font-mono text-xs leading-relaxed ${
+                          resendMsg.type === "ok"
+                            ? "border-green-500/40 bg-green-900/20 text-green-300"
+                            : "border-red-500/40 bg-red-900/20 text-red-300"
+                        }`}
+                      >
+                        {resendMsg.text}
+                        {resendMsg.devUrl && (
+                          <div className="mt-2">
+                            <a
+                              href={resendMsg.devUrl}
+                              className="text-cyan-400 underline break-all"
+                            >
+                              {resendMsg.devUrl}
+                            </a>
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <Button
+                    variant="ghost"
+                    onClick={handleResendVerification}
+                    disabled={resendLoading}
+                    className="rounded-none font-orbitron text-xs tracking-widest border border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/10 transition-all"
+                  >
+                    {resendLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                    {resendLoading ? "ĐANG GỬI..." : "GỬI LẠI EMAIL XÁC THỰC"}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </motion.section>
+        )}
 
         <motion.section
           initial={{ opacity: 0, y: 16 }}

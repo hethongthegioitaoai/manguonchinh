@@ -33,6 +33,7 @@ import isekaiRouter from "./isekai.js";
 import fateRouter from "./fate.js";
 import notificationsRouter from "./notifications.js";
 import passwordResetRouter from "./passwordReset.js";
+import emailVerificationRouter from "./emailVerification.js";
 
 const router: IRouter = Router();
 
@@ -70,5 +71,6 @@ router.use(isekaiRouter);
 router.use(fateRouter);
 router.use(notificationsRouter);
 router.use(passwordResetRouter);
+router.use(emailVerificationRouter);
 
 export default router;
