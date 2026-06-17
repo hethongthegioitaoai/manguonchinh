@@ -200,8 +200,15 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.message ?? "Đăng ký thất bại"); return; }
-      setSuccess("Đăng ký thành công! Đang đăng nhập...");
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      setSuccess("Đăng ký thành công! Đang vào thế giới...");
+      queryClient.setQueryData(["/api/auth/user"], {
+        id: data.id,
+        email: data.email,
+        username: data.username,
+        firstName: data.firstName,
+        emailVerified: data.emailVerified ?? false,
+      });
+      setTimeout(() => setLocation("/worlds"), 800);
     } catch {
       setError("Không thể kết nối máy chủ");
     } finally {
