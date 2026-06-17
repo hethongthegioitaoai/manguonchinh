@@ -18,7 +18,7 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 17/06/2026 — Phase 24 HỆ THỐNG DANH HIỆU hoàn tất: 17 danh hiệu 5 tier (common→legendary), auto-unlock qua battle/dungeon/level/gold/prophecy/isekai/auction/guild/trade/fate/passport, equip/unequip, toast notification, grid 2 col với rarity color. Phase 23 NHÀ ĐẤU GIÁ cũng hoàn tất trước đó.
+> **Cập nhật lần cuối:** 17/06/2026 — Phase 25 ĐỒNG HÀNH hoàn tất: 9 pet × 3 thế giới, roll rarity (1% Legendary → 50% Common), triệu hồi 200 vàng cooldown 12h, cho ăn 50 vàng cooldown 4h, tiến hóa Tier 1→2→3, passive buff EXP/gold/crit/HP, trang `/pets`. Đồng thời hoàn tất security middleware 12 tầng (helmet + rate-limit + SQL/XSS guard + honeypot + UA block) kích hoạt trong API server, tạo BẢOMẬTVÀCHỐNGHACKHỆTHỐNG.JS và MÃHOÁFILECODEHỆTHỐNG.JS ở root.
 
 ---
 
@@ -458,21 +458,23 @@ lib/
 ---
 
 ### ════════════════════════════════════════
-### PHASE 25 — ĐỒNG HÀNH (PET SYSTEM)
+### PHASE 25 — ĐỒNG HÀNH (PET SYSTEM) ✅
 ### ════════════════════════════════════════
 
 **Mục tiêu:** Nhân vật có thú cưỡi/linh thú/robot đồng hành — passive buff chiến đấu, có thể tiến hóa qua EXP pet.
 
-- [ ] Bảng DB `pets` (id, characterId, name, species, level, exp, rarity, skills jsonb, bondLevel, lastFedAt, createdAt)
-- [ ] 9 loại pet × 3 thế giới: Tu Tiên (Linh Hổ/Rồng Con/Phượng Hoàng), Cyberpunk (Drone/Mech Dog/Nano Spider), Hoang Phế (Mutant Wolf/Scavenger Bird/Toxic Slug)
-- [ ] API POST /api/pets/summon — triệu hồi pet ngẫu nhiên (tốn 200 vàng, cooldown 24h)
-- [ ] API GET /api/pets/my — pets của nhân vật
-- [ ] API POST /api/pets/:id/feed — cho ăn tăng bond level (dùng consumable item)
-- [ ] API POST /api/pets/:id/equip — đặt làm đồng hành active (1 lúc 1 pet)
-- [ ] Passive buff khi có pet active: +5-15% EXP, +5-10% gold drop, +crit% tùy loại pet
-- [ ] Pet tiến hóa khi đạt level 10/20/30 — đổi tên, tăng buff
-- [ ] Trang `/pets` — danh sách pet, bond meter, nút feed/equip/summon
-- [ ] Nút Dashboard "ĐỒNG HÀNH"
+- [x] Bảng DB `pets` (characterId, name, species, icon, worldSlug, rarity, tier, level, exp, bondLevel, skills jsonb, isActive, lastFedAt, lastSummonedAt)
+- [x] 9 loại pet × 3 thế giới: Tu Tiên (Linh Hổ🐯/Rồng Con🐲/Phượng Hoàng🦅), Cyberpunk (Combat Drone🚁/Mech Dog🤖/Nano Spider🕷️), Hoang Phế (Mutant Wolf🐺/Scavenger Bird🦜/Toxic Slug🐛)
+- [x] Roll rarity: 1% Legendary / 4% Epic / 15% Rare / 30% Uncommon / 50% Common (tỷ lệ có thật)
+- [x] API POST /api/pets/summon — 200 vàng, cooldown 12h, roll rarity + species ngẫu nhiên
+- [x] API GET /api/pets/my/:characterId — pets của nhân vật
+- [x] API POST /api/pets/:id/feed — 50 vàng/lần, cooldown 4h, +bond +exp, tiến hóa tier 1→2→3
+- [x] API POST /api/pets/:id/equip — kích hoạt 1 pet duy nhất (deactivate all others)
+- [x] API POST /api/pets/:id/unequip — tắt pet active
+- [x] Passive buff khi có pet active: +expBonus% EXP, +goldBonus% Vàng, +critBonus% Crit, +hpBonus% HP (scale theo rarity × tier)
+- [x] Pet tiến hóa tại level 20 (Tier 2) và 30 (Tier 3) — tăng buff đáng kể
+- [x] Trang `/pets` — 2 tab: ĐỒNG HÀNH (grid, bond bar, kích hoạt/cho ăn) + TRIỆU HỒI (bảng tỷ lệ, preview)
+- [x] Nút Dashboard "ĐỒNG HÀNH" tag "NEW"
 
 ---
 
@@ -567,6 +569,7 @@ lib/
 | `auction_listings` | ✅ | P23 | Phiên đấu giá — startBid, currentBid, buyoutPrice, expiresAt, status |
 | `auction_bids` | ✅ | P23 | Lịch sử đặt giá — bidderCharId, bidAmount, bidAt |
 | `character_titles` | ✅ | P24 | Danh hiệu nhân vật — titleKey, equipped, unlockedAt |
+| `pets` | ✅ | P25 | Đồng hành — species, rarity, tier, level, bondLevel, skills jsonb, isActive |
 
 ---
 
@@ -614,6 +617,7 @@ lib/
 | `/fate` | Mệnh Số & Vận Mệnh | P22 | ✅ |
 | `/auction` | Nhà Đấu Giá | P23 | ✅ |
 | `/titles` | Hệ Thống Danh Hiệu | P24 | ✅ |
+| `/pets` | Đồng Hành (Pet System) | P25 | ✅ |
 
 ---
 

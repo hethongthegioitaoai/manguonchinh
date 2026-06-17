@@ -29,3 +29,4 @@ export * from "./fate";
 export * from "./notifications";
 export * from "./auction";
 export * from "./titles";
+export * from "./pets";

@@ -4,6 +4,7 @@ import pinoHttp from "pino-http";
 import router from "./routes/index.js";
 import { logger } from "./lib/logger.js";
 import { setupAuth } from "./auth/localAuth.js";
+import { applySecurityMiddleware, authRateLimit } from "./middleware/security.js";
 
 const app: Express = express();
 
@@ -26,11 +27,14 @@ app.use(
     },
   }),
 );
+applySecurityMiddleware(app);
 app.use(cors({ origin: true, credentials: true }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 setupAuth(app);
+app.use("/api/auth", authRateLimit);
+app.use("/auth", authRateLimit);
 
 app.use("/api", router);
 

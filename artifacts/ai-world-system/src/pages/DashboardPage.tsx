@@ -716,9 +716,17 @@ export default function DashboardPage() {
                         icon: Award,
                         label: "DANH HIỆU",
                         sub: "Danh hiệu mở khóa qua thành tựu — trang bị để flex cùng cộng đồng",
-                        tag: "NEW",
+                        tag: null,
                         disabled: false,
                         onClick: () => setLocation("/titles"),
+                      },
+                      {
+                        icon: Sparkles,
+                        label: "ĐỒNG HÀNH",
+                        sub: "Triệu hồi linh thú/robot đồng hành — passive buff EXP, vàng, crit khi chiến đấu",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/pets"),
                       },
                     ].map((action) => (
                       <motion.div
