@@ -3,6 +3,7 @@ import { isAuthenticated } from "../auth/replitAuth.js";
 import { db } from "@workspace/db";
 import { characters, battles, pvpRankings } from "@workspace/db/schema";
 import { eq, ne, and, desc, asc } from "drizzle-orm";
+import { notifyUser } from "../lib/notify.js";
 
 const router = Router();
 
@@ -213,6 +214,16 @@ router.post("/pvp/challenge/:defenderId", isAuthenticated, async (req: any, res)
     const newExp = challenger.exp + expGained;
     const newLevel = Math.floor(newExp / EXP_PER_LEVEL) + 1;
     const newTier = getTier(newChallRanking.ratingPoints);
+
+    notifyUser(defender.userId, {
+      type: "pvp_challenged",
+      challengerName: challenger.name,
+      result: defResult,
+      rpChange: defRpChange,
+    });
+    if (newLevel > oldLevel) {
+      notifyUser(userId, { type: "level_up", characterName: challenger.name, newLevel });
+    }
 
     res.json({
       result: battle.result,

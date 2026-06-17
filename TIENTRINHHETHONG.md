@@ -17,7 +17,7 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 16/06/2026 — Phase 16 HOÀN TẤT: Social Feed (Dòng Thời Gian) — 16/20 phases [x], Phase 17–20 mới được thêm vào roadmap
+> **Cập nhật lần cuối:** 17/06/2026 — WebSocket Real-Time Notifications hoàn tất: PvP challenge, level-up, guild war, world events push đến client ngay lập tức
 
 ---
 
