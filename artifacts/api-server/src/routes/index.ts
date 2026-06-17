@@ -37,6 +37,7 @@ import emailVerificationRouter from "./emailVerification.js";
 import auctionRouter from "./auction.js";
 import titlesRouter from "./titles.js";
 import petsRouter from "./pets.js";
+import worldEconomyRouter from "./worldEconomy.js";
 
 const router: IRouter = Router();
 
@@ -78,5 +79,6 @@ router.use(emailVerificationRouter);
 router.use(auctionRouter);
 router.use(titlesRouter);
 router.use(petsRouter);
+router.use(worldEconomyRouter);
 
 export default router;

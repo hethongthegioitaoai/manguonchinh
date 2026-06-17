@@ -47,6 +47,7 @@ import FatePage from "@/pages/FatePage";
 import AuctionPage from "@/pages/AuctionPage";
 import TitlesPage from "@/pages/TitlesPage";
 import PetsPage from "@/pages/PetsPage";
+import WorldEconomyPage from "@/pages/WorldEconomyPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";
@@ -105,6 +106,7 @@ function Router() {
       <Route path="/auction" component={AuctionPage} />
       <Route path="/titles" component={TitlesPage} />
       <Route path="/pets" component={PetsPage} />
+      <Route path="/world-economy" component={WorldEconomyPage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/reset-password" component={ResetPasswordPage} />
       <Route path="/verify-email" component={VerifyEmailPage} />

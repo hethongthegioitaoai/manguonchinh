@@ -724,9 +724,17 @@ export default function DashboardPage() {
                         icon: Sparkles,
                         label: "ĐỒNG HÀNH",
                         sub: "Triệu hồi linh thú/robot đồng hành — passive buff EXP, vàng, crit khi chiến đấu",
-                        tag: "NEW",
+                        tag: null,
                         disabled: false,
                         onClick: () => setLocation("/pets"),
+                      },
+                      {
+                        icon: Globe,
+                        label: "KINH TẾ THẾ GIỚI",
+                        sub: "Sàn tỷ giá liên thế giới — đổi tiền, quản lý kho bạc, đặt thuế quan cho thế giới của bạn",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/world-economy"),
                       },
                     ].map((action) => (
                       <motion.div

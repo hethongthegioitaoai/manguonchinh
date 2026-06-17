@@ -18,14 +18,29 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 17/06/2026 — Phase 25 ĐỒNG HÀNH hoàn tất: 9 pet × 3 thế giới, roll rarity (1% Legendary → 50% Common), triệu hồi 200 vàng cooldown 12h, cho ăn 50 vàng cooldown 4h, tiến hóa Tier 1→2→3, passive buff EXP/gold/crit/HP, trang `/pets`. Đồng thời hoàn tất security middleware 12 tầng (helmet + rate-limit + SQL/XSS guard + honeypot + UA block) kích hoạt trong API server, tạo BẢOMẬTVÀCHỐNGHACKHỆTHỐNG.JS và MÃHOÁFILECODEHỆTHỐNG.JS ở root.
+> **Cập nhật lần cuối:** 17/06/2026 — Phase 26 KINH TẾ THẾ GIỚI hoàn tất: DB `world_currencies`+`world_treasury`+`currency_exchanges`, AI sinh tên tiền tệ theo lore, sàn tỷ giá realtime, đổi tiền liên thế giới (phí 1%), tỷ giá dao động theo volume, kho bạc thế giới, thuế quan 0-30%, trang `/world-economy`. Tầm nhìn dự án được cập nhật: thế giới là đơn vị chính, 5 phases mới (Kinh Tế / Ngoại Giao / Chiến Tranh / Đa Chủ Đề / Quản Trị) thay thế phases cũ.
+>
+> Phase 25: ĐỒNG HÀNH hoàn tất: 9 pet × 3 thế giới, roll rarity (1% Legendary → 50% Common), triệu hồi 200 vàng cooldown 12h, cho ăn 50 vàng cooldown 4h, tiến hóa Tier 1→2→3, passive buff EXP/gold/crit/HP, trang `/pets`. Đồng thời hoàn tất security middleware 12 tầng (helmet + rate-limit + SQL/XSS guard + honeypot + UA block) kích hoạt trong API server, tạo BẢOMẬTVÀCHỐNGHACKHỆTHỐNG.JS và MÃHOÁFILECODEHỆTHỐNG.JS ở root.
 
 ---
 
 ## 🌐 TỔNG QUAN DỰ ÁN
 
 **Tên:** AI World System
-**Tầm nhìn:** Nền tảng nơi người dùng tạo thế giới riêng, AI tự sinh NPC/Quest/Boss/Lịch sử, AI quản trị như Game Master, mỗi người chơi nhận Hệ Thống khác nhau. Thế giới tồn tại ngay cả khi không có người chơi online. Sau này hỗ trợ 3D, VR, AR, MR, XR.
+
+**Tầm nhìn cốt lõi:**
+> **Thế giới là đơn vị chính — không phải nhân vật.**
+>
+> Mỗi user tạo ra **thế giới ảo riêng** với chủ đề tự chọn (Tu Tiên, Cyberpunk, Kiếm Hiệp, Space Opera, Steampunk, Medieval, Underwater, Post-Apocalypse... không giới hạn). Thế giới đó là **lãnh thổ sống** — có dân cư (người chơi khác xin nhập cảnh), kinh tế riêng (tiền tệ, kho bạc, thuế), quân đội, chính quyền, văn hóa, ngoại giao.
+>
+> **Các thế giới tương tác với nhau ở cấp độ vĩ mô:**
+> - 🪙 **Kinh tế liên thế giới** — mỗi thế giới có đồng tiền riêng, tỷ giá dao động theo cung cầu, giao thương xuyên biên giới, thuế quan
+> - ⚔️ **Chiến tranh thế giới** — thế giới tuyên chiến thế giới khác, dân của 2 bên đánh nhau, lãnh thổ/tài nguyên bị chiếm
+> - 🤝 **Ngoại giao** — ký hiệp ước, liên minh phòng thủ, đại sứ quán, cấm vận
+> - 🏛️ **Quản trị** — world owner đặt luật, thu thuế, bầu hội đồng, ban hành sự kiện quốc gia
+> - 🎨 **Đa chủ đề** — AI sinh framework hoàn chỉnh từ bất kỳ ý tưởng nào (không bị giới hạn 3 thế giới preset)
+>
+> Các khái niệm thế giới thực (kinh tế học, chính trị, quân sự, ngoại giao, văn hóa) được **phóng tác theo ngôn ngữ và lore của từng thế giới ảo** — không copy y chang mà biến tấu cho phù hợp. Thế giới tồn tại và vận hành kể cả khi owner offline. Tương lai: 3D, VR, AR, XR.
 
 **Stack thực tế:**
 - Frontend: React 19 + Vite 7 + TypeScript + Tailwind CSS v4 + Framer Motion + Wouter + shadcn/ui
@@ -50,9 +65,11 @@ lib/
 
 ---
 
-## 🗺️ MASTER ROADMAP — 15 PHASES
+## 🗺️ MASTER ROADMAP
 
 > Agent: tìm `[ ]` đầu tiên theo thứ tự Phase và build. KHÔNG hỏi user.
+>
+> **Triết lý roadmap:** Phase 1–25 xây nền tảng nhân vật. Phase 26+ xây hệ thống LIÊN THẾ GIỚI — thế giới là đơn vị chính, mọi tính năng mới phải phản ánh tương tác giữa các thế giới.
 
 ### ════════════════════════════════════════
 ### PHASE 1 — FOUNDATION MVP ✅
@@ -479,41 +496,110 @@ lib/
 ---
 
 ### ════════════════════════════════════════
-### PHASE 26 — CHUYỂN SINH (REINCARNATION)
+### PHASE 26 — KINH TẾ THẾ GIỚI (WORLD ECONOMY) ✅
 ### ════════════════════════════════════════
 
-**Mục tiêu:** Nhân vật đạt level 50+ có thể Chuyển Sinh — reset về level 1, giữ kỹ năng, nhận bonus vĩnh viễn. Tạo vòng chơi lại hấp dẫn.
+**Mục tiêu:** Mỗi thế giới có **đồng tiền riêng** do AI đặt tên theo lore (VD: Tu Tiên → "Linh Thạch", Cyberpunk → "NeuroCoin"). World owner quản lý kho bạc, đặt thuế suất. Dân có thể đổi tiền qua sàn liên thế giới — tỷ giá dao động theo khối lượng giao dịch thực.
 
-- [ ] Bảng DB `reincarnations` (id, characterId, fromLevel, fromSystem, bonusGranted jsonb, narrativeIntro, reincarnationCount, createdAt)
-- [ ] Điều kiện: level ≥ 50
-- [ ] Bonus vĩnh viễn per lần chuyển sinh: +10% EXP toàn bộ, +5% gold, +1 stat point vào stat cao nhất
-- [ ] AI sinh narrative 3-4 câu về quá trình siêu độ/chuyển sinh
-- [ ] Giữ lại: kỹ năng đã unlock, thành tựu, memories, danh hiệu
-- [ ] Reset: level về 1, EXP về 0, inventory clear (trừ equipped)
-- [ ] API POST /api/reincarnation/proceed — thực hiện chuyển sinh
-- [ ] API GET /api/reincarnation/status/:characterId — eligible? + lịch sử
-- [ ] Huy hiệu "Chuyển Sinh lần N" hiển thị trên profile + leaderboard
-- [ ] Trang `/reincarnation` — xác nhận, preview bonus, lịch sử chuyển sinh của server
-- [ ] Nút Dashboard "CHUYỂN SINH" (disabled nếu level < 50)
+- [x] Bảng DB `world_currencies` (worldSlug, currencyName, currencySymbol, exchangeRateToGold, totalSupply, reserveGold, createdAt)
+- [x] Bảng DB `world_treasury` (worldSlug, balance, taxRate, totalRevenue, totalExpenditure, lastUpdated)
+- [x] Bảng DB `currency_exchanges` (fromWorld, toWorld, fromAmount, toAmount, rate, executedByCharId, executedAt)
+- [x] AI sinh tên tiền tệ + biểu tượng theo lore thế giới khi world được tạo (hoặc retroactive)
+- [x] Tỷ giá tự động dao động: mỗi giao dịch lớn tác động ±2-5% tỷ giá
+- [x] API GET /api/world-economy/rates — bảng tỷ giá tất cả thế giới
+- [x] API GET /api/world-economy/:worldSlug — kinh tế 1 thế giới (currency, treasury, volume 24h)
+- [x] API POST /api/world-economy/setup — creator setup tiền tệ cho thế giới (AI đặt tên)
+- [x] API POST /api/world-economy/exchange — đổi tiền giữa 2 thế giới (phí 1%)
+- [x] API POST /api/world-economy/tax/:worldSlug — owner set thuế suất (0-30%)
+- [x] Thuế tự động thu % từ mỗi giao dịch trong thế giới → chuyển vào world treasury
+- [x] Trang `/world-economy` — sàn tỷ giá realtime, đổi tiền, bảng GDP thế giới, kho bạc
+- [x] Nút Dashboard "KINH TẾ THẾ GIỚI"
 
 ---
 
 ### ════════════════════════════════════════
-### PHASE 27 — BẢN ĐỒ KHO BÁU (TREASURE HUNT)
+### PHASE 27 — NGOẠI GIAO LIÊN THẾ GIỚI (DIPLOMACY)
 ### ════════════════════════════════════════
 
-**Mục tiêu:** AI sinh ra bản đồ kho báu bí ẩn — chuỗi câu đố/clue dẫn đến phần thưởng ẩn. Người chơi giải theo thứ tự, first to finish thắng.
+**Mục tiêu:** Thế giới ký kết hiệp ước với nhau — liên minh phòng thủ, hiệp định thương mại, đại sứ quán. Quan hệ ngoại giao ảnh hưởng đến tỷ giá, thuế, và khả năng tuyên chiến.
 
-- [ ] Bảng DB `treasure_maps` (id, worldSlug, title, difficulty, clues jsonb, finalReward jsonb, status, winnerId, createdAt, expiresAt)
-- [ ] Bảng DB `treasure_progress` (id, mapId, characterId, currentClue, answersSubmitted jsonb, completedAt)
-- [ ] AI (Gemini) sinh map: 4-5 clue theo phong cách thế giới (thơ/mật mã/hình ảnh mô tả)
-- [ ] API GET /api/treasure/list — danh sách bản đồ active theo world
-- [ ] API POST /api/treasure/generate/:worldSlug — creator/admin kích hoạt (cooldown 12h/world)
-- [ ] API GET /api/treasure/progress/:mapId — xem tiến độ của mình
-- [ ] API POST /api/treasure/:mapId/submit — nộp đáp án cho clue hiện tại (AI chấm yes/no)
-- [ ] First to complete → reward: item epic + 1000 EXP + title đặc biệt
-- [ ] Trang `/treasure` — bản đồ active, giao diện giải clue, bảng ai đang dẫn đầu
-- [ ] Nút Dashboard "KHO BÁU ẨN"
+- [ ] Bảng DB `world_relations` (worldSlugA, worldSlugB, status: neutral/ally/trade_partner/enemy/war, treatiesthDetails jsonb, establishedAt, updatedAt)
+- [ ] Bảng DB `diplomacy_events` (id, fromWorldSlug, toWorldSlug, eventType: proposal/accept/reject/cancel/declare_war/peace, content, createdAt)
+- [ ] Bảng DB `world_embassies` (id, homeWorldSlug, hostWorldSlug, ambassadorCharId, establishedAt, status)
+- [ ] API GET /api/diplomacy/world/:worldSlug — quan hệ của 1 thế giới với các thế giới khác
+- [ ] API GET /api/diplomacy/map — bản đồ quan hệ toàn bộ thế giới (nodes + edges)
+- [ ] API POST /api/diplomacy/propose — đề xuất hiệp ước (trade / alliance / non-aggression)
+- [ ] API POST /api/diplomacy/respond/:eventId — chấp nhận / từ chối đề xuất
+- [ ] API POST /api/diplomacy/establish-embassy — cử đại sứ sang thế giới khác
+- [ ] API POST /api/diplomacy/sanction/:worldSlug — cấm vận kinh tế (giảm 50% trade volume)
+- [ ] Hiệu ứng thực: liên minh → giảm thuế giao thương 50%, trade_partner → tăng tỷ giá 10%, enemy → phí giao dịch ×2
+- [ ] Trang `/diplomacy` — bản đồ quan hệ thế giới (graph), gửi đề xuất, quản lý hiệp ước, đại sứ quán
+- [ ] Nút Dashboard "NGOẠI GIAO"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 28 — CHIẾN TRANH THẾ GIỚI (WORLD WAR)
+### ════════════════════════════════════════
+
+**Mục tiêu:** Thế giới tuyên chiến thế giới khác. Dân của 2 bên PvP để tích điểm chiến tranh. Thế giới thắng chiếm tài nguyên/kho bạc đối phương. AI sinh tường thuật chiến sự mỗi ngày.
+
+- [ ] Bảng DB `world_wars` (id, attackerWorldSlug, defenderWorldSlug, declaredAt, endsAt, attackerScore, defenderScore, status: active/ended, winnerId, warReason, territory jsonb)
+- [ ] Bảng DB `war_contributions` (warId, characterId, worldSlug, pvpKills, pvpDeaths, contribution, recordedAt)
+- [ ] Điều kiện tuyên chiến: 2 thế giới phải ở trạng thái neutral hoặc enemy (không phải ally)
+- [ ] API POST /api/world-war/declare/:targetWorldSlug — tuyên chiến (chỉ world owner)
+- [ ] API GET /api/world-war/active — tất cả chiến tranh đang diễn ra
+- [ ] API GET /api/world-war/:warId — chi tiết chiến tranh + bảng xếp hạng đóng góp
+- [ ] API POST /api/world-war/contribute — PvP kill tự động cộng điểm vào chiến tranh đang active
+- [ ] API POST /api/world-war/:warId/surrender — đầu hàng sớm (mất 30% kho bạc thay vì 50%)
+- [ ] Auto-end sau 72h: tính tổng điểm, thế giới thắng nhận 20% kho bạc đối phương
+- [ ] AI sinh "Tường Thuật Chiến Sự" mỗi 12h — tin tức chiến tranh theo phong cách lore thế giới
+- [ ] Trang `/world-war` — bản đồ chiến tranh, điểm số realtime, tường thuật, lịch sử chiến tranh
+- [ ] Nút Dashboard "CHIẾN TRANH THẾ GIỚI"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 29 — ĐA CHỦ ĐỀ THẾ GIỚI (MULTI-THEME ENGINE)
+### ════════════════════════════════════════
+
+**Mục tiêu:** Không còn giới hạn 3 thế giới preset. Người dùng nhập bất kỳ ý tưởng nào → AI sinh framework hoàn chỉnh: lịch sử, kinh tế, quân đội, văn hóa, địa lý, 10 NPC, 5 Boss, 20 item đặc trưng, tiền tệ riêng, 8 quest template — tất cả theo phong cách chủ đề đó.
+
+- [ ] Bảng DB `world_themes` (worldSlug, themeInput, themeName, themeStyle, geography jsonb, history, economy jsonb, military jsonb, culture jsonb, uniqueItems jsonb, uniqueQuests jsonb, generatedAt)
+- [ ] AI pipeline: input → generate theme → generate economy → generate military → generate culture → generate items → generate quests (6 bước, parallel khi có thể)
+- [ ] 15+ preset theme templates: Steampunk / Space Opera / Medieval / Underwater / Post-Apocalypse / Wuxia / Viking / Ancient Egypt / Feudal Japan / Wild West / Dinosaur Era / Underwater Civilization / Demon Realm / Celestial Heaven / Ant Colony
+- [ ] Preset áp dụng ngay không cần AI (fast path) — AI dùng khi custom input
+- [ ] API POST /api/world-theme/generate — input chủ đề → AI sinh full framework (5-10s)
+- [ ] API POST /api/world-theme/apply/:worldSlug — áp dụng theme vào thế giới đã tạo
+- [ ] API GET /api/world-theme/presets — 15 preset có sẵn
+- [ ] API GET /api/world-theme/:worldSlug — theme hiện tại của thế giới
+- [ ] Tích hợp vào World Creator: bước 2 chọn theme (preset hoặc custom AI)
+- [ ] Theme ảnh hưởng: tên tiền tệ, item names, NPC titles, quest flavor text, enemy types
+- [ ] Trang `/world-theme` — gallery 15 presets + ô nhập custom → preview → áp dụng
+- [ ] Nút Dashboard "THEME THẾ GIỚI"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 30 — QUẢN TRỊ THẾ GIỚI (WORLD GOVERNANCE)
+### ════════════════════════════════════════
+
+**Mục tiêu:** World owner không cai trị một mình — có thể lập Hội Đồng từ top dân cư, ban hành luật, thu thuế có mục tiêu, tổ chức bầu cử. Công dân có tiếng nói. Thế giới có "chỉ số ổn định" dao động theo quyết định quản trị.
+
+- [ ] Bảng DB `world_constitution` (worldSlug, laws jsonb, taxPolicy jsonb, entryPolicy, tradePolicy, warPolicy, stability, lastAmended, amendedBy)
+- [ ] Bảng DB `world_council` (worldSlug, characterId, role: owner/minister/ambassador/citizen_rep, votingPower, appointedAt)
+- [ ] Bảng DB `world_votes` (id, worldSlug, proposedBy, proposalType, proposalContent, votesFor, votesAgainst, status, expiresAt, executedAt)
+- [ ] Bảng DB `world_decrees` (id, worldSlug, issuedBy, decreeName, decreeContent, effect jsonb, issuedAt, expiresAt)
+- [ ] Chỉ số ổn định (0-100): tax quá cao → -10/ngày, war liên tục → -5/ngày, prosperity event → +5
+- [ ] API GET /api/governance/:worldSlug — constitution, council, active votes, stability
+- [ ] API POST /api/governance/appoint/:worldSlug — bổ nhiệm vào hội đồng
+- [ ] API POST /api/governance/propose/:worldSlug — đề xuất luật/nghị quyết
+- [ ] API POST /api/governance/vote/:voteId — hội đồng bỏ phiếu
+- [ ] API POST /api/governance/decree/:worldSlug — owner ban hành sắc lệnh trực tiếp (không cần vote)
+- [ ] Auto-execute: vote pass → luật có hiệu lực ngay, stability thay đổi
+- [ ] AI sinh mô tả "Sắc Lệnh" theo phong cách lore thế giới (VD: Tu Tiên → dùng từ ngữ đạo môn)
+- [ ] Trang `/governance` — hiến pháp thế giới, hội đồng, vote đang mở, lịch sử sắc lệnh
+- [ ] Nút Dashboard "QUẢN TRỊ THẾ GIỚI"
 
 ---
 
