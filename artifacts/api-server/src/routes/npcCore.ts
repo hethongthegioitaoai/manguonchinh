@@ -3,20 +3,23 @@ import { isAuthenticated } from "../auth/replitAuth.js";
 import { db } from "@workspace/db";
 import {
   npcCores, npcPersonalities, npcCoreMemories, npcRelationships,
-  npcJobs, npcInventory, npcTransactions,
+  npcJobs, npcInventory, npcTransactions, worldMarket, marketOrders,
 } from "@workspace/db/schema";
 import { eq, desc, and, or } from "drizzle-orm";
 
 const router = Router();
 
-function clamp(v: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, v));
-}
-function rand(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+function clamp(v: number, min: number, max: number) { return Math.max(min, Math.min(max, v)); }
+function rand(min: number, max: number) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
-/* ── Job type → salary + produce ── */
+/* ── Market constants ── */
+const MARKET_ITEMS = ["thực phẩm", "cá", "gỗ", "công cụ"] as const;
+const BASE_PRICES: Record<string, number> = { "thực phẩm": 8, "cá": 6, "gỗ": 5, "công cụ": 12 };
+const PRICE_BOUNDS: Record<string, [number, number]> = {
+  "thực phẩm": [3, 28], "cá": [2, 22], "gỗ": [2, 18], "công cụ": [5, 35],
+};
+
+/* ── Job config ── */
 const JOB_CONFIG: Record<string, { salary: number; produces: string; produceAmt: [number, number] }> = {
   "nông dân":     { salary: 15, produces: "thực phẩm",  produceAmt: [1, 3] },
   "thương nhân":  { salary: 25, produces: "công cụ",    produceAmt: [0, 1] },
@@ -25,7 +28,6 @@ const JOB_CONFIG: Record<string, { salary: number; produces: string; produceAmt:
   "ngư dân":      { salary: 16, produces: "cá",         produceAmt: [2, 4] },
 };
 
-/* ── Occupation → job type mapping ── */
 function occupationToJob(occupation: string): string {
   const o = occupation.toLowerCase();
   if (o.includes("thương") || o.includes("buôn") || o.includes("chủ"))  return "thương nhân";
@@ -35,7 +37,6 @@ function occupationToJob(occupation: string): string {
   return "nông dân";
 }
 
-/* ── Initial inventory by job ── */
 const INIT_INVENTORY: Record<string, Array<{ itemName: string; quantity: number }>> = {
   "nông dân":     [{ itemName: "thực phẩm", quantity: 5 }, { itemName: "gỗ", quantity: 2 }],
   "thương nhân":  [{ itemName: "thực phẩm", quantity: 3 }, { itemName: "công cụ", quantity: 2 }],
@@ -44,22 +45,15 @@ const INIT_INVENTORY: Record<string, Array<{ itemName: string; quantity: number 
   "ngư dân":      [{ itemName: "cá", quantity: 8 }, { itemName: "gỗ", quantity: 1 }],
 };
 
-/* ── Item sell prices ── */
-const ITEM_PRICE: Record<string, number> = {
-  "thực phẩm": 8,
-  "cá":        6,
-  "gỗ":        5,
-  "công cụ":  12,
-};
 const FOOD_ITEMS = ["thực phẩm", "cá"];
 
 function generateGoal(npc: typeof npcCores.$inferSelect): string {
-  if (npc.money < 30)   return "Kiếm tiền — túi tiền gần cạn";
-  if (npc.hunger > 70)  return "Ăn uống — cơn đói hành hạ";
-  if (npc.energy < 25)  return "Nghỉ ngơi — kiệt sức hoàn toàn";
+  if (npc.money < 30)    return "Kiếm tiền — túi tiền gần cạn";
+  if (npc.hunger > 70)   return "Ăn uống — cơn đói hành hạ";
+  if (npc.energy < 25)   return "Nghỉ ngơi — kiệt sức hoàn toàn";
   if (npc.happiness < 30) return "Giao tiếp — cần kết nối với ai đó";
-  if (npc.hunger > 50)  return "Tìm thức ăn — bắt đầu đói";
-  if (npc.energy < 50)  return "Tìm chỗ nghỉ — cần lấy lại sức";
+  if (npc.hunger > 50)   return "Tìm thức ăn — bắt đầu đói";
+  if (npc.energy < 50)   return "Tìm chỗ nghỉ — cần lấy lại sức";
   if (npc.happiness < 60) return "Giải trí — tâm trạng không tốt";
   return "Khám phá — không có việc gì cấp bách";
 }
@@ -74,56 +68,95 @@ function scoreToType(score: number): string {
 }
 
 function describeAction(npc: typeof npcCores.$inferSelect, personality: typeof npcPersonalities.$inferSelect | null): string {
-  if (npc.currentGoal?.includes("Kiếm tiền")) {
-    return personality?.greed && personality.greed > 0.7
-      ? `${npc.name} đang tích cực mời chào khách hàng, mắt sáng lên khi thấy cơ hội kiếm tiền`
-      : `${npc.name} đang làm việc chăm chỉ để kiếm thêm thu nhập`;
-  }
-  if (npc.currentGoal?.includes("Ăn uống") || npc.currentGoal?.includes("Tìm thức ăn")) {
+  if (npc.currentGoal?.includes("Kiếm tiền"))
+    return personality?.greed && personality.greed > 0.7 ? `${npc.name} đang tích cực mời chào khách hàng` : `${npc.name} đang làm việc chăm chỉ kiếm thêm thu nhập`;
+  if (npc.currentGoal?.includes("Ăn uống") || npc.currentGoal?.includes("Tìm thức ăn"))
     return `${npc.name} đang tìm kiếm thức ăn, bụng réo sôi ùng ục`;
-  }
-  if (npc.currentGoal?.includes("Nghỉ ngơi") || npc.currentGoal?.includes("Tìm chỗ nghỉ")) {
+  if (npc.currentGoal?.includes("Nghỉ ngơi") || npc.currentGoal?.includes("Tìm chỗ nghỉ"))
     return `${npc.name} đang tìm chỗ ngả lưng, mắt díu lại vì mệt`;
-  }
-  if (npc.currentGoal?.includes("Giao tiếp") || npc.currentGoal?.includes("Giải trí")) {
-    return personality?.kindness && personality.kindness > 0.6
-      ? `${npc.name} đang trò chuyện vui vẻ với những người xung quanh`
-      : `${npc.name} đang ngồi một mình, nhìn xa xăm`;
-  }
-  return personality?.curiosity && personality.curiosity > 0.7
-    ? `${npc.name} đang tò mò khám phá xung quanh, đôi mắt sáng rực`
-    : `${npc.name} đang đi lang thang qua khu vực`;
+  if (npc.currentGoal?.includes("Giao tiếp") || npc.currentGoal?.includes("Giải trí"))
+    return personality?.kindness && personality.kindness > 0.6 ? `${npc.name} đang trò chuyện vui vẻ` : `${npc.name} đang ngồi một mình, nhìn xa xăm`;
+  return personality?.curiosity && personality.curiosity > 0.7 ? `${npc.name} đang tò mò khám phá xung quanh` : `${npc.name} đang đi lang thang qua khu vực`;
 }
 
-/* ── Upsert inventory item ── */
+/* ── Upsert inventory ── */
 async function upsertInventory(npcCoreId: string, itemName: string, delta: number): Promise<void> {
-  const [existing] = await db.select().from(npcInventory)
-    .where(and(eq(npcInventory.npcCoreId, npcCoreId), eq(npcInventory.itemName, itemName)));
+  const [existing] = await db.select().from(npcInventory).where(and(eq(npcInventory.npcCoreId, npcCoreId), eq(npcInventory.itemName, itemName)));
   if (existing) {
-    const newQty = Math.max(0, existing.quantity + delta);
-    await db.update(npcInventory).set({ quantity: newQty }).where(eq(npcInventory.id, existing.id));
+    await db.update(npcInventory).set({ quantity: Math.max(0, existing.quantity + delta) }).where(eq(npcInventory.id, existing.id));
   } else if (delta > 0) {
     await db.insert(npcInventory).values({ npcCoreId, itemName, quantity: delta });
   }
 }
 
-/* ── Record transaction ── */
-async function recordTx(
-  npcCoreId: string, description: string, amount: number,
-  transactionType: "earn" | "buy" | "sell" | "trade"
-): Promise<void> {
+/* ── Record NPC transaction ── */
+async function recordTx(npcCoreId: string, description: string, amount: number, transactionType: "earn" | "buy" | "sell" | "trade"): Promise<void> {
   await db.insert(npcTransactions).values({ npcCoreId, description, amount, transactionType });
-  // Keep max 30 per NPC
-  const all = await db.select({ id: npcTransactions.id }).from(npcTransactions)
-    .where(eq(npcTransactions.npcCoreId, npcCoreId)).orderBy(desc(npcTransactions.timestamp));
-  if (all.length > 30) {
-    for (const t of all.slice(30)) {
-      await db.delete(npcTransactions).where(eq(npcTransactions.id, t.id));
+  const all = await db.select({ id: npcTransactions.id }).from(npcTransactions).where(eq(npcTransactions.npcCoreId, npcCoreId)).orderBy(desc(npcTransactions.timestamp));
+  if (all.length > 30) for (const t of all.slice(30)) await db.delete(npcTransactions).where(eq(npcTransactions.id, t.id));
+}
+
+/* ── Seed world market (base prices) ── */
+async function seedMarket(worldSlug: string): Promise<void> {
+  for (const item of MARKET_ITEMS) {
+    const [existing] = await db.select().from(worldMarket).where(and(eq(worldMarket.worldSlug, worldSlug), eq(worldMarket.itemName, item)));
+    if (!existing) {
+      await db.insert(worldMarket).values({ worldSlug, itemName: item, currentPrice: BASE_PRICES[item], totalSupply: rand(10, 20), totalDemand: rand(8, 15) });
     }
   }
 }
 
-/* ── Relationship delta calculation ── */
+/* ── Get market price for item in a world ── */
+async function getMarketPrice(worldSlug: string, itemName: string): Promise<number> {
+  const [row] = await db.select().from(worldMarket).where(and(eq(worldMarket.worldSlug, worldSlug), eq(worldMarket.itemName, itemName)));
+  return row?.currentPrice ?? BASE_PRICES[itemName] ?? 8;
+}
+
+/* ── Record a market order + update supply/demand ── */
+async function recordMarketOrder(
+  worldSlug: string, npcId: string | null, itemName: string,
+  quantity: number, orderType: "mua" | "bán", price: number
+): Promise<void> {
+  await db.insert(marketOrders).values({ npcId, worldSlug, itemName, quantity, orderType, price, status: "filled" });
+  // Clean up old orders (keep 100 per world)
+  const all = await db.select({ id: marketOrders.id }).from(marketOrders).where(eq(marketOrders.worldSlug, worldSlug)).orderBy(desc(marketOrders.createdAt));
+  if (all.length > 100) for (const o of all.slice(100)) await db.delete(marketOrders).where(eq(marketOrders.id, o.id));
+}
+
+/* ── Update market prices based on supply/demand this tick ── */
+async function updateMarketPrices(worldSlug: string, tickSupply: Record<string, number>, tickDemand: Record<string, number>): Promise<void> {
+  for (const item of MARKET_ITEMS) {
+    const [row] = await db.select().from(worldMarket).where(and(eq(worldMarket.worldSlug, worldSlug), eq(worldMarket.itemName, item)));
+    if (!row) continue;
+
+    const supply = (row.totalSupply + (tickSupply[item] ?? 0)) || 1;
+    const demand = (row.totalDemand + (tickDemand[item] ?? 0)) || 1;
+    const ratio = demand / supply;
+
+    let newPrice = row.currentPrice;
+    if (ratio > 1.15) {
+      // Demand > supply → tăng giá, tối đa +10%
+      const pct = Math.min(0.10, (ratio - 1) * 0.25);
+      newPrice = Math.round(newPrice * (1 + pct));
+    } else if (ratio < 0.85) {
+      // Supply > demand → giảm giá, tối đa -10%
+      const pct = Math.min(0.10, (1 - ratio) * 0.25);
+      newPrice = Math.round(newPrice * (1 - pct));
+    }
+
+    const [lo, hi] = PRICE_BOUNDS[item];
+    newPrice = clamp(newPrice, lo, hi);
+
+    const newTotalSupply  = Math.min(999, row.totalSupply  + (tickSupply[item]  ?? 0));
+    const newTotalDemand  = Math.min(999, row.totalDemand  + (tickDemand[item]  ?? 0));
+
+    await db.update(worldMarket)
+      .set({ currentPrice: newPrice, totalSupply: newTotalSupply, totalDemand: newTotalDemand, lastUpdated: new Date() })
+      .where(eq(worldMarket.id, row.id));
+  }
+}
+
+/* ── Relationship delta ── */
 function calcRelationshipDelta(
   a: typeof npcCores.$inferSelect, b: typeof npcCores.$inferSelect,
   pA: typeof npcPersonalities.$inferSelect | null, pB: typeof npcPersonalities.$inferSelect | null,
@@ -136,31 +169,31 @@ function calcRelationshipDelta(
 
   if (kA > 0.6 && kB > 0.6) {
     delta += rand(8, 15);
-    memory = [`Gặp ${b.name} và chia sẻ bữa ăn ấm áp`, `Giúp ${b.name} giải quyết khó khăn`, `${b.name} và tôi trò chuyện chân thành, cảm thấy tin tưởng`][rand(0, 2)];
+    memory = [`Gặp ${b.name} và chia sẻ bữa ăn ấm áp`, `Giúp ${b.name} giải quyết khó khăn`, `${b.name} và tôi trò chuyện chân thành`][rand(0, 2)];
     importance = 3;
   } else if (gA > 0.7 && b.money < 50) {
     delta += rand(-20, -8);
-    memory = [`Tranh cãi với ${b.name} về tiền bạc`, `Cố tình gây khó dễ cho ${b.name} trong mua bán`, `Xung đột với ${b.name} vì chênh lệch của cải`][rand(0, 2)];
+    memory = [`Tranh cãi với ${b.name} về tiền bạc`, `Gây khó dễ cho ${b.name} trong mua bán`, `Xung đột với ${b.name} vì chênh lệch của cải`][rand(0, 2)];
     importance = 3;
   } else if (cA > 0.6 && cB > 0.6) {
     delta += rand(5, 12);
-    memory = [`Cùng ${b.name} khám phá khu vực mới lạ`, `Trao đổi thông tin thú vị với ${b.name}`, `${b.name} chia sẻ bí mật về thế giới`][rand(0, 2)];
+    memory = [`Cùng ${b.name} khám phá khu vực mới`, `Trao đổi thông tin thú vị với ${b.name}`, `${b.name} chia sẻ bí mật về thế giới`][rand(0, 2)];
     importance = 2;
   } else if (brA > 0.75 && brB > 0.75) {
     delta += rand(-10, -3);
-    memory = [`Tranh giành địa bàn với ${b.name}`, `Thách đấu ${b.name} để xem ai mạnh hơn`, `Xung đột với ${b.name}, không ai chịu lùi`][rand(0, 2)];
+    memory = [`Tranh giành địa bàn với ${b.name}`, `Thách đấu ${b.name} xem ai mạnh hơn`, `Xung đột với ${b.name}, không ai chịu lùi`][rand(0, 2)];
     importance = 3;
   } else if (kA > 0.6 && b.money < 50) {
     delta += rand(5, 10);
-    memory = [`Giúp ${b.name} tìm việc làm tốt hơn`, `Cho ${b.name} mượn tiền qua giai đoạn khó khăn`, `${b.name} cảm ơn sự giúp đỡ`][rand(0, 2)];
+    memory = [`Giúp ${b.name} tìm việc làm`, `Cho ${b.name} mượn tiền`, `${b.name} cảm ơn sự giúp đỡ`][rand(0, 2)];
     importance = 3;
   } else if (gA > 0.65 && gB > 0.65) {
     delta += rand(-8, -2);
-    memory = [`Cạnh tranh khốc liệt với ${b.name}`, `${b.name} phá hợp đồng của tôi`, `Tranh cãi chia chác lợi nhuận với ${b.name}`][rand(0, 2)];
+    memory = [`Cạnh tranh khốc liệt với ${b.name}`, `${b.name} phá hợp đồng của tôi`, `Tranh cãi lợi nhuận với ${b.name}`][rand(0, 2)];
     importance = 2;
   } else {
     delta += rand(-3, 5);
-    memory = [`Chạm mặt ${b.name} trên đường, gật đầu chào`, `Trao đổi vài câu với ${b.name}`, `Gặp ${b.name} ở chợ rồi đi`][rand(0, 2)];
+    memory = [`Chạm mặt ${b.name}, gật đầu chào`, `Trao đổi vài câu với ${b.name}`, `Gặp ${b.name} ở chợ rồi đi`][rand(0, 2)];
     importance = 1;
   }
   return { delta, memory, importance };
@@ -169,8 +202,7 @@ function calcRelationshipDelta(
 /* ── Upsert relationship ── */
 async function upsertRelationship(aId: string, bId: string, delta: number): Promise<void> {
   const [idA, idB] = aId < bId ? [aId, bId] : [bId, aId];
-  const [existing] = await db.select().from(npcRelationships)
-    .where(and(eq(npcRelationships.npcAId, idA), eq(npcRelationships.npcBId, idB)));
+  const [existing] = await db.select().from(npcRelationships).where(and(eq(npcRelationships.npcAId, idA), eq(npcRelationships.npcBId, idB)));
   if (existing) {
     const newScore = clamp(existing.relationshipScore + delta, -100, 100);
     await db.update(npcRelationships).set({ relationshipScore: newScore, relationshipType: scoreToType(newScore), updatedAt: new Date() }).where(eq(npcRelationships.id, existing.id));
@@ -211,21 +243,14 @@ const SEED_DATA: Record<string, Array<{
 router.get("/api/npc-core/:worldSlug", isAuthenticated, async (req, res) => {
   try {
     const { worldSlug } = req.params;
-    const npcs = await db.select().from(npcCores)
-      .where(and(eq(npcCores.worldSlug, worldSlug), eq(npcCores.active, 1)))
-      .orderBy(npcCores.createdAt);
-
+    const npcs = await db.select().from(npcCores).where(and(eq(npcCores.worldSlug, worldSlug), eq(npcCores.active, 1))).orderBy(npcCores.createdAt);
     const results = await Promise.all(npcs.map(async (npc) => {
       const [personality] = await db.select().from(npcPersonalities).where(eq(npcPersonalities.npcCoreId, npc.id));
       const memories = await db.select().from(npcCoreMemories).where(eq(npcCoreMemories.npcCoreId, npc.id)).orderBy(desc(npcCoreMemories.timestamp)).limit(5);
       return { ...npc, personality: personality ?? null, recentMemories: memories };
     }));
-
     return res.json(results);
-  } catch (err) {
-    console.error("[npcCore] GET error:", err);
-    return res.status(500).json({ message: "Lỗi server" });
-  }
+  } catch (err) { console.error("[npcCore] GET:", err); return res.status(500).json({ message: "Lỗi server" }); }
 });
 
 /* ════════════════════════════════════════
@@ -241,45 +266,26 @@ router.post("/api/npc-core/seed/:worldSlug", isAuthenticated, async (req, res) =
     let seeded = 0;
 
     for (const t of templates) {
-      const [created] = await db.insert(npcCores).values({
-        worldSlug, name: t.name, age: t.age, occupation: t.occupation,
-        money: t.money, energy: t.energy, hunger: t.hunger, happiness: t.happiness, currentGoal: null,
-      }).returning();
+      const [created] = await db.insert(npcCores).values({ worldSlug, name: t.name, age: t.age, occupation: t.occupation, money: t.money, energy: t.energy, hunger: t.hunger, happiness: t.happiness, currentGoal: null }).returning();
+      await db.insert(npcPersonalities).values({ npcCoreId: created.id, kindness: t.kindness, greed: t.greed, bravery: t.bravery, intelligence: t.intelligence, curiosity: t.curiosity });
+      await db.update(npcCores).set({ currentGoal: generateGoal(created) }).where(eq(npcCores.id, created.id));
 
-      await db.insert(npcPersonalities).values({
-        npcCoreId: created.id, kindness: t.kindness, greed: t.greed,
-        bravery: t.bravery, intelligence: t.intelligence, curiosity: t.curiosity,
-      });
-
-      const initialGoal = generateGoal(created);
-      await db.update(npcCores).set({ currentGoal: initialGoal }).where(eq(npcCores.id, created.id));
-
-      // Assign job
       const jobType = occupationToJob(t.occupation);
       const cfg = JOB_CONFIG[jobType] ?? JOB_CONFIG["thương nhân"];
-      const skillLevel = parseFloat((0.3 + t.intelligence * 0.5 + Math.random() * 0.2).toFixed(2));
-      await db.insert(npcJobs).values({ npcCoreId: created.id, jobType, salary: cfg.salary, skillLevel: Math.min(1, skillLevel) });
+      const skillLevel = Math.min(1, parseFloat((0.3 + t.intelligence * 0.5 + Math.random() * 0.2).toFixed(2)));
+      await db.insert(npcJobs).values({ npcCoreId: created.id, jobType, salary: cfg.salary, skillLevel });
 
-      // Assign initial inventory
-      const items = INIT_INVENTORY[jobType] ?? INIT_INVENTORY["thương nhân"];
-      for (const item of items) {
+      for (const item of (INIT_INVENTORY[jobType] ?? INIT_INVENTORY["thương nhân"])) {
         await db.insert(npcInventory).values({ npcCoreId: created.id, itemName: item.itemName, quantity: item.quantity });
       }
-
-      await db.insert(npcCoreMemories).values({
-        npcCoreId: created.id,
-        event: `${created.name} xuất hiện tại ${worldSlug} với tư cách ${created.occupation}`,
-        importance: 5,
-      });
-
+      await db.insert(npcCoreMemories).values({ npcCoreId: created.id, event: `${created.name} xuất hiện tại ${worldSlug} với tư cách ${created.occupation}`, importance: 5 });
       seeded++;
     }
 
+    // Seed market cho thế giới này
+    await seedMarket(worldSlug);
     return res.json({ message: `Đã tạo ${seeded} NPC`, seeded });
-  } catch (err) {
-    console.error("[npcCore] seed error:", err);
-    return res.status(500).json({ message: "Lỗi server" });
-  }
+  } catch (err) { console.error("[npcCore] seed:", err); return res.status(500).json({ message: "Lỗi server" }); }
 });
 
 /* ════════════════════════════════════════
@@ -291,11 +297,17 @@ router.post("/api/npc-core/tick/:worldSlug", isAuthenticated, async (req, res) =
     const npcs = await db.select().from(npcCores).where(and(eq(npcCores.worldSlug, worldSlug), eq(npcCores.active, 1)));
     if (npcs.length === 0) return res.json({ message: "Không có NPC để tick", ticked: 0 });
 
+    // Đảm bảo thị trường đã được khởi tạo
+    await seedMarket(worldSlug);
+
     const logs: Array<{ name: string; goal: string; action: string }> = [];
+    // Track supply/demand changes in this tick
+    const tickSupply: Record<string, number>  = {};
+    const tickDemand: Record<string, number>  = {};
 
     // Pre-load personalities + jobs
     const personalityMap = new Map<string, typeof npcPersonalities.$inferSelect>();
-    const jobMap = new Map<string, typeof npcJobs.$inferSelect>();
+    const jobMap          = new Map<string, typeof npcJobs.$inferSelect>();
     for (const npc of npcs) {
       const [p] = await db.select().from(npcPersonalities).where(eq(npcPersonalities.npcCoreId, npc.id));
       if (p) personalityMap.set(npc.id, p);
@@ -305,18 +317,18 @@ router.post("/api/npc-core/tick/:worldSlug", isAuthenticated, async (req, res) =
 
     for (const npc of npcs) {
       const personality = personalityMap.get(npc.id) ?? null;
-      const job = jobMap.get(npc.id) ?? null;
+      const job         = jobMap.get(npc.id) ?? null;
 
-      let newHunger  = clamp(npc.hunger + rand(3, 8), 0, 100);
-      let newEnergy  = clamp(npc.energy - rand(2, 6), 0, 100);
-      let newMoney   = npc.money;
+      let newHunger    = clamp(npc.hunger + rand(3, 8), 0, 100);
+      let newEnergy    = clamp(npc.energy - rand(2, 6), 0, 100);
+      let newMoney     = npc.money;
       let newHappiness = npc.happiness;
-      let memoryEvent = "";
+      let memoryEvent  = "";
       let memoryImportance = 1;
 
       const goal = npc.currentGoal ?? "";
 
-      // ── 1. Làm việc kiếm tiền (luôn xảy ra nếu có job) ──
+      // ── 1. Làm việc nhận lương + sản xuất ──
       if (job) {
         const cfg = JOB_CONFIG[job.jobType] ?? JOB_CONFIG["thương nhân"];
         const earned = Math.round(job.salary * (0.7 + job.skillLevel * 0.6));
@@ -324,19 +336,19 @@ router.post("/api/npc-core/tick/:worldSlug", isAuthenticated, async (req, res) =
         newEnergy = clamp(newEnergy - rand(2, 5), 0, 100);
         await recordTx(npc.id, `Làm ${job.jobType}, nhận ${earned} vàng lương`, earned, "earn");
 
-        // Sản xuất hàng hóa theo nghề
         const produceQty = rand(...cfg.produceAmt);
         if (produceQty > 0) {
           await upsertInventory(npc.id, cfg.produces, produceQty);
+          // Đóng góp vào cung thị trường
+          tickSupply[cfg.produces] = (tickSupply[cfg.produces] ?? 0) + produceQty;
         }
       }
 
-      // ── 2. Ăn uống nếu đói (ưu tiên dùng đồ trong kho) ──
+      // ── 2. Ăn uống nếu đói ──
       if (newHunger > 55) {
         let ate = false;
         for (const foodItem of FOOD_ITEMS) {
-          const [inv] = await db.select().from(npcInventory)
-            .where(and(eq(npcInventory.npcCoreId, npc.id), eq(npcInventory.itemName, foodItem)));
+          const [inv] = await db.select().from(npcInventory).where(and(eq(npcInventory.npcCoreId, npc.id), eq(npcInventory.itemName, foodItem)));
           if (inv && inv.quantity >= 1) {
             await upsertInventory(npc.id, foodItem, -1);
             newHunger = clamp(newHunger - 45, 0, 100);
@@ -347,34 +359,99 @@ router.post("/api/npc-core/tick/:worldSlug", isAuthenticated, async (req, res) =
             break;
           }
         }
-        // Nếu kho hết, mua bằng tiền
-        if (!ate && newMoney >= 12) {
-          const cost = rand(12, 20);
+        // Nếu kho hết → mua từ thị trường
+        if (!ate && newMoney >= 8) {
+          const marketPrice = await getMarketPrice(worldSlug, "thực phẩm");
+          const cost = Math.min(newMoney, marketPrice + rand(0, 3));
           newMoney = clamp(newMoney - cost, 0, 9999);
           newHunger = clamp(newHunger - 50, 0, 100);
           newHappiness = clamp(newHappiness + 6, 0, 100);
-          memoryEvent = `${npc.name} mua thực phẩm ở chợ, tiêu ${cost} vàng`;
+          memoryEvent = `${npc.name} mua thực phẩm từ chợ, giá ${cost} vàng`;
           memoryImportance = 2;
           await recordTx(npc.id, `Mua thực phẩm ở chợ: -${cost} vàng`, cost, "buy");
+          await recordMarketOrder(worldSlug, npc.id, "thực phẩm", 1, "mua", cost);
+          tickDemand["thực phẩm"] = (tickDemand["thực phẩm"] ?? 0) + 1;
         }
       }
 
-      // ── 3. Bán tài nguyên dư thừa ──
+      // ── 3. Hành vi thị trường theo nghề ──
+      if (job) {
+        const p = personality;
+        // Thương nhân tham lam: bán hàng dư với giá cao hơn thị trường
+        if (job.jobType === "thương nhân" && (p?.greed ?? 0.5) > 0.6) {
+          const allInv = await db.select().from(npcInventory).where(eq(npcInventory.npcCoreId, npc.id));
+          for (const inv of allInv) {
+            if (inv.quantity >= 4 && PRICE_BOUNDS[inv.itemName]) {
+              const marketPrice = await getMarketPrice(worldSlug, inv.itemName);
+              const sellPrice = Math.round(marketPrice * (1.08 + (p?.greed ?? 0.5) * 0.12));
+              const sellQty = Math.min(inv.quantity - 2, 3);
+              await upsertInventory(npc.id, inv.itemName, -sellQty);
+              newMoney = clamp(newMoney + sellPrice * sellQty, 0, 9999);
+              memoryEvent = `${npc.name} bán ${sellQty} ${inv.itemName} ở chợ, giá cao ${sellPrice} vàng/đơn vị`;
+              memoryImportance = 3;
+              await recordTx(npc.id, `Bán ${sellQty} ${inv.itemName} chợ: +${sellPrice * sellQty} vàng`, sellPrice * sellQty, "sell");
+              await recordMarketOrder(worldSlug, npc.id, inv.itemName, sellQty, "bán", sellPrice);
+              tickSupply[inv.itemName] = (tickSupply[inv.itemName] ?? 0) + sellQty;
+              break;
+            }
+          }
+          // Mua thấp: nếu giá < 85% giá gốc → mua để tích
+          for (const item of MARKET_ITEMS) {
+            const marketPrice = await getMarketPrice(worldSlug, item);
+            if (marketPrice < BASE_PRICES[item] * 0.85 && newMoney >= marketPrice * 2) {
+              const buyQty = rand(2, 4);
+              const cost = marketPrice * buyQty;
+              if (newMoney >= cost) {
+                newMoney = clamp(newMoney - cost, 0, 9999);
+                await upsertInventory(npc.id, item, buyQty);
+                await recordTx(npc.id, `Mua thấp ${buyQty} ${item}: -${cost} vàng (giá rẻ)`, cost, "buy");
+                await recordMarketOrder(worldSlug, npc.id, item, buyQty, "mua", marketPrice);
+                tickDemand[item] = (tickDemand[item] ?? 0) + buyQty;
+                if (!memoryEvent) { memoryEvent = `${npc.name} nhanh tay mua ${buyQty} ${item} khi giá hạ còn ${marketPrice} vàng`; memoryImportance = 3; }
+                break;
+              }
+            }
+          }
+        }
+
+        // Thợ thủ công: mua gỗ khi kho thấp
+        if (job.jobType === "thợ thủ công") {
+          const [woodInv] = await db.select().from(npcInventory).where(and(eq(npcInventory.npcCoreId, npc.id), eq(npcInventory.itemName, "gỗ")));
+          const woodQty = woodInv?.quantity ?? 0;
+          if (woodQty < 3 && newMoney >= 8) {
+            const marketPrice = await getMarketPrice(worldSlug, "gỗ");
+            const buyQty = rand(2, 3);
+            const cost = marketPrice * buyQty;
+            if (newMoney >= cost) {
+              newMoney = clamp(newMoney - cost, 0, 9999);
+              await upsertInventory(npc.id, "gỗ", buyQty);
+              await recordTx(npc.id, `Mua ${buyQty} gỗ từ chợ: -${cost} vàng`, cost, "buy");
+              await recordMarketOrder(worldSlug, npc.id, "gỗ", buyQty, "mua", marketPrice);
+              tickDemand["gỗ"] = (tickDemand["gỗ"] ?? 0) + buyQty;
+              if (!memoryEvent) { memoryEvent = `${npc.name} mua gỗ để làm thủ công, kho dự trữ đang cạn`; memoryImportance = 2; }
+            }
+          }
+        }
+      }
+
+      // ── 4. Bán tài nguyên dư thừa ra chợ ──
       const allInv = await db.select().from(npcInventory).where(eq(npcInventory.npcCoreId, npc.id));
       for (const inv of allInv) {
-        if (inv.quantity > 8 && ITEM_PRICE[inv.itemName]) {
-          const sellQty = inv.quantity - 5; // giữ lại 5
-          const revenue = sellQty * ITEM_PRICE[inv.itemName];
+        if (inv.quantity > 9 && PRICE_BOUNDS[inv.itemName]) {
+          const marketPrice = await getMarketPrice(worldSlug, inv.itemName);
+          const sellQty = inv.quantity - 5;
+          const revenue = sellQty * marketPrice;
           await upsertInventory(npc.id, inv.itemName, -sellQty);
           newMoney = clamp(newMoney + revenue, 0, 9999);
-          memoryEvent = `${npc.name} bán ${sellQty} ${inv.itemName} dư thừa, thu ${revenue} vàng`;
-          memoryImportance = 2;
-          await recordTx(npc.id, `Bán ${sellQty} ${inv.itemName}: +${revenue} vàng`, revenue, "sell");
+          if (!memoryEvent) { memoryEvent = `${npc.name} bán ${sellQty} ${inv.itemName} dư thừa ra chợ, thu ${revenue} vàng`; memoryImportance = 2; }
+          await recordTx(npc.id, `Bán ${sellQty} ${inv.itemName} chợ: +${revenue} vàng`, revenue, "sell");
+          await recordMarketOrder(worldSlug, npc.id, inv.itemName, sellQty, "bán", marketPrice);
+          tickSupply[inv.itemName] = (tickSupply[inv.itemName] ?? 0) + sellQty;
           break;
         }
       }
 
-      // ── 4. Xử lý hành động theo mục tiêu cũ ──
+      // ── 5. Xử lý mục tiêu (nghỉ ngơi / giao tiếp / khám phá) ──
       if (goal.includes("Nghỉ ngơi") || goal.includes("Tìm chỗ nghỉ")) {
         newEnergy = clamp(newEnergy + 50, 0, 100);
         newHappiness = clamp(newHappiness + 5, 0, 100);
@@ -384,67 +461,52 @@ router.post("/api/npc-core/tick/:worldSlug", isAuthenticated, async (req, res) =
         newHappiness = clamp(newHappiness + boost, 0, 100);
         if (!memoryEvent) { memoryEvent = `${npc.name} trò chuyện vui vẻ, tâm trạng khá hơn`; memoryImportance = 2; }
       } else if (!memoryEvent) {
-        const exploreBoost = Math.floor((personality?.curiosity ?? 0.5) * 10);
-        newHappiness = clamp(newHappiness + exploreBoost, 0, 100);
-        memoryEvent = `${npc.name} lang thang khám phá ${worldSlug}`;
-        memoryImportance = 1;
+        newHappiness = clamp(newHappiness + Math.floor((personality?.curiosity ?? 0.5) * 10), 0, 100);
+        memoryEvent = `${npc.name} lang thang khám phá ${worldSlug}`; memoryImportance = 1;
       }
 
       const updatedNpc = { ...npc, money: newMoney, energy: newEnergy, hunger: newHunger, happiness: newHappiness };
       const newGoal = generateGoal(updatedNpc);
-      const action = describeAction(updatedNpc, personality);
+      const action  = describeAction(updatedNpc, personality);
 
       await db.update(npcCores).set({ money: newMoney, energy: newEnergy, hunger: newHunger, happiness: newHappiness, currentGoal: newGoal, lastTickAt: new Date() }).where(eq(npcCores.id, npc.id));
       await db.insert(npcCoreMemories).values({ npcCoreId: npc.id, event: memoryEvent, importance: memoryImportance });
 
-      // Dọn bộ nhớ cũ
       const mems = await db.select({ id: npcCoreMemories.id }).from(npcCoreMemories).where(eq(npcCoreMemories.npcCoreId, npc.id)).orderBy(desc(npcCoreMemories.timestamp));
-      if (mems.length > 50) {
-        for (const m of mems.slice(50)) await db.delete(npcCoreMemories).where(eq(npcCoreMemories.id, m.id));
-      }
+      if (mems.length > 50) for (const m of mems.slice(50)) await db.delete(npcCoreMemories).where(eq(npcCoreMemories.id, m.id));
 
       logs.push({ name: npc.name, goal: newGoal, action });
     }
 
-    // ── Gặp gỡ ngẫu nhiên giữa các NPC ──
+    // ── Gặp gỡ ngẫu nhiên ──
     if (npcs.length >= 2) {
       const numEncounters = npcs.length >= 4 ? 2 : 1;
       const shuffled = [...npcs].sort(() => Math.random() - 0.5);
-
       for (let i = 0; i < numEncounters && i * 2 + 1 < shuffled.length; i++) {
-        const a = shuffled[i * 2];
-        const b = shuffled[i * 2 + 1];
-        const pA = personalityMap.get(a.id) ?? null;
-        const pB = personalityMap.get(b.id) ?? null;
+        const a = shuffled[i * 2], b = shuffled[i * 2 + 1];
+        const pA = personalityMap.get(a.id) ?? null, pB = personalityMap.get(b.id) ?? null;
         const jobA = jobMap.get(a.id) ?? null;
-        const jobB = jobMap.get(b.id) ?? null;
-
-        // Relationship delta
         const { delta, memory: memEvent, importance } = calcRelationshipDelta(a, b, pA, pB);
         await upsertRelationship(a.id, b.id, delta);
         await db.insert(npcCoreMemories).values({ npcCoreId: a.id, event: memEvent, importance });
         const revMem = memEvent.replace(new RegExp(b.name, "g"), "___T___").replace(new RegExp(a.name, "g"), b.name).replace(/___T___/g, a.name);
         await db.insert(npcCoreMemories).values({ npcCoreId: b.id, event: revMem, importance });
 
-        // ── Giao dịch thương mại giữa 2 NPC ──
-        // Kiểm tra A đói, B có thức ăn dư
-        const [aHunger] = await db.select().from(npcCores).where(eq(npcCores.id, a.id));
-        const [bHunger] = await db.select().from(npcCores).where(eq(npcCores.id, b.id));
-
-        for (const [buyer, seller] of [[aHunger, bHunger], [bHunger, aHunger]] as const) {
+        // Giao dịch P2P
+        const [aFresh] = await db.select().from(npcCores).where(eq(npcCores.id, a.id));
+        const [bFresh] = await db.select().from(npcCores).where(eq(npcCores.id, b.id));
+        for (const [buyer, seller] of [[aFresh, bFresh], [bFresh, aFresh]] as const) {
           if (buyer.hunger > 60) {
             for (const foodItem of FOOD_ITEMS) {
-              const [sellerInv] = await db.select().from(npcInventory)
-                .where(and(eq(npcInventory.npcCoreId, seller.id), eq(npcInventory.itemName, foodItem)));
-              if (sellerInv && sellerInv.quantity >= 2 && buyer.money >= 10) {
-                const price = ITEM_PRICE[foodItem] + rand(-2, 2);
-                // Transfer
+              const [sellerInv] = await db.select().from(npcInventory).where(and(eq(npcInventory.npcCoreId, seller.id), eq(npcInventory.itemName, foodItem)));
+              if (sellerInv && sellerInv.quantity >= 2 && buyer.money >= 8) {
+                const price = (await getMarketPrice(worldSlug, foodItem)) + rand(-1, 2);
                 await upsertInventory(seller.id, foodItem, -1);
                 await db.update(npcCores).set({ money: clamp(seller.money + price, 0, 9999) }).where(eq(npcCores.id, seller.id));
                 await db.update(npcCores).set({ hunger: clamp(buyer.hunger - 35, 0, 100), money: clamp(buyer.money - price, 0, 9999) }).where(eq(npcCores.id, buyer.id));
                 await recordTx(buyer.id, `Mua ${foodItem} từ ${seller.name}: -${price} vàng`, price, "trade");
                 await recordTx(seller.id, `Bán ${foodItem} cho ${buyer.name}: +${price} vàng`, price, "trade");
-                await db.insert(npcCoreMemories).values({ npcCoreId: buyer.id, event: `Mua ${foodItem} từ ${seller.name} với giá ${price} vàng`, importance: 3 });
+                await db.insert(npcCoreMemories).values({ npcCoreId: buyer.id, event: `Mua ${foodItem} từ ${seller.name}, giá ${price} vàng`, importance: 3 });
                 await db.insert(npcCoreMemories).values({ npcCoreId: seller.id, event: `Bán ${foodItem} cho ${buyer.name}, thu ${price} vàng`, importance: 3 });
                 break;
               }
@@ -452,30 +514,51 @@ router.post("/api/npc-core/tick/:worldSlug", isAuthenticated, async (req, res) =
           }
         }
 
-        // Thợ thủ công mua gỗ từ NPC khác
         if (jobA?.jobType === "thợ thủ công") {
-          const [bWood] = await db.select().from(npcInventory)
-            .where(and(eq(npcInventory.npcCoreId, b.id), eq(npcInventory.itemName, "gỗ")));
+          const [bWood] = await db.select().from(npcInventory).where(and(eq(npcInventory.npcCoreId, b.id), eq(npcInventory.itemName, "gỗ")));
           if (bWood && bWood.quantity >= 2 && a.money >= 8) {
-            const price = ITEM_PRICE["gỗ"] + rand(-1, 1);
+            const price = (await getMarketPrice(worldSlug, "gỗ")) + rand(-1, 1);
             await upsertInventory(b.id, "gỗ", -1);
             await upsertInventory(a.id, "gỗ", 1);
             await db.update(npcCores).set({ money: clamp(a.money - price, 0, 9999) }).where(eq(npcCores.id, a.id));
             await db.update(npcCores).set({ money: clamp(b.money + price, 0, 9999) }).where(eq(npcCores.id, b.id));
             await recordTx(a.id, `Mua gỗ từ ${b.name}: -${price} vàng`, price, "trade");
             await recordTx(b.id, `Bán gỗ cho ${a.name}: +${price} vàng`, price, "trade");
-            await db.insert(npcCoreMemories).values({ npcCoreId: a.id, event: `Mua gỗ từ ${b.name} để làm thủ công, giá ${price} vàng`, importance: 2 });
-            await db.insert(npcCoreMemories).values({ npcCoreId: b.id, event: `Bán gỗ cho ${a.name} thợ thủ công, thu ${price} vàng`, importance: 2 });
           }
         }
       }
     }
 
+    // ── Cập nhật giá thị trường ──
+    await updateMarketPrices(worldSlug, tickSupply, tickDemand);
+
     return res.json({ message: `Đã tick ${logs.length} NPC`, ticked: logs.length, logs });
-  } catch (err) {
-    console.error("[npcCore] tick error:", err);
-    return res.status(500).json({ message: "Lỗi server" });
-  }
+  } catch (err) { console.error("[npcCore] tick:", err); return res.status(500).json({ message: "Lỗi server" }); }
+});
+
+/* ════════════════════════════════════════
+   GET market data for a world
+════════════════════════════════════════ */
+router.get("/api/npc-market/:worldSlug", isAuthenticated, async (req, res) => {
+  try {
+    const { worldSlug } = req.params;
+    await seedMarket(worldSlug);
+
+    const market = await db.select().from(worldMarket).where(eq(worldMarket.worldSlug, worldSlug));
+    const recentOrders = await db.select().from(marketOrders)
+      .where(eq(marketOrders.worldSlug, worldSlug))
+      .orderBy(desc(marketOrders.createdAt))
+      .limit(30);
+
+    // Attach NPC name to each order
+    const ordersWithName = await Promise.all(recentOrders.map(async (o) => {
+      if (!o.npcId) return { ...o, npcName: "Hệ Thống" };
+      const [npc] = await db.select({ name: npcCores.name }).from(npcCores).where(eq(npcCores.id, o.npcId));
+      return { ...o, npcName: npc?.name ?? "Không rõ" };
+    }));
+
+    return res.json({ market, recentOrders: ordersWithName });
+  } catch (err) { console.error("[npcCore] market:", err); return res.status(500).json({ message: "Lỗi server" }); }
 });
 
 /* ════════════════════════════════════════
@@ -486,19 +569,11 @@ router.get("/api/npc-economy/:npcId", isAuthenticated, async (req, res) => {
     const { npcId } = req.params;
     const [npc] = await db.select().from(npcCores).where(eq(npcCores.id, npcId));
     if (!npc) return res.status(404).json({ message: "Không tìm thấy NPC" });
-
     const [job] = await db.select().from(npcJobs).where(eq(npcJobs.npcCoreId, npcId));
     const inventory = await db.select().from(npcInventory).where(eq(npcInventory.npcCoreId, npcId));
-    const transactions = await db.select().from(npcTransactions)
-      .where(eq(npcTransactions.npcCoreId, npcId))
-      .orderBy(desc(npcTransactions.timestamp))
-      .limit(10);
-
+    const transactions = await db.select().from(npcTransactions).where(eq(npcTransactions.npcCoreId, npcId)).orderBy(desc(npcTransactions.timestamp)).limit(10);
     return res.json({ npc, job: job ?? null, inventory, transactions });
-  } catch (err) {
-    console.error("[npcCore] economy error:", err);
-    return res.status(500).json({ message: "Lỗi server" });
-  }
+  } catch (err) { console.error("[npcCore] economy:", err); return res.status(500).json({ message: "Lỗi server" }); }
 });
 
 /* ════════════════════════════════════════
@@ -507,10 +582,7 @@ router.get("/api/npc-economy/:npcId", isAuthenticated, async (req, res) => {
 router.get("/api/npc-relationships/:npcId", isAuthenticated, async (req, res) => {
   try {
     const { npcId } = req.params;
-    const rows = await db.select().from(npcRelationships)
-      .where(or(eq(npcRelationships.npcAId, npcId), eq(npcRelationships.npcBId, npcId)))
-      .orderBy(desc(npcRelationships.updatedAt));
-
+    const rows = await db.select().from(npcRelationships).where(or(eq(npcRelationships.npcAId, npcId), eq(npcRelationships.npcBId, npcId))).orderBy(desc(npcRelationships.updatedAt));
     const results = await Promise.all(rows.map(async (rel) => {
       const otherId = rel.npcAId === npcId ? rel.npcBId : rel.npcAId;
       const [other] = await db.select({ id: npcCores.id, name: npcCores.name, occupation: npcCores.occupation }).from(npcCores).where(eq(npcCores.id, otherId));
@@ -518,12 +590,8 @@ router.get("/api/npc-relationships/:npcId", isAuthenticated, async (req, res) =>
       const relatedMemories = other ? recentMemories.filter((m) => m.event.includes(other.name)).slice(0, 3) : [];
       return { ...rel, other: other ?? null, recentEncounters: relatedMemories };
     }));
-
     return res.json(results);
-  } catch (err) {
-    console.error("[npcCore] relationships error:", err);
-    return res.status(500).json({ message: "Lỗi server" });
-  }
+  } catch (err) { console.error("[npcCore] relationships:", err); return res.status(500).json({ message: "Lỗi server" }); }
 });
 
 /* ════════════════════════════════════════
@@ -534,10 +602,7 @@ router.get("/api/npc-core/:npcId/memories", isAuthenticated, async (req, res) =>
     const { npcId } = req.params;
     const memories = await db.select().from(npcCoreMemories).where(eq(npcCoreMemories.npcCoreId, npcId)).orderBy(desc(npcCoreMemories.timestamp)).limit(20);
     return res.json(memories);
-  } catch (err) {
-    console.error("[npcCore] memories error:", err);
-    return res.status(500).json({ message: "Lỗi server" });
-  }
+  } catch (err) { console.error("[npcCore] memories:", err); return res.status(500).json({ message: "Lỗi server" }); }
 });
 
 /* ════════════════════════════════════════
@@ -551,10 +616,7 @@ router.get("/api/npc-core/detail/:npcId", isAuthenticated, async (req, res) => {
     const [personality] = await db.select().from(npcPersonalities).where(eq(npcPersonalities.npcCoreId, npcId));
     const memories = await db.select().from(npcCoreMemories).where(eq(npcCoreMemories.npcCoreId, npcId)).orderBy(desc(npcCoreMemories.timestamp)).limit(10);
     return res.json({ ...npc, personality: personality ?? null, recentMemories: memories });
-  } catch (err) {
-    console.error("[npcCore] detail error:", err);
-    return res.status(500).json({ message: "Lỗi server" });
-  }
+  } catch (err) { console.error("[npcCore] detail:", err); return res.status(500).json({ message: "Lỗi server" }); }
 });
 
 export default router;

@@ -68,6 +68,28 @@ export const npcTransactions = pgTable("npc_transactions", {
   timestamp: timestamp("timestamp").defaultNow(),
 });
 
+export const worldMarket = pgTable("world_market", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  worldSlug: varchar("world_slug", { length: 64 }).notNull(),
+  itemName: varchar("item_name", { length: 64 }).notNull(),
+  currentPrice: integer("current_price").notNull().default(8),
+  totalSupply: integer("total_supply").notNull().default(0),
+  totalDemand: integer("total_demand").notNull().default(0),
+  lastUpdated: timestamp("last_updated").defaultNow(),
+});
+
+export const marketOrders = pgTable("market_orders", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  npcId: uuid("npc_id").references(() => npcCores.id, { onDelete: "cascade" }),
+  worldSlug: varchar("world_slug", { length: 64 }).notNull(),
+  itemName: varchar("item_name", { length: 64 }).notNull(),
+  quantity: integer("quantity").notNull().default(1),
+  orderType: varchar("order_type", { length: 8 }).notNull().default("mua"),
+  price: integer("price").notNull().default(8),
+  status: varchar("status", { length: 16 }).notNull().default("filled"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export type NpcCore = typeof npcCores.$inferSelect;
 export type InsertNpcCore = typeof npcCores.$inferInsert;
 export type NpcPersonality = typeof npcPersonalities.$inferSelect;
