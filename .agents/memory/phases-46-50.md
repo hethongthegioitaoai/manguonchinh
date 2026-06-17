@@ -24,6 +24,19 @@ description: Phase 46 THỜI TIẾT ĐỘNG complete; phases 47-50 pending with 
 - Dashboard: Activity icon, "SIM ENGINE — THẾ GIỚI TỰ SỐNG"
 - Bug fix: `/api/simulation/all` was ordering by `worldSimLog.happenedAt` instead of `worldSimState.lastTickAt`
 
+## Phase 52 — LÃNH THỔ ✅ (complete 2026-06-17)
+
+- Tables: `territories`, `territory_resources`, `territory_logs` (pushed to DB)
+- Schema: `lib/db/src/schema/territories.ts` — references `npcFactions.id` for ownerFactionId
+- Route: `artifacts/api-server/src/routes/territories.ts`
+  - GET /api/territories/:worldSlug
+  - POST /api/territories/seed/:worldSlug (idempotent, 5 territories)
+  - POST /api/territories/:id/claim (body: { factionId })
+  - POST /api/territories/harvest/:worldSlug (prosperity multiplier)
+- Harvest config: farmland→food+wood, harbor→fish+gold, city→gold+tools, district→gold, village→food+labor
+- Page: `/territories` — TerritoryPage.tsx, expandable cards with resources/owner/logs
+- Dashboard: Map icon, label "LÃNH THỔ"
+
 ## Phase 51 — HỘI NHÓM NPC ✅ (complete 2026-06-17)
 
 - Tables: `npc_factions`, `npc_faction_members`, `npc_faction_memories` (pushed to DB)

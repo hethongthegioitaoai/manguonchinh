@@ -584,9 +584,17 @@ export default function DashboardPage() {
                         icon: Shield,
                         label: "HỘI NHÓM NPC",
                         sub: "Thành lập hội nhóm, thủ lĩnh, quỹ hội",
-                        tag: "NEW",
+                        tag: null,
                         disabled: false,
                         onClick: () => setLocation("/npc-factions"),
+                      },
+                      {
+                        icon: Map,
+                        label: "LÃNH THỔ",
+                        sub: "Sở hữu đất đai, thu hoạch tài nguyên",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/territories"),
                       },
                       {
                         icon: Globe,

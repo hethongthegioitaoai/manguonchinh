@@ -71,6 +71,7 @@ import WorldSimulationPage from "@/pages/WorldSimulationPage";
 import NPCSimulationPage from "@/pages/NPCSimulationPage";
 import NPCPopulationPage from "@/pages/NPCPopulationPage";
 import NPCFactionPage from "@/pages/NPCFactionPage";
+import TerritoryPage from "@/pages/TerritoryPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";
 
@@ -151,6 +152,7 @@ function Router() {
       <Route path="/npc-simulation" component={NPCSimulationPage} />
       <Route path="/npc-population" component={NPCPopulationPage} />
       <Route path="/npc-factions" component={NPCFactionPage} />
+      <Route path="/territories" component={TerritoryPage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/reset-password" component={ResetPasswordPage} />
       <Route path="/verify-email" component={VerifyEmailPage} />

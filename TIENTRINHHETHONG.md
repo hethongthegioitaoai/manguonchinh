@@ -18,7 +18,9 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 17/06/2026 — HỆ THỐNG HỘI NHÓM NPC hoàn tất: bảng DB `npc_factions`+`npc_faction_members`+`npc_faction_memories`; 5 loại hội nhóm (merchant_guild/farming_clan/military_order/criminal_group/noble_house); tự động thành lập từ 3+ NPC cùng nghề quan hệ>70; bầu thủ lĩnh theo wealth+influence; thu phí thành viên 5% tài sản vào quỹ; ký ức gia nhập/bầu lãnh đạo; API 3 route (GET/auto-form/collect-tribute); trang `/npc-factions`; nút Dashboard "HỘI NHÓM NPC".
+> **Cập nhật lần cuối:** 17/06/2026 — HỆ THỐNG LÃNH THỔ hoàn tất: 3 bảng DB `territories`+`territory_resources`+`territory_logs`; 5 loại (village/district/city/farmland/harbor); faction sở hữu lãnh thổ; thu hoạch tài nguyên theo loại (thực phẩm/cá/vàng/công cụ/gỗ) với hệ số thịnh vượng; nhật ký lãnh thổ; API 4 route (GET/seed/claim/harvest); trang `/territories`; nút Dashboard "LÃNH THỔ".
+
+> **Cập nhật trước:** 17/06/2026 — HỆ THỐNG HỘI NHÓM NPC hoàn tất: bảng DB `npc_factions`+`npc_faction_members`+`npc_faction_memories`; 5 loại hội nhóm (merchant_guild/farming_clan/military_order/criminal_group/noble_house); tự động thành lập từ 3+ NPC cùng nghề quan hệ>70; bầu thủ lĩnh theo wealth+influence; thu phí thành viên 5% tài sản vào quỹ; ký ức gia nhập/bầu lãnh đạo; API 3 route (GET/auto-form/collect-tribute); trang `/npc-factions`; nút Dashboard "HỘI NHÓM NPC".
 
 > **Cập nhật trước:** 17/06/2026 — HỆ THỐNG DÂN SỐ NPC hoàn tất: thêm cột `life_stage` + `tick_count` vào `npc_cores`; bảng `npc_births`; logic già hoá mỗi 5 tick +1 tuổi trong tick route; hệ thống sinh con cho cặp đôi đủ điều kiện (trưởng thành + happiness>60 + quan hệ>75, 15% xác suất/lần); route `GET /api/npc-population/:worldSlug` + `POST /api/npc-population/run-aging/:worldSlug`; trang `/npc-population` — 3 stat card, phân bổ độ tuổi 4 giai đoạn, danh sách dân cư, nút Chạy Già Hóa & Sinh Sản, ký ức chào đời.
 
@@ -1289,6 +1291,23 @@ configureWorkflow("Frontend", "pnpm --filter @workspace/ai-world-system run dev"
 - [ ] Nút Dashboard "LỄ HỘI THEO MÙA"
 
 ---
+
+### ════════════════════════════════════════
+### PHASE 52 — LÃNH THỔ (TERRITORY SYSTEM)
+### ════════════════════════════════════════
+
+**Mục tiêu:** Hội nhóm NPC sở hữu lãnh thổ, thu hoạch tài nguyên, nhật ký lịch sử.
+
+- [x] Bảng DB `territories` (id, worldSlug, name, type, ownerFactionId, population, prosperity, security, lastHarvestAt)
+- [x] Bảng DB `territory_resources` (id, territoryId, resourceType, amount)
+- [x] Bảng DB `territory_logs` (id, territoryId, event, createdAt)
+- [x] 5 loại: village / district / city / farmland / harbor
+- [x] Faction claim lãnh thổ
+- [x] Thu hoạch: farmland→thực phẩm+gỗ; harbor→cá+vàng; city→vàng+công cụ; district→vàng; village→thực phẩm+dân công
+- [x] Prosperity multiplier ảnh hưởng sản lượng thu hoạch
+- [x] API: GET /api/territories/:worldSlug, POST seed/:worldSlug, POST /:id/claim, POST harvest/:worldSlug
+- [x] Trang `/territories` — 4 stat cards, khởi tạo/thu hoạch, expandable card (tài nguyên/chủ/nhật ký)
+- [x] Nút Dashboard "LÃNH THỔ"
 
 ### ════════════════════════════════════════
 ### PHASE 51 — HỘI NHÓM NPC (NPC FACTION SYSTEM)
