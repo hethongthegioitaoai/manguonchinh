@@ -57,6 +57,11 @@ import BankPage from "@/pages/BankPage";
 import BountiesPage from "@/pages/BountiesPage";
 import TournamentPage from "@/pages/TournamentPage";
 import RealEstatePage from "@/pages/RealEstatePage";
+import WorldFairPage from "@/pages/WorldFairPage";
+import CitizenshipPage from "@/pages/CitizenshipPage";
+import ExpeditionPage from "@/pages/ExpeditionPage";
+import WorldSkillsPage from "@/pages/WorldSkillsPage";
+import LegendPage from "@/pages/LegendPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";
@@ -125,6 +130,11 @@ function Router() {
       <Route path="/bounties" component={BountiesPage} />
       <Route path="/tournament" component={TournamentPage} />
       <Route path="/realestate" component={RealEstatePage} />
+      <Route path="/fair" component={WorldFairPage} />
+      <Route path="/citizenship" component={CitizenshipPage} />
+      <Route path="/expedition" component={ExpeditionPage} />
+      <Route path="/world-skills" component={WorldSkillsPage} />
+      <Route path="/legends" component={LegendPage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/reset-password" component={ResetPasswordPage} />
       <Route path="/verify-email" component={VerifyEmailPage} />

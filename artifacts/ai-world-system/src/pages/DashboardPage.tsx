@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import {
   LogOut, Globe, Zap, User, Shield, Swords, Users,
-  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain, Sparkles, Skull, Hammer, Newspaper, Crown, ShoppingBag, Map, ScrollText, Infinity, Orbit, Mail, X, Gavel, Award, Handshake, Palette, Scale, AlertTriangle, Landmark, Target, Sword, Leaf,
+  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain, Sparkles, Skull, Hammer, Newspaper, Crown, ShoppingBag, Map, ScrollText, Infinity, Orbit, Mail, X, Gavel, Award, Handshake, Palette, Scale, AlertTriangle, Landmark, Target, Sword, Leaf, Compass, BookOpen,
 } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Button } from "@/components/ui/button";
@@ -804,9 +804,49 @@ export default function DashboardPage() {
                         icon: Leaf,
                         label: "BẤT ĐỘNG SẢN",
                         sub: "Mua đất — nông điền/khoáng mỏ/cửa hàng/cư sở — thu nhập thụ động — nâng cấp bán lại",
-                        tag: "NEW",
+                        tag: null,
                         disabled: false,
                         onClick: () => setLocation("/realestate"),
+                      },
+                      {
+                        icon: Compass,
+                        label: "THÁM HIỂM NHÓM",
+                        sub: "Lập đội 2-4 người — AI sinh bản đồ — sự kiện ngẫu nhiên — loot chia đều — EXP nhân đôi",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/expedition"),
+                      },
+                      {
+                        icon: Globe,
+                        label: "DI DÂN & QUỐC TỊCH",
+                        sub: "Định cư thế giới khác — quyền lợi công dân — giảm thuế giao dịch — bầu cử thế giới",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/citizenship"),
+                      },
+                      {
+                        icon: Sparkles,
+                        label: "HỘI CHỢ THẾ GIỚI",
+                        sub: "Tham quan gian hàng các thế giới — bình chọn thế giới xuất sắc — nhận EXP — đăng ký gian hàng",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/fair"),
+                      },
+                      {
+                        icon: BookOpen,
+                        label: "KỸ NĂNG QUỐC GIA",
+                        sub: "Kỹ năng độc quyền từng thế giới — passive buff EXP/gold/crit — cần quốc tịch để học",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/world-skills"),
+                      },
+                      {
+                        icon: Crown,
+                        label: "ĐIỆN TRUYỀN THUYẾT",
+                        sub: "Phong huyền thoại nếu đủ điều kiện — AI sinh câu chuyện sử thi — cộng đồng tôn vinh",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/legends"),
                       },
                     ].map((action) => (
                       <motion.div

@@ -40,3 +40,8 @@ export * from "./bank";
 export * from "./bounty";
 export * from "./tournament";
 export * from "./realEstate";
+export * from "./worldFair";
+export * from "./citizenship";
+export * from "./expedition";
+export * from "./worldSkill";
+export * from "./legend";

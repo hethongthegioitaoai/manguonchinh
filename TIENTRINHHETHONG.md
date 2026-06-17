@@ -18,7 +18,9 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 17/06/2026 — Phase 26 KINH TẾ THẾ GIỚI hoàn tất: DB `world_currencies`+`world_treasury`+`currency_exchanges`, AI sinh tên tiền tệ theo lore, sàn tỷ giá realtime, đổi tiền liên thế giới (phí 1%), tỷ giá dao động theo volume, kho bạc thế giới, thuế quan 0-30%, trang `/world-economy`. Tầm nhìn dự án được cập nhật: thế giới là đơn vị chính, 5 phases mới (Kinh Tế / Ngoại Giao / Chiến Tranh / Đa Chủ Đề / Quản Trị) thay thế phases cũ.
+> **Cập nhật lần cuối:** 17/06/2026 — Phase 36 HỘI CHỢ THẾ GIỚI hoàn tất: DB `world_fairs`+`fair_booths`+`fair_visits`, AI sinh tên gian hàng + narrative theo lore, tham quan 50 gold/gian +30 EXP, bình chọn thế giới xuất sắc, đăng ký gian hàng cho creator, trang `/fair`, nút Dashboard "HỘI CHỢ THẾ GIỚI". Phases 36-40 được thêm vào roadmap và build ngay.
+>
+> Phase 26 KINH TẾ THẾ GIỚI hoàn tất: DB `world_currencies`+`world_treasury`+`currency_exchanges`, AI sinh tên tiền tệ theo lore, sàn tỷ giá realtime, đổi tiền liên thế giới (phí 1%), tỷ giá dao động theo volume, kho bạc thế giới, thuế quan 0-30%, trang `/world-economy`. Tầm nhìn dự án được cập nhật: thế giới là đơn vị chính, 5 phases mới (Kinh Tế / Ngoại Giao / Chiến Tranh / Đa Chủ Đề / Quản Trị) thay thế phases cũ.
 >
 > Phase 25: ĐỒNG HÀNH hoàn tất: 9 pet × 3 thế giới, roll rarity (1% Legendary → 50% Common), triệu hồi 200 vàng cooldown 12h, cho ăn 50 vàng cooldown 4h, tiến hóa Tier 1→2→3, passive buff EXP/gold/crit/HP, trang `/pets`. Đồng thời hoàn tất security middleware 12 tầng (helmet + rate-limit + SQL/XSS guard + honeypot + UA block) kích hoạt trong API server, tạo BẢOMẬTVÀCHỐNGHACKHỆTHỐNG.JS và MÃHOÁFILECODEHỆTHỐNG.JS ở root.
 
@@ -714,6 +716,112 @@ lib/
 
 ---
 
+### ════════════════════════════════════════
+### PHASE 36 — HỘI CHỢ THẾ GIỚI (WORLD FAIR) ✅
+### ════════════════════════════════════════
+
+**Mục tiêu:** Định kỳ 3 ngày/lần, hội chợ liên thế giới mở ra. Mỗi thế giới có gian hàng riêng — người chơi bỏ 50 gold tham quan, nhận EXP, bình chọn thế giới yêu thích. Thế giới nhiều phiếu nhất mùa đó được xướng danh Quán Quân.
+
+- [x] Bảng DB `world_fairs` (id, season, status, theme, startAt, endsAt, totalVisits, winnerWorldSlug)
+- [x] Bảng DB `fair_booths` (id, fairId, worldSlug, worldName, boothName, aiNarrative, entryFee, votes, visits, featured, ownerId)
+- [x] Bảng DB `fair_visits` (id, fairId, boothId, characterId, userId, goldSpent, voted, visitedAt)
+- [x] AI sinh tên gian hàng + narrative mô tả gian hàng theo lore thế giới (lazy — sinh lúc tham quan lần đầu)
+- [x] 3 gian hàng builtin (Tu Tiên/Cyberpunk/Hoang Phế) + up to 5 gian hàng custom worlds
+- [x] Hội chợ tự động tạo mùa mới khi hết hạn (getOrCreateActiveFair)
+- [x] API GET /api/fair/current — hội chợ đang diễn ra + booths
+- [x] API GET /api/fair/history — lịch sử các mùa đã kết thúc
+- [x] API POST /api/fair/visit/:boothId — tham quan (-50 gold, +30 EXP, sinh AI narrative)
+- [x] API POST /api/fair/vote/:boothId — bình chọn (chỉ sau khi đã tham quan)
+- [x] API POST /api/fair/register — creator đăng ký gian hàng cho thế giới công khai của mình
+- [x] API GET /api/fair/my-visits — lịch sử tham quan của user
+- [x] Trang `/fair` — banner thông tin mùa, grid gian hàng, visit/vote, tab lịch sử
+- [x] Nút Dashboard "HỘI CHỢ THẾ GIỚI" tag "NEW"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 37 — HỆ THỐNG DI DÂN (CITIZENSHIP) ✅
+### ════════════════════════════════════════
+
+**Mục tiêu:** Nhân vật có thể xin nhập quốc tịch vào thế giới người khác — không chỉ du lịch mà là định cư. Công dân được giảm thuế giao dịch, nhận thông báo sự kiện thế giới, tham gia bầu cử, đóng thuế thường niên. World owner phê duyệt hoặc từ chối.
+
+- [x] Bảng DB `citizenships` (id, characterId, worldSlug, status: pending/approved/revoked, applicationNote, approvalNote, appliedAt, approvedAt, taxPaidAt, annualTax)
+- [x] Bảng DB `citizenship_benefits` (worldSlug, tradeTaxDiscount, voteEligible, eventNotify, maxCitizens, annualTaxAmount)
+- [x] API GET /api/citizenship/worlds — thế giới đang nhận công dân
+- [x] API GET /api/citizenship/my — quốc tịch của nhân vật hiện tại
+- [x] API POST /api/citizenship/apply/:worldSlug — nộp đơn nhập quốc tịch
+- [x] API GET /api/citizenship/applications/:worldSlug — creator xem đơn xin
+- [x] API POST /api/citizenship/approve/:id — phê duyệt + thiết lập quyền lợi
+- [x] API POST /api/citizenship/revoke/:id — thu hồi quốc tịch
+- [x] API POST /api/citizenship/pay-tax/:worldSlug — nộp thuế thường niên (tránh mất quốc tịch)
+- [x] Quyền lợi công dân: giảm 20% thuế giao dịch, bình chọn governance, thông báo sự kiện
+- [x] Trang `/citizenship` — thế giới nhận cư dân, đơn của tôi, quản lý công dân (creator)
+- [x] Nút Dashboard "DI DÂN & QUỐC TỊCH"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 38 — THÁM HIỂM NHÓM (GROUP EXPEDITION) ✅
+### ════════════════════════════════════════
+
+**Mục tiêu:** 2–4 nhân vật lập đội thám hiểm vùng đất chưa khám phá. AI sinh bản đồ ngẫu nhiên + chuỗi sự kiện. Loot chia đều. Thất bại → mất HP + gold. Thành công → loot hiếm + EXP nhân đôi.
+
+- [x] Bảng DB `expeditions` (id, worldSlug, leaderId, status: recruiting/active/ended, members jsonb, mapData jsonb, currentStep, totalSteps, loot jsonb, createdAt, endedAt)
+- [x] Bảng DB `expedition_events` (id, expeditionId, step, eventType: combat/trap/treasure/npc/rest, description, outcome jsonb, resolvedAt)
+- [x] Tối đa 4 thành viên, leader mời, leader tự khởi động khi muốn
+- [x] AI sinh sự kiện ngẫu nhiên (combat, treasure, trap, npc, rest) + narrative theo lore
+- [x] API POST /api/expedition/create — tạo đội thám hiểm
+- [x] API POST /api/expedition/join/:id — gia nhập đội
+- [x] API POST /api/expedition/start/:id — leader khởi động
+- [x] API POST /api/expedition/advance/:id — tiến bước tiếp (cooldown 5 phút/bước)
+- [x] API GET /api/expedition/active — thám hiểm đang diễn ra của user
+- [x] API GET /api/expedition/events/:id — lịch sử sự kiện
+- [x] API GET /api/expedition/history — lịch sử đã kết thúc
+- [x] Reward chia đều: gold/EXP/HP thay đổi theo từng sự kiện + bonus khi hoàn thành
+- [x] Trang `/expedition` — tạo đội, tìm đội, bản đồ tiến trình, sự kiện realtime
+- [x] Nút Dashboard "THÁM HIỂM NHÓM"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 39 — KỸ NĂNG QUỐC GIA (WORLD SKILLS) ✅
+### ════════════════════════════════════════
+
+**Mục tiêu:** Mỗi thế giới có 3 kỹ năng đặc trưng chỉ công dân/cư dân thế giới đó mới học được. AI sinh tên + mô tả theo lore. Kỹ năng tăng passive buff khi ở trong thế giới đó.
+
+- [x] Bảng DB `world_unique_skills` (id, worldSlug, skillName, skillDesc, buffType, buffValue, requiredLevel, learnCost, learners: int)
+- [x] Bảng DB `character_world_skills` (characterId, worldSlug, skillId, learnedAt, level)
+- [x] AI sinh 3 kỹ năng/world lazy — sinh lần đầu ai truy cập, fallback nếu AI lỗi
+- [x] Builtin worlds không cần quốc tịch; custom worlds cần quốc tịch được duyệt
+- [x] API GET /api/world-skills/:worldSlug — kỹ năng + mySkills + hasCitizenship
+- [x] API POST /api/world-skills/learn — học kỹ năng (-gold, -level check)
+- [x] API GET /api/world-skills/my — tất cả kỹ năng đã học
+- [x] Passive buff: exp_bonus/gold_find/crit_chance/defense_bonus/hp_regen/attack_bonus
+- [x] Trang `/world-skills` — chọn thế giới, gallery kỹ năng, tab kỹ năng đã học
+- [x] Nút Dashboard "KỸ NĂNG QUỐC GIA"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 40 — TRUYỀN THUYẾT ANH HÙNG (LEGEND HALL) ✅
+### ════════════════════════════════════════
+
+**Mục tiêu:** Nhân vật đạt thành tựu đặc biệt (lv50+, 1000 battle wins, vô địch tournament, v.v.) được AI phong "Huyền Thoại" — sinh ra câu chuyện sử thi lưu vĩnh viễn vào "Điện Truyền Thuyết". Người chơi mới đọc lịch sử anh hùng. Huyền Thoại được cộng đồng tôn vinh.
+
+- [x] Bảng DB `legends` (id, characterId, characterName, worldSlug, system, level, legendTitle, epicStory, achievements jsonb, stats jsonb, inducedAt, votes, viewed)
+- [x] Bảng DB `legend_votes` (id, legendId, userId, votedAt)
+- [x] Điều kiện phong huyền thoại (OR): level ≥ 50, hoặc battle_wins ≥ 1000, hoặc ≥20 thành tựu
+- [x] AI (Gemini) sinh câu chuyện sử thi 6-8 câu theo lore thế giới + danh hiệu huyền thoại
+- [x] API GET /api/legends — điện truyền thuyết (sort by votes, limit 50)
+- [x] API POST /api/legends/induct — tự kiểm tra + phong huyền thoại nếu đủ điều kiện
+- [x] API POST /api/legends/vote/:legendId — cộng đồng tôn vinh anh hùng (1 vote/người)
+- [x] API GET /api/legends/check — kiểm tra điều kiện nhân vật của user
+- [x] API GET /api/legends/:legendId — chi tiết + đếm viewed
+- [x] Trang `/legends` — điện thờ huyền thoại, bảng vinh danh top 50, câu chuyện sử thi, phong huyền thoại
+- [x] Nút Dashboard "ĐIỆN TRUYỀN THUYẾT"
+
+---
+
 ## 📦 TRẠNG THÁI BẢNG DB
 
 | Bảng | Trạng thái | Phase | Mô tả |
@@ -792,6 +900,17 @@ lib/
 | `tournament_matches` | ✅ | P34 | Trận đấu — AI commentary, battleLog |
 | `land_plots` | ✅ | P35 | Bất động sản — 30 plots/world, thu nhập thụ động |
 | `land_transactions` | ✅ | P35 | Lịch sử giao dịch đất |
+| `world_fairs` | ✅ | P36 | Hội chợ thế giới — season, theme, endsAt, totalVisits |
+| `fair_booths` | ✅ | P36 | Gian hàng hội chợ — AI tên+narrative, votes, visits |
+| `fair_visits` | ✅ | P36 | Lịch sử tham quan — goldSpent, voted |
+| `citizenships` | ✅ | P37 | Quốc tịch — pending/approved/revoked, annualTax |
+| `citizenship_benefits` | ✅ | P37 | Quyền lợi công dân — tradeTaxDiscount, maxCitizens |
+| `expeditions` | ✅ | P38 | Thám hiểm nhóm — members jsonb, mapData, currentStep |
+| `expedition_events` | ✅ | P38 | Sự kiện thám hiểm — combat/treasure/trap/npc/rest |
+| `world_unique_skills` | ✅ | P39 | Kỹ năng quốc gia — AI sinh 3 kỹ năng/world lazy |
+| `character_world_skills` | ✅ | P39 | Kỹ năng đã học — buffType, buffValue |
+| `legends` | ✅ | P40 | Điện truyền thuyết — AI epicStory, votes, viewed |
+| `legend_votes` | ✅ | P40 | Phiếu tôn vinh anh hùng |
 
 ---
 
@@ -850,6 +969,11 @@ lib/
 | `/bounties` | Bảng Truy Nã | P33 | ✅ |
 | `/tournament` | Đại Hội Võ Lâm | P34 | ✅ |
 | `/realestate` | Bất Động Sản Thế Giới | P35 | ✅ |
+| `/fair` | Hội Chợ Thế Giới | P36 | ✅ |
+| `/citizenship` | Di Dân & Quốc Tịch | P37 | ✅ |
+| `/expedition` | Thám Hiểm Nhóm | P38 | ✅ |
+| `/world-skills` | Kỹ Năng Quốc Gia | P39 | ✅ |
+| `/legends` | Điện Truyền Thuyết | P40 | ✅ |
 
 ---
 

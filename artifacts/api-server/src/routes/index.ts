@@ -47,6 +47,11 @@ import bankRouter from "./bank.js";
 import bountyRouter from "./bounty.js";
 import tournamentRouter from "./tournament.js";
 import realEstateRouter from "./realEstate.js";
+import worldFairRouter from "./worldFair.js";
+import citizenshipRouter from "./citizenship.js";
+import expeditionRouter from "./expedition.js";
+import worldSkillRouter from "./worldSkill.js";
+import legendRouter from "./legend.js";
 
 const router: IRouter = Router();
 
@@ -98,5 +103,10 @@ router.use(bankRouter);
 router.use(bountyRouter);
 router.use(tournamentRouter);
 router.use(realEstateRouter);
+router.use(worldFairRouter);
+router.use(citizenshipRouter);
+router.use(expeditionRouter);
+router.use(worldSkillRouter);
+router.use(legendRouter);
 
 export default router;
