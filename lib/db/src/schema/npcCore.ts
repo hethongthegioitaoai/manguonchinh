@@ -11,6 +11,8 @@ export const npcCores = pgTable("npc_cores", {
   hunger: integer("hunger").notNull().default(0),
   happiness: integer("happiness").notNull().default(70),
   currentGoal: text("current_goal").default(null),
+  lifeStage: varchar("life_stage", { length: 16 }).notNull().default("adult"),
+  tickCount: integer("tick_count").notNull().default(0),
   active: integer("active").notNull().default(1),
   lastTickAt: timestamp("last_tick_at"),
   createdAt: timestamp("created_at").defaultNow(),

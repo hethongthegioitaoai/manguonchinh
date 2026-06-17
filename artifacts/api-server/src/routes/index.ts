@@ -60,6 +60,7 @@ import worldWeatherRouter from "./worldWeather.js";
 import worldSimulationRouter from "./worldSimulation.js";
 import npcCoreRouter from "./npcCore.js";
 import npcFamilyRouter from "./npcFamily.js";
+import npcPopulationRouter from "./npcPopulation.js";
 
 const router: IRouter = Router();
 
@@ -124,5 +125,6 @@ router.use(worldWeatherRouter);
 router.use(worldSimulationRouter);
 router.use(npcCoreRouter);
 router.use(npcFamilyRouter);
+router.use(npcPopulationRouter);
 
 export default router;

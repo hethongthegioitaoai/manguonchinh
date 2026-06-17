@@ -568,9 +568,17 @@ export default function DashboardPage() {
                         icon: Brain,
                         label: "MÔ PHỎNG NPC",
                         sub: "Vòng đời tự động — mục tiêu, bộ nhớ, tính cách",
-                        tag: "NEW",
+                        tag: null,
                         disabled: false,
                         onClick: () => setLocation("/npc-simulation"),
+                      },
+                      {
+                        icon: Users,
+                        label: "DÂN SỐ NPC",
+                        sub: "Sinh sản, già hóa, phân bổ độ tuổi dân số",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/npc-population"),
                       },
                       {
                         icon: Globe,

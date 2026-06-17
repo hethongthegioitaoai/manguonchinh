@@ -11,6 +11,12 @@ const router = Router();
 
 function clamp(v: number, min: number, max: number) { return Math.max(min, Math.min(max, v)); }
 function rand(min: number, max: number) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function getLifeStage(age: number): string {
+  if (age <= 12) return "child";
+  if (age <= 17) return "teenager";
+  if (age <= 59) return "adult";
+  return "elder";
+}
 
 /* ── Market constants ── */
 const MARKET_ITEMS = ["thực phẩm", "cá", "gỗ", "công cụ"] as const;
@@ -469,7 +475,9 @@ router.post("/api/npc-core/tick/:worldSlug", isAuthenticated, async (req, res) =
       const newGoal = generateGoal(updatedNpc);
       const action  = describeAction(updatedNpc, personality);
 
-      await db.update(npcCores).set({ money: newMoney, energy: newEnergy, hunger: newHunger, happiness: newHappiness, currentGoal: newGoal, lastTickAt: new Date() }).where(eq(npcCores.id, npc.id));
+      const newTickCount = (npc.tickCount ?? 0) + 1;
+      const newAge = newTickCount % 5 === 0 ? Math.min(npc.age + 1, 120) : npc.age;
+      await db.update(npcCores).set({ money: newMoney, energy: newEnergy, hunger: newHunger, happiness: newHappiness, currentGoal: newGoal, lastTickAt: new Date(), tickCount: newTickCount, age: newAge, lifeStage: getLifeStage(newAge) }).where(eq(npcCores.id, npc.id));
       await db.insert(npcCoreMemories).values({ npcCoreId: npc.id, event: memoryEvent, importance: memoryImportance });
 
       const mems = await db.select({ id: npcCoreMemories.id }).from(npcCoreMemories).where(eq(npcCoreMemories.npcCoreId, npc.id)).orderBy(desc(npcCoreMemories.timestamp));
