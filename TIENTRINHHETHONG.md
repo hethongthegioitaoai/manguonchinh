@@ -1177,3 +1177,97 @@ configureWorkflow("Frontend", "pnpm --filter @workspace/ai-world-system run dev"
 ```
 
 *Cập nhật file này ngay sau khi hoàn thành mỗi tính năng.*
+
+---
+
+## ════════════════════════════════════════════════════════
+## 🌦️ ROADMAP MỞ RỘNG VŨ TRỤ (PHASES 46–50)
+## ════════════════════════════════════════════════════════
+
+> **Triết lý:** Các phase 46–50 mở rộng chiều sâu của thế giới sống — thời tiết động, kinh tế caravan, kho tàng tri thức, lễ hội mùa vụ, và đấu trường thần lực liên thế giới. Mỗi feature làm cho "thế giới" thực sự sống như một thực thể.
+
+---
+
+### ════════════════════════════════════════
+### PHASE 46 — THỜI TIẾT ĐỘNG (DYNAMIC WORLD WEATHER) ✅
+### ════════════════════════════════════════
+
+**Mục tiêu:** Mỗi thế giới có thời tiết riêng thay đổi mỗi 8–12 giờ. AI sinh narrative theo lore thế giới. Thời tiết ảnh hưởng trực tiếp đến EXP, vàng, thu hoạch và sức chiến đấu. Người chơi phải theo dõi thời tiết để tối ưu chiến lược.
+
+- [x] Bảng DB `world_weather` (id, worldSlug, weatherType, weatherName, intensity, description, aiNarrative, effects jsonb, isActive, startsAt, endsAt, generatedAt)
+- [x] 10 loại thời tiết: clear/rain/storm/fog/blizzard/heatwave/thunderstorm/aurora/sandstorm/blessing_sky
+- [x] AI (Gemini) sinh tên thời tiết theo lore + narrative 2 câu
+- [x] Effects: expMult/goldMult/harvestMult/battleMult (0.3 – 5.0x)
+- [x] Auto-expire weather khi endsAt qua
+- [x] API GET /api/weather/:worldSlug — thời tiết hiện tại + lịch sử 10 gần nhất
+- [x] API GET /api/weather/all/active — tất cả thế giới weather active
+- [x] API POST /api/weather/generate/:worldSlug — tạo thời tiết mới (force hoặc auto)
+- [x] Trang `/weather` — bản đồ thời tiết 3 thế giới, multiplier badge, lịch sử, bảng ý nghĩa
+- [x] Nút Dashboard "THỜI TIẾT THẾ GIỚI"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 47 — CARAVAN LIÊN THẾ GIỚI (INTER-WORLD CARAVAN)
+### ════════════════════════════════════════
+
+**Mục tiêu:** Player tổ chức đoàn thương nhân vận chuyển tài nguyên từ thế giới này sang thế giới khác để kiếm lời. Caravan có thể bị cướp bởi player khác trong tuyến đường nguy hiểm. AI sinh câu chuyện hành trình.
+
+- [ ] Bảng DB `caravans` (id, leaderId, leaderName, fromWorld, toWorld, cargo jsonb, guards, status, route, aiNarrative, departedAt, arrivesAt, goldReward)
+- [ ] Bảng DB `caravan_raids` (id, caravanId, raiderId, raiderName, success, loot jsonb, battleLog, raidedAt)
+- [ ] 4 tuyến đường: Tu Tiên↔Cyberpunk, Cyberpunk↔Hoang Phế, Tu Tiên↔Hoang Phế, vòng 3 thế giới
+- [ ] AI sinh hành trình caravan — rủi ro ngẫu nhiên (bandits/disasters/weather)
+- [ ] API CRUD caravans + raid endpoint
+- [ ] Trang `/caravan` — tạo caravan, theo dõi hành trình, lịch sử
+- [ ] Nút Dashboard "CARAVAN LIÊN THẾ GIỚI"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 48 — THƯ VIỆN CỔ ĐẠI (ANCIENT KNOWLEDGE LIBRARY)
+### ════════════════════════════════════════
+
+**Mục tiêu:** Mỗi thế giới tích lũy "lore entries" từ player khám phá, battle, và AI sinh. Player nghiên cứu để mở kỹ năng ẩn/vật phẩm bí ẩn/cảnh giới đặc biệt. Thư viện là "trí nhớ sống" của thế giới.
+
+- [ ] Bảng DB `knowledge_entries` (id, worldSlug, title, category, content, aiGenerated, discoveredBy, rarity, unlockCost, timesStudied, createdAt)
+- [ ] Bảng DB `player_research` (id, characterId, entryId, studiedAt, bonusUnlocked)
+- [ ] AI sinh lore entry từ battle history + world events
+- [ ] 5 category: history/skills/items/monsters/realms
+- [ ] API CRUD + research endpoint
+- [ ] Trang `/library` — thư viện thế giới, browse/search entries, nghiên cứu
+- [ ] Nút Dashboard "THƯ VIỆN CỔ ĐẠI"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 49 — LỄ HỘI THEO MÙA (SEASONAL FESTIVALS)
+### ════════════════════════════════════════
+
+**Mục tiêu:** Mỗi mùa (3 tháng thực) thế giới có lễ hội riêng — event đặc biệt, quest giới hạn thời gian, boss mùa, phần thưởng cosmetic độc quyền. AI sinh lore lễ hội theo chủ đề thế giới.
+
+- [ ] Bảng DB `seasonal_festivals` (id, worldSlug, season, festivalName, theme, startDate, endDate, rewards jsonb, aiNarrative, participantCount, isActive)
+- [ ] Bảng DB `festival_participations` (id, festivalId, characterId, tasksCompleted, rewardsClaimed, joinedAt)
+- [ ] 4 mùa: Xuân/Hạ/Thu/Đông (auto-rotate theo calendar)
+- [ ] AI sinh tên lễ hội + narrative + 3 quest đặc biệt
+- [ ] Phần thưởng cosmetic (title/pet skin/avatar frame) độc quyền theo mùa
+- [ ] API CRUD festivals + participation
+- [ ] Trang `/festival` — lễ hội hiện tại, task list, đếm ngược, leaderboard mùa
+- [ ] Nút Dashboard "LỄ HỘI THEO MÙA"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 50 — VŨ ĐÀI THẦN LỰC (DIVINE ARENA)
+### ════════════════════════════════════════
+
+**Mục tiêu:** Đấu trường liên thế giới — player từ các thế giới khác nhau chiến đấu trong arena thần thánh. Mỗi trận có rule set riêng theo lore (Tu Tiên: kiếm khí; Cyberpunk: mech; Hoang Phế: survival). AI sinh narrative trận đấu sử thi. Top player được phong "Thần Đấu".
+
+- [ ] Bảng DB `divine_arena_matches` (id, challenger, challengerWorld, defender, defenderWorld, ruleSet, winnerId, aiNarrative, expReward, goldReward, matchedAt, completedAt)
+- [ ] Bảng DB `divine_arena_rankings` (id, characterId, characterName, worldSlug, wins, losses, divinePoints, tier, rank, updatedAt)
+- [ ] 3 rule set theo thế giới: cultivation_duel/cyber_duel/wasteland_survival
+- [ ] AI sinh narrative trận đấu 4-6 câu theo lore thế giới đối kháng
+- [ ] Matchmaking: ghép cặp ngẫu nhiên cross-world, có thể challenge cụ thể
+- [ ] Tier system: Đồng/Bạc/Vàng/Bạch Kim/Kim Cương/Thần
+- [ ] API CRUD arena + matchmaking + rankings
+- [ ] Trang `/divine-arena` — matchmaking, trận đấu, bảng xếp hạng thần lực
+- [ ] Nút Dashboard "VŨ ĐÀI THẦN LỰC"
