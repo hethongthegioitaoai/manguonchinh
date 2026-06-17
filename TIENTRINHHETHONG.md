@@ -18,7 +18,9 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 17/06/2026 — HỆ THỐNG CHỢ TOÀN CẦU (GLOBAL MARKET) hoàn tất: 2 bảng DB mới (`world_market`, `market_orders`), 4 hàng hóa (thực phẩm/cá/gỗ/công cụ) với giá dao động ±10%/tick dựa supply/demand; NPC đói→mua thực phẩm, thương nhân→mua thấp/bán cao, thợ thủ công→mua gỗ khi thiếu; ký ức giao dịch chợ; API `GET /api/npc-market/:worldSlug`; tab CHỢ (thứ 5) trong dashboard: 4 price card (giá hiện tại, cung/cầu bar, xu hướng ↑↓), danh sách 20 giao dịch gần nhất, mini preview ở sidebar trái; nút "CHỢ" luôn hiển thị ngay cả khi chưa chọn NPC.
+> **Cập nhật lần cuối:** 17/06/2026 — HỆ THỐNG GIA ĐÌNH NPC hoàn tất: 2 bảng DB mới (`npc_family`, `npc_family_memories`); điều kiện kết đôi (friendship > 70 + happiness > 50); API CRUD 4 route (GET /api/npc-family/:npcId, POST form-partner, POST set-parent, POST auto-match/:worldSlug); tab GIA ĐÌNH thứ 5 trong NPCSimulationPage — bạn đời/cha/mẹ/con cái, ký ức gia đình, nút ghép đôi tự động.
+
+> **Cập nhật trước:** 17/06/2026 — HỆ THỐNG CHỢ TOÀN CẦU (GLOBAL MARKET) hoàn tất: 2 bảng DB mới (`world_market`, `market_orders`), 4 hàng hóa (thực phẩm/cá/gỗ/công cụ) với giá dao động ±10%/tick dựa supply/demand; NPC đói→mua thực phẩm, thương nhân→mua thấp/bán cao, thợ thủ công→mua gỗ khi thiếu; ký ức giao dịch chợ; API `GET /api/npc-market/:worldSlug`; tab CHỢ (thứ 5) trong dashboard: 4 price card (giá hiện tại, cung/cầu bar, xu hướng ↑↓), danh sách 20 giao dịch gần nhất, mini preview ở sidebar trái; nút "CHỢ" luôn hiển thị ngay cả khi chưa chọn NPC.
 
 > **Cập nhật trước:** 17/06/2026 — HỆ THỐNG QUAN HỆ NPC hoàn tất: bảng DB `npc_relationships` (score -100→100, 6 loại: người lạ/người quen/bạn bè/đồng minh/đối thủ/kẻ thù), logic gặp gỡ ngẫu nhiên trong mỗi tick (đánh giá lòng tốt/tham/dũng/tò mò → delta điểm), ký ức cuộc gặp lưu 2 chiều, API `GET /api/npc-relationships/:npcId`, panel QUAN HỆ 3-tab trong trang `/npc-simulation` (Trạng Thái / Quan Hệ / Bộ Nhớ) với score bar, badge 4 loại ý nghĩa, lịch sử gặp gỡ.
 

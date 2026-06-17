@@ -6,7 +6,7 @@ import {
   BookOpen, Play, RefreshCw, ChevronLeft, Activity, Clock,
   Sparkles, Users, Sword, Shield, Star, Handshake, Eye,
   Briefcase, Package, ArrowUpRight, ArrowDownLeft, ArrowLeftRight, TrendingUp,
-  ShoppingCart, TrendingDown, Minus,
+  ShoppingCart, TrendingDown, Minus, Home, UserPlus, Baby,
 } from "lucide-react";
 
 const WORLDS = [
@@ -44,6 +44,17 @@ type EconomyData = {
 type MarketItem = { id: string; worldSlug: string; itemName: string; currentPrice: number; totalSupply: number; totalDemand: number; lastUpdated: string };
 type MarketOrder = { id: string; npcId: string | null; worldSlug: string; itemName: string; quantity: number; orderType: string; price: number; status: string; createdAt: string; npcName: string };
 type MarketData = { market: MarketItem[]; recentOrders: MarketOrder[] };
+
+type FamilyMember = { id: string; name: string; occupation: string; age: number; happiness: number } | null;
+type FamilyMemory = { id: string; content: string; createdAt: string };
+type FamilyData = {
+  family: { id: string; npcId: string; spouseId: string | null; fatherId: string | null; motherId: string | null; familyName: string | null } | null;
+  spouse: FamilyMember;
+  father: FamilyMember;
+  mother: FamilyMember;
+  children: FamilyMember[];
+  memories: FamilyMemory[];
+};
 
 /* ── Constants ── */
 const COLOR_MAP: Record<string, string> = {
@@ -94,6 +105,36 @@ function StatBar({ label, value, color, icon }: { label: string; value: number; 
         <motion.div className="h-full rounded-full" style={{ background: color }}
           initial={{ width: 0 }} animate={{ width: `${value}%` }} transition={{ duration: 0.6 }} />
       </div>
+    </div>
+  );
+}
+
+function FamilyMemberCard({ member, role, roleColor, roleIcon, worldColor }: {
+  member: FamilyMember; role: string; roleColor: string; roleIcon: React.ReactNode; worldColor: string;
+}) {
+  return (
+    <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-3 flex items-center gap-3">
+      <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: `${roleColor}18` }}>
+        <span style={{ color: roleColor }}>{roleIcon}</span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-xs font-bold tracking-widest mb-0.5" style={{ color: roleColor }}>{role}</div>
+        {member ? (
+          <>
+            <div className="text-sm font-bold text-white truncate">{member.name}</div>
+            <div className="text-xs text-gray-500">{member.occupation} · {member.age} tuổi</div>
+          </>
+        ) : (
+          <div className="text-xs text-gray-700 italic">Chưa có</div>
+        )}
+      </div>
+      {member && (
+        <div className="text-xs font-bold px-2 py-0.5 rounded-full shrink-0"
+          style={{ color: member.happiness > 60 ? "#22c55e" : member.happiness > 30 ? "#eab308" : "#ef4444",
+                   background: `${member.happiness > 60 ? "#22c55e" : member.happiness > 30 ? "#eab308" : "#ef4444"}15` }}>
+          ♥{member.happiness}
+        </div>
+      )}
     </div>
   );
 }
@@ -267,7 +308,10 @@ export default function NPCSimulationPage() {
   const [ecoLoading, setEcoLoading]       = useState(false);
   const [marketData, setMarketData]       = useState<MarketData | null>(null);
   const [marketLoading, setMarketLoading] = useState(false);
-  const [detailTab, setDetailTab]         = useState<"status" | "economy" | "relations" | "memories" | "market">("status");
+  const [detailTab, setDetailTab]         = useState<"status" | "economy" | "relations" | "memories" | "market" | "family">("status");
+  const [familyData, setFamilyData]       = useState<FamilyData | null>(null);
+  const [familyLoading, setFamilyLoading] = useState(false);
+  const [autoMatchMsg, setAutoMatchMsg]   = useState<string | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const worldColor  = COLOR_MAP[worldSlug] ?? "#22d3ee";
@@ -312,6 +356,25 @@ export default function NPCSimulationPage() {
     } catch { setMarketData(null); } finally { setMarketLoading(false); }
   }
 
+  async function loadFamily(npcId: string) {
+    setFamilyLoading(true);
+    try {
+      const res = await fetch(`/api/npc-family/${npcId}`);
+      if (!res.ok) throw new Error();
+      setFamilyData(await res.json());
+    } catch { setFamilyData(null); } finally { setFamilyLoading(false); }
+  }
+
+  async function runAutoMatch() {
+    setAutoMatchMsg(null);
+    try {
+      const res = await fetch(`/api/npc-family/auto-match/${worldSlug}`, { method: "POST" });
+      const data = await res.json();
+      setAutoMatchMsg(data.message);
+      if (selectedId) await loadFamily(selectedId);
+    } catch { setAutoMatchMsg("Lỗi khi ghép đôi"); }
+  }
+
   async function seedNPCs() {
     setLoading(true);
     try { await fetch(`/api/npc-core/seed/${worldSlug}`, { method: "POST" }); await Promise.all([loadNPCs(), loadMarket()]); }
@@ -346,12 +409,14 @@ export default function NPCSimulationPage() {
     if (selectedId) {
       loadRelationships(selectedId);
       loadEconomy(selectedId);
+      loadFamily(selectedId);
       if (detailTab !== "market") setDetailTab("status");
     }
   }, [selectedId]);
 
   useEffect(() => {
     if (detailTab === "market") loadMarket();
+    if (detailTab === "family" && selectedId) loadFamily(selectedId);
   }, [detailTab]);
 
   useEffect(() => {
@@ -379,6 +444,7 @@ export default function NPCSimulationPage() {
     { key: "economy",   label: "KINH TẾ",    icon: <Briefcase size={11} /> },
     { key: "relations", label: "QUAN HỆ",    icon: <Users size={11} /> },
     { key: "memories",  label: "BỘ NHỚ",     icon: <BookOpen size={11} /> },
+    { key: "family",    label: "GIA ĐÌNH",   icon: <Home size={11} /> },
     { key: "market",    label: "CHỢ",         icon: <ShoppingCart size={11} /> },
   ] as const;
 
@@ -873,6 +939,97 @@ export default function NPCSimulationPage() {
                           </div>
                         </motion.div>
                       ))
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              )}
+
+              {/* ── GIA ĐÌNH ── */}
+              {detailTab === "family" && (
+                <AnimatePresence mode="wait">
+                  <motion.div key="family" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-4">
+                    {/* Auto-match button */}
+                    <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-4 flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-bold tracking-widest" style={{ color: worldColor }}>TỰ ĐỘNG GHÉP ĐÔI</p>
+                        <p className="text-xs text-gray-600 mt-0.5">Quét thế giới — tình bạn &gt; 70 + hạnh phúc &gt; 50</p>
+                      </div>
+                      <button onClick={runAutoMatch}
+                        className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition-all border"
+                        style={{ borderColor: worldColor, color: worldColor, background: `${worldColor}12` }}>
+                        <UserPlus size={13} />Ghép Đôi
+                      </button>
+                    </div>
+                    {autoMatchMsg && (
+                      <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}
+                        className="rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-xs text-center" style={{ color: worldColor }}>
+                        {autoMatchMsg}
+                      </motion.div>
+                    )}
+
+                    {familyLoading ? (
+                      <div className="flex items-center justify-center py-10"><RefreshCw size={20} className="animate-spin text-gray-600" /></div>
+                    ) : !familyData?.family && familyData?.memories.length === 0 ? (
+                      <div className="flex flex-col items-center gap-3 py-10 text-center">
+                        <Home size={36} className="text-gray-800" />
+                        <p className="text-gray-600 text-sm">Chưa có gia đình</p>
+                        <p className="text-gray-700 text-xs">Cần điểm quan hệ &gt; 70 và hạnh phúc &gt; 50</p>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Family name banner */}
+                        {familyData?.family?.familyName && (
+                          <div className="rounded-xl border p-3 text-center" style={{ borderColor: worldColor, background: `${worldColor}08` }}>
+                            <p className="text-xs text-gray-500 tracking-widest mb-1">GIA TỘC</p>
+                            <p className="text-base font-bold" style={{ color: worldColor }}>{familyData.family.familyName}</p>
+                          </div>
+                        )}
+
+                        {/* Members grid */}
+                        <div className="flex flex-col gap-3">
+                          {/* Spouse */}
+                          <FamilyMemberCard member={familyData?.spouse ?? null} role="Bạn Đời" roleColor="#ec4899" roleIcon={<Heart size={12} />} worldColor={worldColor} />
+
+                          {/* Parents */}
+                          <div className="grid grid-cols-2 gap-3">
+                            <FamilyMemberCard member={familyData?.father ?? null} role="Cha" roleColor="#3b82f6" roleIcon={<User size={12} />} worldColor={worldColor} />
+                            <FamilyMemberCard member={familyData?.mother ?? null} role="Mẹ" roleColor="#a855f7" roleIcon={<User size={12} />} worldColor={worldColor} />
+                          </div>
+
+                          {/* Children */}
+                          {(familyData?.children ?? []).length > 0 && (
+                            <div>
+                              <p className="text-xs text-gray-600 tracking-widest mb-2 flex items-center gap-1.5">
+                                <Baby size={11} />CON CÁI ({familyData?.children.length})
+                              </p>
+                              <div className="grid grid-cols-2 gap-2">
+                                {(familyData?.children ?? []).map((child, i) => (
+                                  <FamilyMemberCard key={i} member={child} role="Con" roleColor="#22d3ee" roleIcon={<Baby size={12} />} worldColor={worldColor} />
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Family memories */}
+                        {(familyData?.memories ?? []).length > 0 && (
+                          <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-4">
+                            <p className="text-xs font-bold text-gray-500 tracking-widest mb-3">KÝ ỨC GIA ĐÌNH</p>
+                            <div className="flex flex-col gap-2 max-h-64 overflow-y-auto pr-1">
+                              {(familyData?.memories ?? []).map((mem) => (
+                                <motion.div key={mem.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
+                                  className="flex items-start gap-2.5 rounded-lg border border-gray-800 bg-gray-900/50 p-2.5">
+                                  <Heart size={11} className="text-pink-600 mt-0.5 shrink-0" />
+                                  <div>
+                                    <p className="text-xs text-gray-300 leading-relaxed">{mem.content}</p>
+                                    <p className="text-xs text-gray-700 mt-1">{new Date(mem.createdAt).toLocaleString("vi-VN")}</p>
+                                  </div>
+                                </motion.div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )}
                   </motion.div>
                 </AnimatePresence>

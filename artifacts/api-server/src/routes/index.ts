@@ -59,6 +59,7 @@ import cosmicHierarchyRouter from "./cosmicHierarchy.js";
 import worldWeatherRouter from "./worldWeather.js";
 import worldSimulationRouter from "./worldSimulation.js";
 import npcCoreRouter from "./npcCore.js";
+import npcFamilyRouter from "./npcFamily.js";
 
 const router: IRouter = Router();
 
@@ -122,5 +123,6 @@ router.use(cosmicHierarchyRouter);
 router.use(worldWeatherRouter);
 router.use(worldSimulationRouter);
 router.use(npcCoreRouter);
+router.use(npcFamilyRouter);
 
 export default router;

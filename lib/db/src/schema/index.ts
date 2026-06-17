@@ -53,3 +53,4 @@ export * from "./cosmicHierarchy";
 export * from "./worldWeather";
 export * from "./worldSimulation";
 export * from "./npcCore";
+export * from "./npcFamily";
