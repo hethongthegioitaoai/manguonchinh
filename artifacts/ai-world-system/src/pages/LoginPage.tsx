@@ -131,6 +131,139 @@ function InputField({
   );
 }
 
+function WorldTransitionOverlay({ username }: { username: string }) {
+  const steps = [
+    "KHỞI TẠO THẦN KINH KẾT NỐI...",
+    "XÁC THỰC DANH TÍNH CHIẾN BINH...",
+    "TẢI DỮ LIỆU THẾ GIỚI SONG SONG...",
+    "MỞ CỔNG VÀO HƯ VÔ...",
+  ];
+  const [step, setStep] = useState(0);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setProgress(p => {
+        const next = p + 1.4;
+        if (next >= 100) { clearInterval(interval); return 100; }
+        return next;
+      });
+    }, 28);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const t = setInterval(() => setStep(s => Math.min(s + 1, steps.length - 1)), 480);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      style={{ background: "radial-gradient(ellipse 90% 80% at 50% 50%, rgba(0,30,40,0.98) 0%, rgba(5,0,15,1) 60%, #000 100%)" }}
+    >
+      {/* Grid overlay */}
+      <div className="absolute inset-0 opacity-[0.04]" style={{
+        backgroundImage: "linear-gradient(rgba(0,255,240,1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,240,1) 1px, transparent 1px)",
+        backgroundSize: "40px 40px",
+      }} />
+
+      {/* Scanning line */}
+      <motion.div
+        className="absolute left-0 right-0 h-px pointer-events-none"
+        style={{ background: "linear-gradient(90deg, transparent 0%, rgba(0,255,240,0.6) 30%, rgba(180,0,255,0.8) 50%, rgba(0,255,240,0.6) 70%, transparent 100%)" }}
+        animate={{ top: ["0%", "100%", "0%"] }}
+        transition={{ duration: 2.4, repeat: Infinity, ease: "linear" }}
+      />
+
+      {/* Glowing circle */}
+      <div className="relative flex items-center justify-center mb-10">
+        <motion.div
+          className="absolute rounded-full"
+          style={{ width: 180, height: 180, background: "radial-gradient(circle, rgba(0,255,240,0.12) 0%, rgba(100,0,200,0.08) 60%, transparent 100%)" }}
+          animate={{ scale: [1, 1.15, 1], opacity: [0.6, 1, 0.6] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+        />
+        {[0, 1, 2].map(i => (
+          <motion.div
+            key={i}
+            className="absolute rounded-full border border-cyan-400/30"
+            style={{ width: 80 + i * 50, height: 80 + i * 50 }}
+            animate={{ rotate: 360 * (i % 2 === 0 ? 1 : -1), opacity: [0.2, 0.6, 0.2] }}
+            transition={{ duration: 2 + i * 0.7, repeat: Infinity, ease: "linear" }}
+          />
+        ))}
+        <motion.div
+          className="w-16 h-16 rounded-full flex items-center justify-center border border-cyan-400/50"
+          style={{ background: "radial-gradient(circle, rgba(0,255,240,0.2), rgba(100,0,200,0.1))", boxShadow: "0 0 30px rgba(0,255,240,0.4)" }}
+          animate={{ boxShadow: ["0 0 20px rgba(0,255,240,0.3)", "0 0 50px rgba(0,255,240,0.8)", "0 0 20px rgba(0,255,240,0.3)"] }}
+          transition={{ duration: 1.2, repeat: Infinity }}
+        >
+          <motion.span
+            className="text-2xl"
+            animate={{ opacity: [1, 0.3, 1] }}
+            transition={{ duration: 0.8, repeat: Infinity }}
+          >⚡</motion.span>
+        </motion.div>
+      </div>
+
+      {/* Username greeting */}
+      <motion.div
+        className="text-center mb-6"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <p className="font-mono text-[10px] tracking-[0.4em] text-cyan-500/50 uppercase mb-1">CHIẾN BINH ĐÃ ĐƯỢC NHẬN DIỆN</p>
+        <motion.h2
+          className="font-orbitron text-2xl font-black tracking-wider"
+          style={{ background: "linear-gradient(135deg, #00fff0 0%, #b000ff 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", filter: "drop-shadow(0 0 16px rgba(0,255,240,0.5))" }}
+          animate={{ filter: ["drop-shadow(0 0 10px rgba(0,255,240,0.4))", "drop-shadow(0 0 24px rgba(0,255,240,0.9))", "drop-shadow(0 0 10px rgba(0,255,240,0.4))"] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        >
+          {username.toUpperCase()}
+        </motion.h2>
+      </motion.div>
+
+      {/* Status message */}
+      <div className="h-5 mb-6">
+        <motion.p
+          key={step}
+          className="font-mono text-[11px] tracking-[0.25em] text-cyan-400/70 uppercase text-center"
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          {steps[step]}
+        </motion.p>
+      </div>
+
+      {/* Progress bar */}
+      <div className="w-72 relative">
+        <div className="w-full h-px bg-cyan-500/15 mb-1" />
+        <div className="w-full h-[3px] relative overflow-hidden" style={{ background: "rgba(0,255,240,0.08)", border: "1px solid rgba(0,255,240,0.15)" }}>
+          <motion.div
+            className="h-full"
+            style={{ width: `${progress}%`, background: "linear-gradient(90deg, rgba(0,255,240,0.6), rgba(180,0,255,0.8))", boxShadow: "0 0 10px rgba(0,255,240,0.5)" }}
+          />
+          <motion.div
+            className="absolute top-0 bottom-0 w-6"
+            style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)", left: `${Math.max(0, progress - 8)}%` }}
+          />
+        </div>
+        <div className="flex justify-between mt-1">
+          <span className="font-mono text-[9px] text-cyan-500/30 tracking-widest">LOADING</span>
+          <span className="font-mono text-[9px] text-cyan-400/60 tracking-widest">{Math.round(progress)}%</span>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function LoginPage() {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
@@ -141,13 +274,14 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [transitioning, setTransitioning] = useState<string | null>(null);
 
   const [loginForm, setLoginForm] = useState({ login: "", password: "" });
   const [regForm, setRegForm] = useState({ username: "", email: "", password: "", confirmPassword: "", firstName: "" });
 
   useEffect(() => {
-    if (!loading && user) setLocation("/worlds");
-  }, [user, loading, setLocation]);
+    if (!loading && user && !transitioning) setLocation("/worlds");
+  }, [user, loading, setLocation, transitioning]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -200,7 +334,6 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.message ?? "Đăng ký thất bại"); return; }
-      setSuccess("Đăng ký thành công! Đang vào thế giới...");
       queryClient.setQueryData(["/api/auth/user"], {
         id: data.id,
         email: data.email,
@@ -208,7 +341,8 @@ export default function LoginPage() {
         firstName: data.firstName,
         emailVerified: data.emailVerified ?? false,
       });
-      setTimeout(() => setLocation("/worlds"), 800);
+      setTransitioning(data.username ?? regForm.username);
+      setTimeout(() => setLocation("/worlds"), 2200);
     } catch {
       setError("Không thể kết nối máy chủ");
     } finally {
@@ -218,6 +352,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden bg-black">
+      {transitioning && <WorldTransitionOverlay username={transitioning} />}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_50%,rgba(0,60,80,0.5)_0%,rgba(20,0,40,0.6)_50%,#000_100%)]" />
       <div
         className="absolute inset-0 opacity-[0.05]"
