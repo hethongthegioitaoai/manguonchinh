@@ -18,7 +18,7 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 17/06/2026 — HỆ THỐNG KINH TẾ & VIỆC LÀM NPC hoàn tất: 3 bảng DB mới (`npc_jobs`, `npc_inventory`, `npc_transactions`), 5 nghề: nông dân/thương nhân/bảo vệ/thợ thủ công/ngư dân, mỗi tick NPC làm việc→nhận lương→sản xuất hàng, tự ăn từ kho hoặc mua ở chợ nếu đói, bán dư thừa, giao dịch 2 NPC (mua thực phẩm/cá/gỗ), API `GET /api/npc-economy/:npcId`, tab KINH TẾ mới: nghề nghiệp+kỹ năng, kho đồ grid, lịch sử giao dịch.
+> **Cập nhật lần cuối:** 17/06/2026 — HỆ THỐNG CHỢ TOÀN CẦU (GLOBAL MARKET) hoàn tất: 2 bảng DB mới (`world_market`, `market_orders`), 4 hàng hóa (thực phẩm/cá/gỗ/công cụ) với giá dao động ±10%/tick dựa supply/demand; NPC đói→mua thực phẩm, thương nhân→mua thấp/bán cao, thợ thủ công→mua gỗ khi thiếu; ký ức giao dịch chợ; API `GET /api/npc-market/:worldSlug`; tab CHỢ (thứ 5) trong dashboard: 4 price card (giá hiện tại, cung/cầu bar, xu hướng ↑↓), danh sách 20 giao dịch gần nhất, mini preview ở sidebar trái; nút "CHỢ" luôn hiển thị ngay cả khi chưa chọn NPC.
 
 > **Cập nhật trước:** 17/06/2026 — HỆ THỐNG QUAN HỆ NPC hoàn tất: bảng DB `npc_relationships` (score -100→100, 6 loại: người lạ/người quen/bạn bè/đồng minh/đối thủ/kẻ thù), logic gặp gỡ ngẫu nhiên trong mỗi tick (đánh giá lòng tốt/tham/dũng/tò mò → delta điểm), ký ức cuộc gặp lưu 2 chiều, API `GET /api/npc-relationships/:npcId`, panel QUAN HỆ 3-tab trong trang `/npc-simulation` (Trạng Thái / Quan Hệ / Bộ Nhớ) với score bar, badge 4 loại ý nghĩa, lịch sử gặp gỡ.
 

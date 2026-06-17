@@ -6,12 +6,13 @@ import {
   BookOpen, Play, RefreshCw, ChevronLeft, Activity, Clock,
   Sparkles, Users, Sword, Shield, Star, Handshake, Eye,
   Briefcase, Package, ArrowUpRight, ArrowDownLeft, ArrowLeftRight, TrendingUp,
+  ShoppingCart, TrendingDown, Minus,
 } from "lucide-react";
 
 const WORLDS = [
   { slug: "cultivation", label: "Tu Tiên", color: "cyan" },
-  { slug: "cyberpunk", label: "Cyberpunk", color: "purple" },
-  { slug: "zombie", label: "Hoang Phế", color: "red" },
+  { slug: "cyberpunk",   label: "Cyberpunk", color: "purple" },
+  { slug: "zombie",      label: "Hoang Phế", color: "red" },
 ];
 
 type Personality = { kindness: number; greed: number; bravery: number; intelligence: number; curiosity: number };
@@ -40,9 +41,15 @@ type EconomyData = {
   transactions: Array<{ id: string; description: string; amount: number; transactionType: string; timestamp: string }>;
 };
 
+type MarketItem = { id: string; worldSlug: string; itemName: string; currentPrice: number; totalSupply: number; totalDemand: number; lastUpdated: string };
+type MarketOrder = { id: string; npcId: string | null; worldSlug: string; itemName: string; quantity: number; orderType: string; price: number; status: string; createdAt: string; npcName: string };
+type MarketData = { market: MarketItem[]; recentOrders: MarketOrder[] };
+
+/* ── Constants ── */
 const COLOR_MAP: Record<string, string> = {
   cultivation: "#22d3ee", cyberpunk: "#a855f7", zombie: "#ef4444",
 };
+const BASE_PRICES: Record<string, number> = { "thực phẩm": 8, "cá": 6, "gỗ": 5, "công cụ": 12 };
 
 const REL_CONFIG: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
   "đồng minh":  { color: "#22d3ee", icon: <Shield size={12} />,    label: "Đồng Minh" },
@@ -66,14 +73,16 @@ const ITEM_ICONS: Record<string, string> = {
   "thực phẩm": "🌾", "cá": "🐟", "gỗ": "🪵", "công cụ": "⚙️",
 };
 
-const TX_CONFIG: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
-  earn:  { color: "#22c55e", icon: <TrendingUp size={11} />,      label: "Thu nhập" },
-  sell:  { color: "#22d3ee", icon: <ArrowUpRight size={11} />,    label: "Bán" },
-  buy:   { color: "#f97316", icon: <ArrowDownLeft size={11} />,   label: "Mua" },
-  trade: { color: "#a855f7", icon: <ArrowLeftRight size={11} />,  label: "Trao đổi" },
+const TX_CONFIG: Record<string, { color: string; icon: React.ReactNode }> = {
+  earn:  { color: "#22c55e", icon: <TrendingUp size={11} /> },
+  sell:  { color: "#22d3ee", icon: <ArrowUpRight size={11} /> },
+  buy:   { color: "#f97316", icon: <ArrowDownLeft size={11} /> },
+  trade: { color: "#a855f7", icon: <ArrowLeftRight size={11} /> },
 };
 
-/* ── Components ── */
+/* ═══════════════════════════════
+   Sub-components
+═══════════════════════════════ */
 function StatBar({ label, value, color, icon }: { label: string; value: number; color: string; icon: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1">
@@ -83,7 +92,7 @@ function StatBar({ label, value, color, icon }: { label: string; value: number; 
       </div>
       <div className="h-1.5 rounded-full bg-gray-800 overflow-hidden">
         <motion.div className="h-full rounded-full" style={{ background: color }}
-          initial={{ width: 0 }} animate={{ width: `${value}%` }} transition={{ duration: 0.6, ease: "easeOut" }} />
+          initial={{ width: 0 }} animate={{ width: `${value}%` }} transition={{ duration: 0.6 }} />
       </div>
     </div>
   );
@@ -116,20 +125,101 @@ function RelationshipScoreBar({ score }: { score: number }) {
         <motion.div className="h-full rounded-full" style={{ background: color }}
           animate={{ width: `${pct}%` }} transition={{ duration: 0.5 }} />
       </div>
-      <span className="text-xs font-bold w-8 text-right" style={{ color }}>
-        {score > 0 ? `+${score}` : score}
-      </span>
+      <span className="text-xs font-bold w-8 text-right" style={{ color }}>{score > 0 ? `+${score}` : score}</span>
     </div>
+  );
+}
+
+function PriceTrendIcon({ supply, demand }: { supply: number; demand: number }) {
+  const ratio = demand / Math.max(supply, 1);
+  if (ratio > 1.15) return <TrendingUp size={14} className="text-green-400" />;
+  if (ratio < 0.85) return <TrendingDown size={14} className="text-red-400" />;
+  return <Minus size={14} className="text-gray-500" />;
+}
+
+function MarketItemCard({ item, worldColor }: { item: MarketItem; worldColor: string }) {
+  const base = BASE_PRICES[item.itemName] ?? 8;
+  const ratio = item.totalDemand / Math.max(item.totalSupply, 1);
+  const priceUp = ratio > 1.15;
+  const priceDown = ratio < 0.85;
+  const priceColor = priceUp ? "#22c55e" : priceDown ? "#ef4444" : "#6b7280";
+  const pricePct = item.currentPrice / (base * 2.5) * 100;
+  const supplyPct = Math.min(100, (item.totalSupply / Math.max(item.totalSupply + item.totalDemand, 1)) * 100);
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+      className="rounded-xl border border-gray-800 bg-gray-900/60 p-4 flex flex-col gap-3">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-xl">{ITEM_ICONS[item.itemName] ?? "📦"}</span>
+          <div>
+            <div className="text-xs font-bold text-white capitalize">{item.itemName}</div>
+            <div className="text-xs text-gray-600">Giá gốc: {base}đ</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <PriceTrendIcon supply={item.totalSupply} demand={item.totalDemand} />
+          <span className="text-lg font-bold" style={{ color: priceColor }}>{item.currentPrice}</span>
+          <span className="text-xs text-gray-600">vàng</span>
+        </div>
+      </div>
+
+      {/* Price bar */}
+      <div>
+        <div className="flex justify-between text-xs text-gray-600 mb-1">
+          <span>Giá thị trường</span>
+          <span style={{ color: priceColor }}>
+            {item.currentPrice > base ? `▲ +${item.currentPrice - base}` : item.currentPrice < base ? `▼ ${item.currentPrice - base}` : "— ổn định"}
+          </span>
+        </div>
+        <div className="h-1.5 rounded-full bg-gray-800 overflow-hidden">
+          <motion.div className="h-full rounded-full" style={{ background: priceColor }}
+            animate={{ width: `${Math.min(100, pricePct)}%` }} transition={{ duration: 0.7 }} />
+        </div>
+      </div>
+
+      {/* Supply vs Demand */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="rounded-lg bg-gray-800/60 p-2 text-center">
+          <div className="text-xs text-gray-500 mb-0.5">Cung</div>
+          <div className="text-sm font-bold text-cyan-400">{item.totalSupply}</div>
+        </div>
+        <div className="rounded-lg bg-gray-800/60 p-2 text-center">
+          <div className="text-xs text-gray-500 mb-0.5">Cầu</div>
+          <div className="text-sm font-bold text-yellow-400">{item.totalDemand}</div>
+        </div>
+      </div>
+
+      {/* Supply/demand ratio bar */}
+      <div>
+        <div className="text-xs text-gray-600 mb-1">Cung / Cầu</div>
+        <div className="h-2 rounded-full bg-gray-800 overflow-hidden relative">
+          <motion.div className="h-full rounded-full bg-cyan-500/60"
+            animate={{ width: `${supplyPct}%` }} transition={{ duration: 0.7 }} />
+          <motion.div className="h-full rounded-full bg-yellow-400/60 absolute top-0"
+            animate={{ left: `${supplyPct}%`, width: `${100 - supplyPct}%` }} transition={{ duration: 0.7 }} />
+        </div>
+        <div className="flex justify-between text-xs text-gray-700 mt-0.5">
+          <span>Cung</span><span>Cầu</span>
+        </div>
+      </div>
+
+      {/* Last updated */}
+      <div className="text-xs text-gray-700 text-right">
+        Cập nhật: {new Date(item.lastUpdated).toLocaleTimeString("vi-VN")}
+      </div>
+    </motion.div>
   );
 }
 
 function NPCCard({ npc, worldColor, selected, onClick }: {
   npc: NPCCore; worldColor: string; selected: boolean; onClick: () => void
 }) {
-  const energyColor   = npc.energy > 60 ? "#22c55e" : npc.energy > 30 ? "#eab308" : "#ef4444";
-  const hungerColor   = npc.hunger < 40 ? "#22c55e" : npc.hunger < 70 ? "#eab308" : "#ef4444";
+  const energyColor    = npc.energy > 60 ? "#22c55e" : npc.energy > 30 ? "#eab308" : "#ef4444";
+  const hungerColor    = npc.hunger < 40 ? "#22c55e" : npc.hunger < 70 ? "#eab308" : "#ef4444";
   const happinessColor = npc.happiness > 60 ? "#22c55e" : npc.happiness > 30 ? "#eab308" : "#ef4444";
-  const moneyColor    = npc.money > 200 ? "#22c55e" : npc.money > 50 ? "#eab308" : "#ef4444";
+  const moneyColor     = npc.money > 200 ? "#22c55e" : npc.money > 50 ? "#eab308" : "#ef4444";
   return (
     <motion.div layout onClick={onClick} className="cursor-pointer rounded-xl border p-4 transition-all"
       style={{ borderColor: selected ? worldColor : "#1f2937", background: selected ? `${worldColor}11` : "#0f1117", boxShadow: selected ? `0 0 16px ${worldColor}44` : "none" }}
@@ -142,10 +232,10 @@ function NPCCard({ npc, worldColor, selected, onClick }: {
         <div className="flex items-center gap-1 text-xs" style={{ color: moneyColor }}><Coins size={11} /><span>{npc.money}</span></div>
       </div>
       <div className="grid grid-cols-2 gap-2 mb-3">
-        <StatBar label="Năng lượng" value={npc.energy} color={energyColor} icon={<Zap size={10} />} />
-        <StatBar label="Độ đói" value={npc.hunger} color={hungerColor} icon={<Utensils size={10} />} />
-        <StatBar label="Hạnh phúc" value={npc.happiness} color={happinessColor} icon={<Heart size={10} />} />
-        <StatBar label="Tiền" value={Math.min(100, Math.round(npc.money / 10))} color={moneyColor} icon={<Coins size={10} />} />
+        <StatBar label="Năng lượng" value={npc.energy}    color={energyColor}    icon={<Zap size={10} />} />
+        <StatBar label="Độ đói"     value={npc.hunger}    color={hungerColor}    icon={<Utensils size={10} />} />
+        <StatBar label="Hạnh phúc"  value={npc.happiness} color={happinessColor} icon={<Heart size={10} />} />
+        <StatBar label="Tiền"       value={Math.min(100, Math.round(npc.money / 10))} color={moneyColor} icon={<Coins size={10} />} />
       </div>
       {npc.currentGoal && (
         <div className="flex items-start gap-1.5 rounded-lg p-2" style={{ background: `${worldColor}18` }}>
@@ -157,30 +247,33 @@ function NPCCard({ npc, worldColor, selected, onClick }: {
   );
 }
 
-/* ════════════════════════════════════════
+/* ═══════════════════════════════
    Main Page
-════════════════════════════════════════ */
+═══════════════════════════════ */
 export default function NPCSimulationPage() {
   const [, setLocation] = useLocation();
-  const [worldSlug, setWorldSlug]       = useState("cultivation");
-  const [npcs, setNpcs]                 = useState<NPCCore[]>([]);
-  const [selectedId, setSelectedId]     = useState<string | null>(null);
-  const [loading, setLoading]           = useState(false);
-  const [ticking, setTicking]           = useState(false);
-  const [tickLog, setTickLog]           = useState<Array<{ name: string; goal: string; action: string }>>([]);
-  const [autoTick, setAutoTick]         = useState(false);
-  const [tickCount, setTickCount]       = useState(0);
-  const [lastTickTime, setLastTickTime] = useState<Date | null>(null);
+  const [worldSlug, setWorldSlug]         = useState("cultivation");
+  const [npcs, setNpcs]                   = useState<NPCCore[]>([]);
+  const [selectedId, setSelectedId]       = useState<string | null>(null);
+  const [loading, setLoading]             = useState(false);
+  const [ticking, setTicking]             = useState(false);
+  const [tickLog, setTickLog]             = useState<Array<{ name: string; goal: string; action: string }>>([]);
+  const [autoTick, setAutoTick]           = useState(false);
+  const [tickCount, setTickCount]         = useState(0);
+  const [lastTickTime, setLastTickTime]   = useState<Date | null>(null);
   const [relationships, setRelationships] = useState<RelationshipEntry[]>([]);
-  const [relLoading, setRelLoading]     = useState(false);
-  const [economy, setEconomy]           = useState<EconomyData | null>(null);
-  const [ecoLoading, setEcoLoading]     = useState(false);
-  const [detailTab, setDetailTab]       = useState<"status" | "economy" | "relations" | "memories">("status");
+  const [relLoading, setRelLoading]       = useState(false);
+  const [economy, setEconomy]             = useState<EconomyData | null>(null);
+  const [ecoLoading, setEcoLoading]       = useState(false);
+  const [marketData, setMarketData]       = useState<MarketData | null>(null);
+  const [marketLoading, setMarketLoading] = useState(false);
+  const [detailTab, setDetailTab]         = useState<"status" | "economy" | "relations" | "memories" | "market">("status");
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const worldColor  = COLOR_MAP[worldSlug] ?? "#22d3ee";
   const selectedNpc = npcs.find((n) => n.id === selectedId) ?? null;
 
+  /* ── Loaders ── */
   async function loadNPCs() {
     setLoading(true);
     try {
@@ -210,9 +303,18 @@ export default function NPCSimulationPage() {
     } catch { setEconomy(null); } finally { setEcoLoading(false); }
   }
 
+  async function loadMarket() {
+    setMarketLoading(true);
+    try {
+      const res = await fetch(`/api/npc-market/${worldSlug}`);
+      if (!res.ok) throw new Error();
+      setMarketData(await res.json());
+    } catch { setMarketData(null); } finally { setMarketLoading(false); }
+  }
+
   async function seedNPCs() {
     setLoading(true);
-    try { await fetch(`/api/npc-core/seed/${worldSlug}`, { method: "POST" }); await loadNPCs(); }
+    try { await fetch(`/api/npc-core/seed/${worldSlug}`, { method: "POST" }); await Promise.all([loadNPCs(), loadMarket()]); }
     finally { setLoading(false); }
   }
 
@@ -225,27 +327,46 @@ export default function NPCSimulationPage() {
       if (data.logs) setTickLog(data.logs);
       setTickCount((c) => c + 1);
       setLastTickTime(new Date());
-      await loadNPCs();
-      if (selectedId) { await loadRelationships(selectedId); await loadEconomy(selectedId); }
+      await Promise.all([
+        loadNPCs(),
+        loadMarket(),
+        ...(selectedId ? [loadRelationships(selectedId), loadEconomy(selectedId)] : []),
+      ]);
     } finally { setTicking(false); }
   }
 
-  useEffect(() => { setSelectedId(null); setTickLog([]); setRelationships([]); setEconomy(null); loadNPCs(); }, [worldSlug]);
+  /* ── Effects ── */
   useEffect(() => {
-    if (selectedId) { loadRelationships(selectedId); loadEconomy(selectedId); setDetailTab("status"); }
+    setSelectedId(null); setTickLog([]); setRelationships([]);
+    setEconomy(null); setMarketData(null);
+    Promise.all([loadNPCs(), loadMarket()]);
+  }, [worldSlug]);
+
+  useEffect(() => {
+    if (selectedId) {
+      loadRelationships(selectedId);
+      loadEconomy(selectedId);
+      if (detailTab !== "market") setDetailTab("status");
+    }
   }, [selectedId]);
+
+  useEffect(() => {
+    if (detailTab === "market") loadMarket();
+  }, [detailTab]);
+
   useEffect(() => {
     if (autoTick) { intervalRef.current = setInterval(runTick, 60_000); }
-    else { if (intervalRef.current) clearInterval(intervalRef.current); }
+    else if (intervalRef.current) clearInterval(intervalRef.current);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [autoTick, worldSlug]);
 
+  /* ── Derived ── */
   const personalityLabels: Array<{ key: keyof Personality; label: string; color: string }> = [
-    { key: "kindness",     label: "Lòng Tốt",    color: "#22c55e" },
-    { key: "greed",        label: "Tham Lam",     color: "#eab308" },
-    { key: "bravery",      label: "Dũng Cảm",     color: "#ef4444" },
-    { key: "intelligence", label: "Thông Minh",   color: "#3b82f6" },
-    { key: "curiosity",    label: "Tò Mò",        color: "#a855f7" },
+    { key: "kindness",     label: "Lòng Tốt",  color: "#22c55e" },
+    { key: "greed",        label: "Tham Lam",   color: "#eab308" },
+    { key: "bravery",      label: "Dũng Cảm",   color: "#ef4444" },
+    { key: "intelligence", label: "Thông Minh", color: "#3b82f6" },
+    { key: "curiosity",    label: "Tò Mò",      color: "#a855f7" },
   ];
 
   const relGroups = REL_ORDER.reduce<Record<string, RelationshipEntry[]>>((acc, type) => {
@@ -258,18 +379,97 @@ export default function NPCSimulationPage() {
     { key: "economy",   label: "KINH TẾ",    icon: <Briefcase size={11} /> },
     { key: "relations", label: "QUAN HỆ",    icon: <Users size={11} /> },
     { key: "memories",  label: "BỘ NHỚ",     icon: <BookOpen size={11} /> },
+    { key: "market",    label: "CHỢ",         icon: <ShoppingCart size={11} /> },
   ] as const;
+
+  /* ─── Market tab panel (world-level, no NPC required) ─── */
+  function MarketPanel() {
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div key="market" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-4">
+          {/* Price grid */}
+          <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-4">
+            <div className="flex items-center gap-2 mb-4">
+              <ShoppingCart size={14} style={{ color: worldColor }} />
+              <p className="text-xs font-bold tracking-widest" style={{ color: worldColor }}>THỊ TRƯỜNG TOÀN CẦU — {worldSlug.toUpperCase()}</p>
+              <button onClick={loadMarket} className="ml-auto text-gray-600 hover:text-gray-400 transition-colors">
+                <RefreshCw size={12} className={marketLoading ? "animate-spin" : ""} />
+              </button>
+            </div>
+            {marketLoading && !marketData ? (
+              <div className="flex items-center justify-center py-8"><RefreshCw size={18} className="animate-spin text-gray-600" /></div>
+            ) : marketData?.market && marketData.market.length > 0 ? (
+              <div className="grid grid-cols-2 gap-3">
+                {marketData.market.map((item) => (
+                  <MarketItemCard key={item.id} item={item} worldColor={worldColor} />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-3 py-8 text-center">
+                <ShoppingCart size={32} className="text-gray-800" />
+                <p className="text-gray-600 text-sm">Thị trường chưa khởi tạo</p>
+                <p className="text-gray-700 text-xs">Nhấn "Khởi Tạo" để tạo NPC và thị trường</p>
+              </div>
+            )}
+          </div>
+
+          {/* Recent orders */}
+          <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-4">
+            <p className="text-xs font-bold text-gray-500 tracking-widest mb-3">GIAO DỊCH GẦN ĐÂY</p>
+            {marketData?.recentOrders && marketData.recentOrders.length > 0 ? (
+              <div className="flex flex-col gap-2 max-h-80 overflow-y-auto pr-1">
+                {marketData.recentOrders.map((order) => {
+                  const isBuy = order.orderType === "mua";
+                  const orderColor = isBuy ? "#f97316" : "#22d3ee";
+                  return (
+                    <motion.div key={order.id}
+                      initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }}
+                      className="flex items-center gap-3 rounded-lg border border-gray-800 bg-gray-900/50 px-3 py-2">
+                      <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style={{ background: `${orderColor}20` }}>
+                        {isBuy
+                          ? <ArrowDownLeft size={11} style={{ color: orderColor }} />
+                          : <ArrowUpRight size={11} style={{ color: orderColor }} />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold" style={{ color: orderColor }}>{isBuy ? "MUA" : "BÁN"}</span>
+                          <span className="text-xs text-gray-400">{order.quantity}× {ITEM_ICONS[order.itemName] ?? ""} {order.itemName}</span>
+                        </div>
+                        <div className="text-xs text-gray-600">{order.npcName} · {new Date(order.createdAt).toLocaleTimeString("vi-VN")}</div>
+                      </div>
+                      <span className="text-xs font-bold shrink-0" style={{ color: isBuy ? "#ef4444" : "#22c55e" }}>
+                        {isBuy ? "-" : "+"}{order.price * order.quantity}
+                      </span>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-2 py-6">
+                <Coins size={24} className="text-gray-800" />
+                <p className="text-gray-600 text-sm">Chưa có giao dịch nào</p>
+                <p className="text-gray-700 text-xs">Chạy Tick để NPC giao dịch trên chợ</p>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
+
+  /* ─── Center detail: can show market even without NPC selected ─── */
+  const showMarketPanel = detailTab === "market";
 
   return (
     <div className="min-h-screen bg-black text-white" style={{ fontFamily: "monospace" }}>
-      {/* Header */}
+      {/* ── Header ── */}
       <div className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button onClick={() => setLocation("/dashboard")} className="text-gray-500 hover:text-white transition-colors"><ChevronLeft size={20} /></button>
           <Brain size={20} style={{ color: worldColor }} />
           <div>
             <h1 className="text-lg font-bold tracking-widest" style={{ color: worldColor }}>MÔ PHỎNG NPC LÕI</h1>
-            <p className="text-xs text-gray-500">Hệ thống vòng đời, kinh tế & quan hệ — chu kỳ 60 giây</p>
+            <p className="text-xs text-gray-500">Hệ thống vòng đời · kinh tế · thị trường · quan hệ</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -278,6 +478,11 @@ export default function NPCSimulationPage() {
               <Clock size={12} /><span>Tick #{tickCount} · {lastTickTime.toLocaleTimeString("vi-VN")}</span>
             </div>
           )}
+          <button onClick={() => { setDetailTab("market"); loadMarket(); }}
+            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all border"
+            style={{ borderColor: detailTab === "market" ? worldColor : "#374151", color: detailTab === "market" ? worldColor : "#6b7280", background: detailTab === "market" ? `${worldColor}18` : "transparent" }}>
+            <ShoppingCart size={12} />CHỢ
+          </button>
           <button onClick={() => setAutoTick((v) => !v)}
             className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all border"
             style={{ borderColor: autoTick ? worldColor : "#374151", color: autoTick ? worldColor : "#6b7280", background: autoTick ? `${worldColor}18` : "transparent" }}>
@@ -286,7 +491,7 @@ export default function NPCSimulationPage() {
         </div>
       </div>
 
-      {/* World tabs */}
+      {/* ── World tabs ── */}
       <div className="flex border-b border-gray-800">
         {WORLDS.map((w) => (
           <button key={w.slug} onClick={() => setWorldSlug(w.slug)} className="flex-1 py-3 text-xs font-bold tracking-widest transition-all"
@@ -297,8 +502,8 @@ export default function NPCSimulationPage() {
       </div>
 
       <div className="flex h-[calc(100vh-129px)]">
-        {/* Left — NPC list */}
-        <div className="w-[300px] shrink-0 border-r border-gray-800 overflow-y-auto p-3 flex flex-col gap-3">
+        {/* ── Left — NPC list ── */}
+        <div className="w-[290px] shrink-0 border-r border-gray-800 overflow-y-auto p-3 flex flex-col gap-3">
           <div className="flex gap-2">
             <button onClick={seedNPCs} disabled={loading}
               className="flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-bold border border-gray-700 text-gray-400 hover:text-white hover:border-gray-500 transition-all">
@@ -312,30 +517,83 @@ export default function NPCSimulationPage() {
             </button>
           </div>
 
+          {/* Market mini-preview */}
+          {marketData?.market && marketData.market.length > 0 && (
+            <button onClick={() => setDetailTab("market")}
+              className="rounded-xl border p-3 text-left transition-all hover:border-gray-600"
+              style={{ borderColor: detailTab === "market" ? worldColor : "#1f2937", background: detailTab === "market" ? `${worldColor}10` : "#0f1117" }}>
+              <div className="flex items-center gap-1.5 mb-2">
+                <ShoppingCart size={11} style={{ color: worldColor }} />
+                <span className="text-xs font-bold tracking-widest" style={{ color: worldColor }}>GIÁ CHỢ</span>
+              </div>
+              <div className="grid grid-cols-2 gap-1">
+                {marketData.market.map((item) => {
+                  const base = BASE_PRICES[item.itemName] ?? 8;
+                  const up = item.currentPrice > base;
+                  const down = item.currentPrice < base;
+                  return (
+                    <div key={item.id} className="flex items-center gap-1.5">
+                      <span className="text-sm">{ITEM_ICONS[item.itemName]}</span>
+                      <span className="text-xs font-bold" style={{ color: up ? "#22c55e" : down ? "#ef4444" : "#6b7280" }}>
+                        {item.currentPrice}đ
+                      </span>
+                      {up && <TrendingUp size={9} className="text-green-400" />}
+                      {down && <TrendingDown size={9} className="text-red-400" />}
+                    </div>
+                  );
+                })}
+              </div>
+            </button>
+          )}
+
           {loading ? (
             <div className="flex-1 flex items-center justify-center"><RefreshCw size={20} className="animate-spin text-gray-600" /></div>
           ) : npcs.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center">
               <Brain size={40} className="text-gray-700" />
               <p className="text-gray-600 text-sm">Chưa có NPC nào</p>
-              <p className="text-gray-700 text-xs">Nhấn "Khởi Tạo" để tạo NPC</p>
+              <p className="text-gray-700 text-xs">Nhấn "Khởi Tạo" để bắt đầu</p>
             </div>
           ) : (
             <AnimatePresence>
               {npcs.map((npc) => (
                 <motion.div key={npc.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                  <NPCCard npc={npc} worldColor={worldColor} selected={selectedId === npc.id} onClick={() => setSelectedId(npc.id)} />
+                  <NPCCard npc={npc} worldColor={worldColor} selected={selectedId === npc.id} onClick={() => { setSelectedId(npc.id); if (detailTab === "market") setDetailTab("status"); }} />
                 </motion.div>
               ))}
             </AnimatePresence>
           )}
         </div>
 
-        {/* Center — Detail panel */}
+        {/* ── Center — Detail / Market panel ── */}
         <div className="flex-1 overflow-y-auto">
-          {!selectedNpc ? (
+          {/* Market panel — shown any time CHỢ tab is active */}
+          {showMarketPanel ? (
+            <div className="p-5 max-w-2xl">
+              {/* Tabs (show tabs even for market) */}
+              <div className="flex rounded-lg overflow-hidden border border-gray-800 mb-4">
+                {ALL_TABS.map((tab, idx) => (
+                  <button key={tab.key} onClick={() => setDetailTab(tab.key)}
+                    className="flex-1 flex items-center justify-center gap-1 py-2 text-xs font-bold transition-all"
+                    style={{
+                      color: detailTab === tab.key ? worldColor : "#6b7280",
+                      background: detailTab === tab.key ? `${worldColor}15` : "transparent",
+                      borderRight: idx < ALL_TABS.length - 1 ? "1px solid #1f2937" : "none",
+                    }}>
+                    {tab.icon}<span className="hidden sm:inline">{tab.label}</span>
+                  </button>
+                ))}
+              </div>
+              <MarketPanel />
+            </div>
+          ) : !selectedNpc ? (
             <div className="h-full flex items-center justify-center flex-col gap-4 text-center">
-              <Brain size={48} className="text-gray-800" /><p className="text-gray-600">Chọn một NPC để xem chi tiết</p>
+              <Brain size={48} className="text-gray-800" />
+              <p className="text-gray-600">Chọn một NPC để xem chi tiết</p>
+              <button onClick={() => setDetailTab("market")}
+                className="flex items-center gap-2 rounded-xl border border-gray-800 px-4 py-2 text-xs text-gray-500 hover:text-white hover:border-gray-600 transition-all">
+                <ShoppingCart size={13} />Xem thị trường toàn cầu
+              </button>
             </div>
           ) : (
             <div className="p-5 flex flex-col gap-4 max-w-2xl">
@@ -366,27 +624,27 @@ export default function NPCSimulationPage() {
               <div className="flex rounded-lg overflow-hidden border border-gray-800">
                 {ALL_TABS.map((tab, idx) => (
                   <button key={tab.key} onClick={() => setDetailTab(tab.key)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold transition-all"
+                    className="flex-1 flex items-center justify-center gap-1 py-2 text-xs font-bold transition-all"
                     style={{
                       color: detailTab === tab.key ? worldColor : "#6b7280",
                       background: detailTab === tab.key ? `${worldColor}15` : "transparent",
                       borderRight: idx < ALL_TABS.length - 1 ? "1px solid #1f2937" : "none",
                     }}>
-                    {tab.icon}{tab.label}
+                    {tab.icon}<span className="hidden sm:inline">{tab.label}</span>
                   </button>
                 ))}
               </div>
 
-              {/* ── Tab: TRẠNG THÁI ── */}
+              {/* ── TRẠNG THÁI ── */}
               {detailTab === "status" && (
                 <AnimatePresence mode="wait">
                   <motion.div key="status" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-4">
                     <div className="grid grid-cols-2 gap-3">
                       {[
-                        { label: "Năng Lượng", value: selectedNpc.energy, icon: <Zap size={13} />, color: selectedNpc.energy > 60 ? "#22c55e" : selectedNpc.energy > 30 ? "#eab308" : "#ef4444" },
-                        { label: "Độ Đói",     value: selectedNpc.hunger, icon: <Utensils size={13} />, color: selectedNpc.hunger < 40 ? "#22c55e" : selectedNpc.hunger < 70 ? "#eab308" : "#ef4444" },
-                        { label: "Hạnh Phúc",  value: selectedNpc.happiness, icon: <Heart size={13} />, color: selectedNpc.happiness > 60 ? "#22c55e" : selectedNpc.happiness > 30 ? "#eab308" : "#ef4444" },
-                        { label: "Tiền Vàng",  value: selectedNpc.money, icon: <Coins size={13} />, color: selectedNpc.money > 200 ? "#22c55e" : selectedNpc.money > 50 ? "#eab308" : "#ef4444", raw: true },
+                        { label: "Năng Lượng", value: selectedNpc.energy,    icon: <Zap size={13} />,      color: selectedNpc.energy > 60 ? "#22c55e" : selectedNpc.energy > 30 ? "#eab308" : "#ef4444" },
+                        { label: "Độ Đói",     value: selectedNpc.hunger,    icon: <Utensils size={13} />, color: selectedNpc.hunger < 40 ? "#22c55e" : selectedNpc.hunger < 70 ? "#eab308" : "#ef4444" },
+                        { label: "Hạnh Phúc",  value: selectedNpc.happiness, icon: <Heart size={13} />,    color: selectedNpc.happiness > 60 ? "#22c55e" : selectedNpc.happiness > 30 ? "#eab308" : "#ef4444" },
+                        { label: "Tiền Vàng",  value: selectedNpc.money,     icon: <Coins size={13} />,    color: selectedNpc.money > 200 ? "#22c55e" : selectedNpc.money > 50 ? "#eab308" : "#ef4444", raw: true },
                       ].map((stat) => (
                         <div key={stat.label} className="rounded-xl border border-gray-800 bg-gray-900/50 p-3">
                           <div className="flex items-center justify-between mb-2">
@@ -425,7 +683,7 @@ export default function NPCSimulationPage() {
                 </AnimatePresence>
               )}
 
-              {/* ── Tab: KINH TẾ ── */}
+              {/* ── KINH TẾ ── */}
               {detailTab === "economy" && (
                 <AnimatePresence mode="wait">
                   <motion.div key="economy" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-4">
@@ -433,7 +691,6 @@ export default function NPCSimulationPage() {
                       <div className="flex items-center justify-center py-10"><RefreshCw size={18} className="animate-spin text-gray-600" /></div>
                     ) : (
                       <>
-                        {/* Job card */}
                         <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-4">
                           <p className="text-xs font-bold text-gray-500 tracking-widest mb-3">NGHỀ NGHIỆP</p>
                           {economy?.job ? (() => {
@@ -460,23 +717,21 @@ export default function NPCSimulationPage() {
                                 </div>
                               </div>
                             );
-                          })() : (
-                            <p className="text-gray-600 text-sm text-center py-2">Chưa có nghề nghiệp</p>
-                          )}
+                          })() : <p className="text-gray-600 text-sm text-center py-2">Chưa có nghề nghiệp</p>}
                         </div>
-
-                        {/* Inventory grid */}
                         <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-4">
                           <p className="text-xs font-bold text-gray-500 tracking-widest mb-3">KHO ĐỒ</p>
                           {economy?.inventory && economy.inventory.length > 0 ? (
                             <div className="grid grid-cols-4 gap-2">
                               {economy.inventory.map((item) => (
-                                <motion.div key={item.id}
-                                  initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+                                <motion.div key={item.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
                                   className="rounded-xl border border-gray-800 bg-gray-900 p-3 flex flex-col items-center gap-1 text-center">
                                   <span className="text-2xl">{ITEM_ICONS[item.itemName] ?? "📦"}</span>
                                   <span className="text-xs text-gray-400 leading-tight">{item.itemName}</span>
                                   <span className="text-sm font-bold text-white">×{item.quantity}</span>
+                                  {marketData?.market?.find((m) => m.itemName === item.itemName) && (
+                                    <span className="text-xs text-gray-600">{marketData.market.find((m) => m.itemName === item.itemName)!.currentPrice}đ</span>
+                                  )}
                                 </motion.div>
                               ))}
                             </div>
@@ -487,24 +742,21 @@ export default function NPCSimulationPage() {
                             </div>
                           )}
                         </div>
-
-                        {/* Transactions */}
                         <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-4">
                           <p className="text-xs font-bold text-gray-500 tracking-widest mb-3">GIAO DỊCH GẦN ĐÂY</p>
                           {economy?.transactions && economy.transactions.length > 0 ? (
                             <div className="flex flex-col gap-2">
                               {economy.transactions.map((tx) => {
                                 const tcfg = TX_CONFIG[tx.transactionType] ?? TX_CONFIG.earn;
-                                const isIncome = tx.transactionType === "earn" || (tx.transactionType === "sell") || (tx.transactionType === "trade" && tx.description.startsWith("Bán"));
+                                const isIncome = ["earn", "sell"].includes(tx.transactionType) || (tx.transactionType === "trade" && tx.description.startsWith("Bán"));
                                 return (
-                                  <motion.div key={tx.id}
-                                    initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
+                                  <motion.div key={tx.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
                                     className="flex items-center gap-3 rounded-lg border border-gray-800 bg-gray-900/40 px-3 py-2">
                                     <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style={{ background: `${tcfg.color}20` }}>
                                       <span style={{ color: tcfg.color }}>{tcfg.icon}</span>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                      <p className="text-xs text-gray-300 truncate leading-relaxed">{tx.description}</p>
+                                      <p className="text-xs text-gray-300 truncate">{tx.description}</p>
                                       <p className="text-xs text-gray-700">{new Date(tx.timestamp).toLocaleTimeString("vi-VN")}</p>
                                     </div>
                                     <span className="text-xs font-bold shrink-0" style={{ color: isIncome ? "#22c55e" : "#ef4444" }}>
@@ -518,7 +770,6 @@ export default function NPCSimulationPage() {
                             <div className="flex flex-col items-center gap-2 py-4">
                               <Coins size={28} className="text-gray-800" />
                               <p className="text-gray-600 text-sm">Chưa có giao dịch nào</p>
-                              <p className="text-gray-700 text-xs">Chạy Tick để bắt đầu kinh tế</p>
                             </div>
                           )}
                         </div>
@@ -528,7 +779,7 @@ export default function NPCSimulationPage() {
                 </AnimatePresence>
               )}
 
-              {/* ── Tab: QUAN HỆ ── */}
+              {/* ── QUAN HỆ ── */}
               {detailTab === "relations" && (
                 <AnimatePresence mode="wait">
                   <motion.div key="relations" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-4">
@@ -599,7 +850,7 @@ export default function NPCSimulationPage() {
                 </AnimatePresence>
               )}
 
-              {/* ── Tab: BỘ NHỚ ── */}
+              {/* ── BỘ NHỚ ── */}
               {detailTab === "memories" && (
                 <AnimatePresence mode="wait">
                   <motion.div key="memories" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-2">
@@ -626,20 +877,23 @@ export default function NPCSimulationPage() {
                   </motion.div>
                 </AnimatePresence>
               )}
+
+              {/* ── CHỢ (shown within NPC context too) ── */}
+              {detailTab === "market" && <MarketPanel />}
             </div>
           )}
         </div>
 
-        {/* Right — Tick log */}
+        {/* ── Right — Tick log ── */}
         {tickLog.length > 0 && (
-          <div className="w-[250px] shrink-0 border-l border-gray-800 overflow-y-auto p-4">
+          <div className="w-[230px] shrink-0 border-l border-gray-800 overflow-y-auto p-3">
             <div className="flex items-center gap-2 mb-3">
-              <Activity size={14} style={{ color: worldColor }} />
-              <h3 className="text-xs font-bold tracking-widest" style={{ color: worldColor }}>NHẬT KÝ #{tickCount}</h3>
+              <Activity size={13} style={{ color: worldColor }} />
+              <h3 className="text-xs font-bold tracking-widest" style={{ color: worldColor }}>TICK #{tickCount}</h3>
             </div>
             <div className="flex flex-col gap-2">
               {tickLog.map((log, i) => (
-                <motion.div key={i} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                <motion.div key={i} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
                   className="rounded-lg border border-gray-800 bg-gray-900/50 p-2.5">
                   <div className="text-xs font-bold text-white mb-1">{log.name}</div>
                   <div className="text-xs text-gray-400 leading-relaxed">{log.action}</div>
