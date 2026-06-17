@@ -52,3 +52,4 @@ export * from "./multiWorld";
 export * from "./cosmicHierarchy";
 export * from "./worldWeather";
 export * from "./worldSimulation";
+export * from "./npcCore";

@@ -18,7 +18,9 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 17/06/2026 — Tích hợp ROADMAP TẠO THẾ GIỚI ẢO vào tầm nhìn cốt lõi + thêm Phases 41–45: [41] FREE WORLD FRAMEWORK (tạo thế giới theo chủ đề hoàn toàn tự do, AI sinh framework), [42] GOD OBSERVER DASHBOARD (Thần quan sát thế giới realtime, autonomous events), [43] LIVING WORLD ENGINE (thế giới sống đúng theo lore, NPC có cuộc đời, văn hóa, kinh tế), [44] MULTI-WORLD MANAGEMENT (nhiều thế giới/user, cổng liên kết, Tinh Vực), [45] COSMIC HIERARCHY (THẾ GIỚI→TINH VỰC→NGÂN HÀ→THIÊN HÀ→VŨ TRỤ, nền tảng VR/AR/XR).
+> **Cập nhật lần cuối:** 17/06/2026 — HỆ THỐNG LÕI NPC hoàn tất: 3 bảng DB mới (`npc_cores`, `npc_personalities`, `npc_core_memories`), route `/api/npc-core` (seed/tick/list/memories/detail), chu kỳ thế giới tự động (hunger↑ energy↓ mỗi tick, sinh mục tiêu dựa trên trạng thái, thực hiện hành động, lưu ký ức), trang `/npc-simulation` dashboard đầy đủ.
+
+> **Cập nhật trước:** 17/06/2026 — Tích hợp ROADMAP TẠO THẾ GIỚI ẢO vào tầm nhìn cốt lõi + thêm Phases 41–45: [41] FREE WORLD FRAMEWORK (tạo thế giới theo chủ đề hoàn toàn tự do, AI sinh framework), [42] GOD OBSERVER DASHBOARD (Thần quan sát thế giới realtime, autonomous events), [43] LIVING WORLD ENGINE (thế giới sống đúng theo lore, NPC có cuộc đời, văn hóa, kinh tế), [44] MULTI-WORLD MANAGEMENT (nhiều thế giới/user, cổng liên kết, Tinh Vực), [45] COSMIC HIERARCHY (THẾ GIỚI→TINH VỰC→NGÂN HÀ→THIÊN HÀ→VŨ TRỤ, nền tảng VR/AR/XR).
 >
 > Phase 26 KINH TẾ THẾ GIỚI hoàn tất: DB `world_currencies`+`world_treasury`+`currency_exchanges`, AI sinh tên tiền tệ theo lore, sàn tỷ giá realtime, đổi tiền liên thế giới (phí 1%), tỷ giá dao động theo volume, kho bạc thế giới, thuế quan 0-30%, trang `/world-economy`. Tầm nhìn dự án được cập nhật: thế giới là đơn vị chính, 5 phases mới (Kinh Tế / Ngoại Giao / Chiến Tranh / Đa Chủ Đề / Quản Trị) thay thế phases cũ.
 >

@@ -68,6 +68,7 @@ import LegendPage from "@/pages/LegendPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import WeatherPage from "@/pages/WeatherPage";
 import WorldSimulationPage from "@/pages/WorldSimulationPage";
+import NPCSimulationPage from "@/pages/NPCSimulationPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";
 
@@ -145,6 +146,7 @@ function Router() {
       <Route path="/legends" component={LegendPage} />
       <Route path="/weather" component={WeatherPage} />
       <Route path="/simulation" component={WorldSimulationPage} />
+      <Route path="/npc-simulation" component={NPCSimulationPage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/reset-password" component={ResetPasswordPage} />
       <Route path="/verify-email" component={VerifyEmailPage} />

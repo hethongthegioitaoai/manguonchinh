@@ -565,6 +565,14 @@ export default function DashboardPage() {
                         onClick: () => setLocation("/npcs"),
                       },
                       {
+                        icon: Brain,
+                        label: "MÔ PHỎNG NPC",
+                        sub: "Vòng đời tự động — mục tiêu, bộ nhớ, tính cách",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/npc-simulation"),
+                      },
+                      {
                         icon: Globe,
                         label: "THẾ GIỚI",
                         sub: "Boss, tài nguyên & trạng thái thế giới",
