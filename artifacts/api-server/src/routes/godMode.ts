@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/localAuth.js";
+import { isAuthenticated } from "../auth/replitAuth.js";
 import { db } from "@workspace/db";
 import { divineActions, npcPrayers, npcs, customWorlds, worldEvents, worldPopulationLog, worldAutoEvents, characters, worldFrameworks } from "@workspace/db/schema";
 import { eq, and, desc, gte, avg, sum, count } from "drizzle-orm";

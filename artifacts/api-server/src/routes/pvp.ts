@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/localAuth.js";
+import { isAuthenticated } from "../auth/replitAuth.js";
 import { db } from "@workspace/db";
 import { characters, battles, pvpRankings } from "@workspace/db/schema";
 import { eq, ne, and, desc, asc } from "drizzle-orm";

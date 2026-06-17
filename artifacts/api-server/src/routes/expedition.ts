@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/localAuth.js";
+import { isAuthenticated } from "../auth/replitAuth.js";
 import { db } from "@workspace/db";
 import { expeditions, expeditionEvents, characters, customWorlds } from "@workspace/db/schema";
 import { eq, and, desc, or } from "drizzle-orm";

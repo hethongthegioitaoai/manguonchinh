@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { db } from "@workspace/db";
 import { users } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
-import { isAuthenticated, getAuthUser } from "../auth/localAuth.js";
+import { isAuthenticated, getAuthUser } from "../auth/replitAuth.js";
 
 const router = Router();
 

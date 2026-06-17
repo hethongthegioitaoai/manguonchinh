@@ -3,7 +3,7 @@ import crypto from "crypto";
 import { db } from "@workspace/db";
 import { users } from "@workspace/db/schema";
 import { eq, and, gt } from "drizzle-orm";
-import { isAuthenticated } from "../auth/localAuth.js";
+import { isAuthenticated } from "../auth/replitAuth.js";
 import { sendVerificationEmail } from "../lib/mailer.js";
 
 const router = Router();

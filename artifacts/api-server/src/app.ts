@@ -3,7 +3,7 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes/index.js";
 import { logger } from "./lib/logger.js";
-import { setupAuth } from "./auth/localAuth.js";
+import { setupAuth } from "./auth/replitAuth.js";
 import { applySecurityMiddleware, authRateLimit } from "./middleware/security.js";
 
 const app: Express = express();
