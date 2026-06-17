@@ -48,6 +48,15 @@ import AuctionPage from "@/pages/AuctionPage";
 import TitlesPage from "@/pages/TitlesPage";
 import PetsPage from "@/pages/PetsPage";
 import WorldEconomyPage from "@/pages/WorldEconomyPage";
+import DiplomacyPage from "@/pages/DiplomacyPage";
+import WorldWarPage from "@/pages/WorldWarPage";
+import WorldThemePage from "@/pages/WorldThemePage";
+import GovernancePage from "@/pages/GovernancePage";
+import DisastersPage from "@/pages/DisastersPage";
+import BankPage from "@/pages/BankPage";
+import BountiesPage from "@/pages/BountiesPage";
+import TournamentPage from "@/pages/TournamentPage";
+import RealEstatePage from "@/pages/RealEstatePage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";
@@ -107,6 +116,15 @@ function Router() {
       <Route path="/titles" component={TitlesPage} />
       <Route path="/pets" component={PetsPage} />
       <Route path="/world-economy" component={WorldEconomyPage} />
+      <Route path="/diplomacy" component={DiplomacyPage} />
+      <Route path="/world-war" component={WorldWarPage} />
+      <Route path="/world-theme" component={WorldThemePage} />
+      <Route path="/governance" component={GovernancePage} />
+      <Route path="/disasters" component={DisastersPage} />
+      <Route path="/bank" component={BankPage} />
+      <Route path="/bounties" component={BountiesPage} />
+      <Route path="/tournament" component={TournamentPage} />
+      <Route path="/realestate" component={RealEstatePage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/reset-password" component={ResetPasswordPage} />
       <Route path="/verify-email" component={VerifyEmailPage} />

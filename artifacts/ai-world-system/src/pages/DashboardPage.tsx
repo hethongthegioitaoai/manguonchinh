@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import {
   LogOut, Globe, Zap, User, Shield, Swords, Users,
-  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain, Sparkles, Skull, Hammer, Newspaper, Crown, ShoppingBag, Map, ScrollText, Infinity, Orbit, Mail, X, Gavel, Award,
+  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain, Sparkles, Skull, Hammer, Newspaper, Crown, ShoppingBag, Map, ScrollText, Infinity, Orbit, Mail, X, Gavel, Award, Handshake, Palette, Scale, AlertTriangle, Landmark, Target, Sword, Leaf,
 } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Button } from "@/components/ui/button";
@@ -732,9 +732,81 @@ export default function DashboardPage() {
                         icon: Globe,
                         label: "KINH TẾ THẾ GIỚI",
                         sub: "Sàn tỷ giá liên thế giới — đổi tiền, quản lý kho bạc, đặt thuế quan cho thế giới của bạn",
-                        tag: "NEW",
+                        tag: null,
                         disabled: false,
                         onClick: () => setLocation("/world-economy"),
+                      },
+                      {
+                        icon: Handshake,
+                        label: "NGOẠI GIAO",
+                        sub: "Ký kết hiệp ước liên thế giới — liên minh, thương mại, đại sứ quán, cấm vận",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/diplomacy"),
+                      },
+                      {
+                        icon: Swords,
+                        label: "CHIẾN TRANH THẾ GIỚI",
+                        sub: "Tuyên chiến — PvP tích điểm 72h — thế giới thắng chiếm 20% kho bạc đối phương",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/world-war"),
+                      },
+                      {
+                        icon: Palette,
+                        label: "THEME THẾ GIỚI",
+                        sub: "15 preset + custom AI — sinh framework hoàn chỉnh: lore, kinh tế, quân sự, vật phẩm, quest",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/world-theme"),
+                      },
+                      {
+                        icon: Scale,
+                        label: "QUẢN TRỊ THẾ GIỚI",
+                        sub: "Hiến pháp — Hội đồng — Bỏ phiếu — Sắc lệnh AI — Chỉ số ổn định 0-100",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/governance"),
+                      },
+                      {
+                        icon: AlertTriangle,
+                        label: "THIÊN TAI & PHÚC LỘC",
+                        sub: "Sự kiện AI ngẫu nhiên — EXP ×0.4 đến ×5.0 — cầu nguyện tập thể đẩy lùi thiên tai",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/disasters"),
+                      },
+                      {
+                        icon: Landmark,
+                        label: "NGÂN HÀNG",
+                        sub: "Gửi tiết kiệm lãi 2%/ngày — vay vốn — chuyển khoản cross-world — tỷ giá ngoại giao",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/bank"),
+                      },
+                      {
+                        icon: Target,
+                        label: "BẢNG TRUY NÃ",
+                        sub: "Đặt tiền truy nã nhân vật khác — thợ săn tiền thưởng — danh sách kẻ thù thiên hạ",
+                        tag: null,
+                        disabled: false,
+                        onClick: () => setLocation("/bounties"),
+                      },
+                      {
+                        icon: Sword,
+                        label: "ĐẠI HỘI VÕ LÂM",
+                        sub: "Giải đấu PvP toàn server — AI commentary — vô địch nhận danh hiệu Thiên Hạ Đệ Nhất",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/tournament"),
+                      },
+                      {
+                        icon: Leaf,
+                        label: "BẤT ĐỘNG SẢN",
+                        sub: "Mua đất — nông điền/khoáng mỏ/cửa hàng/cư sở — thu nhập thụ động — nâng cấp bán lại",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/realestate"),
                       },
                     ].map((action) => (
                       <motion.div

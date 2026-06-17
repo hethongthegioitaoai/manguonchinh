@@ -523,18 +523,18 @@ lib/
 
 **Mục tiêu:** Thế giới ký kết hiệp ước với nhau — liên minh phòng thủ, hiệp định thương mại, đại sứ quán. Quan hệ ngoại giao ảnh hưởng đến tỷ giá, thuế, và khả năng tuyên chiến.
 
-- [ ] Bảng DB `world_relations` (worldSlugA, worldSlugB, status: neutral/ally/trade_partner/enemy/war, treatiesthDetails jsonb, establishedAt, updatedAt)
-- [ ] Bảng DB `diplomacy_events` (id, fromWorldSlug, toWorldSlug, eventType: proposal/accept/reject/cancel/declare_war/peace, content, createdAt)
-- [ ] Bảng DB `world_embassies` (id, homeWorldSlug, hostWorldSlug, ambassadorCharId, establishedAt, status)
-- [ ] API GET /api/diplomacy/world/:worldSlug — quan hệ của 1 thế giới với các thế giới khác
-- [ ] API GET /api/diplomacy/map — bản đồ quan hệ toàn bộ thế giới (nodes + edges)
-- [ ] API POST /api/diplomacy/propose — đề xuất hiệp ước (trade / alliance / non-aggression)
-- [ ] API POST /api/diplomacy/respond/:eventId — chấp nhận / từ chối đề xuất
-- [ ] API POST /api/diplomacy/establish-embassy — cử đại sứ sang thế giới khác
-- [ ] API POST /api/diplomacy/sanction/:worldSlug — cấm vận kinh tế (giảm 50% trade volume)
-- [ ] Hiệu ứng thực: liên minh → giảm thuế giao thương 50%, trade_partner → tăng tỷ giá 10%, enemy → phí giao dịch ×2
-- [ ] Trang `/diplomacy` — bản đồ quan hệ thế giới (graph), gửi đề xuất, quản lý hiệp ước, đại sứ quán
-- [ ] Nút Dashboard "NGOẠI GIAO"
+- [x] Bảng DB `world_relations` (worldSlugA, worldSlugB, status: neutral/ally/trade_partner/enemy/war, treatiesthDetails jsonb, establishedAt, updatedAt)
+- [x] Bảng DB `diplomacy_events` (id, fromWorldSlug, toWorldSlug, eventType: proposal/accept/reject/cancel/declare_war/peace, content, createdAt)
+- [x] Bảng DB `world_embassies` (id, homeWorldSlug, hostWorldSlug, ambassadorCharId, establishedAt, status)
+- [x] API GET /api/diplomacy/world/:worldSlug — quan hệ của 1 thế giới với các thế giới khác
+- [x] API GET /api/diplomacy/map — bản đồ quan hệ toàn bộ thế giới (nodes + edges)
+- [x] API POST /api/diplomacy/propose — đề xuất hiệp ước (trade / alliance / non-aggression)
+- [x] API POST /api/diplomacy/respond/:eventId — chấp nhận / từ chối đề xuất
+- [x] API POST /api/diplomacy/establish-embassy — cử đại sứ sang thế giới khác
+- [x] API POST /api/diplomacy/sanction/:worldSlug — cấm vận kinh tế (giảm 50% trade volume)
+- [x] Hiệu ứng thực: liên minh → giảm thuế giao thương 50%, trade_partner → tăng tỷ giá 10%, enemy → phí giao dịch ×2
+- [x] Trang `/diplomacy` — bản đồ quan hệ thế giới (graph), gửi đề xuất, quản lý hiệp ước, đại sứ quán
+- [x] Nút Dashboard "NGOẠI GIAO"
 
 ---
 
@@ -544,18 +544,18 @@ lib/
 
 **Mục tiêu:** Thế giới tuyên chiến thế giới khác. Dân của 2 bên PvP để tích điểm chiến tranh. Thế giới thắng chiếm tài nguyên/kho bạc đối phương. AI sinh tường thuật chiến sự mỗi ngày.
 
-- [ ] Bảng DB `world_wars` (id, attackerWorldSlug, defenderWorldSlug, declaredAt, endsAt, attackerScore, defenderScore, status: active/ended, winnerId, warReason, territory jsonb)
-- [ ] Bảng DB `war_contributions` (warId, characterId, worldSlug, pvpKills, pvpDeaths, contribution, recordedAt)
-- [ ] Điều kiện tuyên chiến: 2 thế giới phải ở trạng thái neutral hoặc enemy (không phải ally)
-- [ ] API POST /api/world-war/declare/:targetWorldSlug — tuyên chiến (chỉ world owner)
-- [ ] API GET /api/world-war/active — tất cả chiến tranh đang diễn ra
-- [ ] API GET /api/world-war/:warId — chi tiết chiến tranh + bảng xếp hạng đóng góp
-- [ ] API POST /api/world-war/contribute — PvP kill tự động cộng điểm vào chiến tranh đang active
-- [ ] API POST /api/world-war/:warId/surrender — đầu hàng sớm (mất 30% kho bạc thay vì 50%)
-- [ ] Auto-end sau 72h: tính tổng điểm, thế giới thắng nhận 20% kho bạc đối phương
-- [ ] AI sinh "Tường Thuật Chiến Sự" mỗi 12h — tin tức chiến tranh theo phong cách lore thế giới
-- [ ] Trang `/world-war` — bản đồ chiến tranh, điểm số realtime, tường thuật, lịch sử chiến tranh
-- [ ] Nút Dashboard "CHIẾN TRANH THẾ GIỚI"
+- [x] Bảng DB `world_wars` (id, attackerWorldSlug, defenderWorldSlug, declaredAt, endsAt, attackerScore, defenderScore, status: active/ended, winnerId, warReason, territory jsonb)
+- [x] Bảng DB `war_contributions` (warId, characterId, worldSlug, pvpKills, pvpDeaths, contribution, recordedAt)
+- [x] Điều kiện tuyên chiến: 2 thế giới phải ở trạng thái neutral hoặc enemy (không phải ally)
+- [x] API POST /api/world-war/declare/:targetWorldSlug — tuyên chiến (chỉ world owner)
+- [x] API GET /api/world-war/active — tất cả chiến tranh đang diễn ra
+- [x] API GET /api/world-war/:warId — chi tiết chiến tranh + bảng xếp hạng đóng góp
+- [x] API POST /api/world-war/contribute — PvP kill tự động cộng điểm vào chiến tranh đang active
+- [x] API POST /api/world-war/:warId/surrender — đầu hàng sớm (mất 30% kho bạc thay vì 50%)
+- [x] Auto-end sau 72h: tính tổng điểm, thế giới thắng nhận 20% kho bạc đối phương
+- [x] AI sinh "Tường Thuật Chiến Sự" mỗi 12h — tin tức chiến tranh theo phong cách lore thế giới
+- [x] Trang `/world-war` — bản đồ chiến tranh, điểm số realtime, tường thuật, lịch sử chiến tranh
+- [x] Nút Dashboard "CHIẾN TRANH THẾ GIỚI"
 
 ---
 
@@ -565,18 +565,18 @@ lib/
 
 **Mục tiêu:** Không còn giới hạn 3 thế giới preset. Người dùng nhập bất kỳ ý tưởng nào → AI sinh framework hoàn chỉnh: lịch sử, kinh tế, quân đội, văn hóa, địa lý, 10 NPC, 5 Boss, 20 item đặc trưng, tiền tệ riêng, 8 quest template — tất cả theo phong cách chủ đề đó.
 
-- [ ] Bảng DB `world_themes` (worldSlug, themeInput, themeName, themeStyle, geography jsonb, history, economy jsonb, military jsonb, culture jsonb, uniqueItems jsonb, uniqueQuests jsonb, generatedAt)
-- [ ] AI pipeline: input → generate theme → generate economy → generate military → generate culture → generate items → generate quests (6 bước, parallel khi có thể)
-- [ ] 15+ preset theme templates: Steampunk / Space Opera / Medieval / Underwater / Post-Apocalypse / Wuxia / Viking / Ancient Egypt / Feudal Japan / Wild West / Dinosaur Era / Underwater Civilization / Demon Realm / Celestial Heaven / Ant Colony
-- [ ] Preset áp dụng ngay không cần AI (fast path) — AI dùng khi custom input
-- [ ] API POST /api/world-theme/generate — input chủ đề → AI sinh full framework (5-10s)
-- [ ] API POST /api/world-theme/apply/:worldSlug — áp dụng theme vào thế giới đã tạo
-- [ ] API GET /api/world-theme/presets — 15 preset có sẵn
-- [ ] API GET /api/world-theme/:worldSlug — theme hiện tại của thế giới
-- [ ] Tích hợp vào World Creator: bước 2 chọn theme (preset hoặc custom AI)
-- [ ] Theme ảnh hưởng: tên tiền tệ, item names, NPC titles, quest flavor text, enemy types
-- [ ] Trang `/world-theme` — gallery 15 presets + ô nhập custom → preview → áp dụng
-- [ ] Nút Dashboard "THEME THẾ GIỚI"
+- [x] Bảng DB `world_themes` (worldSlug, themeInput, themeName, themeStyle, geography jsonb, history, economy jsonb, military jsonb, culture jsonb, uniqueItems jsonb, uniqueQuests jsonb, generatedAt)
+- [x] AI pipeline: input → generate theme → generate economy → generate military → generate culture → generate items → generate quests (6 bước, parallel khi có thể)
+- [x] 15+ preset theme templates: Steampunk / Space Opera / Medieval / Underwater / Post-Apocalypse / Wuxia / Viking / Ancient Egypt / Feudal Japan / Wild West / Dinosaur Era / Underwater Civilization / Demon Realm / Celestial Heaven / Ant Colony
+- [x] Preset áp dụng ngay không cần AI (fast path) — AI dùng khi custom input
+- [x] API POST /api/world-theme/generate — input chủ đề → AI sinh full framework (5-10s)
+- [x] API POST /api/world-theme/apply/:worldSlug — áp dụng theme vào thế giới đã tạo
+- [x] API GET /api/world-theme/presets — 15 preset có sẵn
+- [x] API GET /api/world-theme/:worldSlug — theme hiện tại của thế giới
+- [x] Tích hợp vào World Creator: bước 2 chọn theme (preset hoặc custom AI)
+- [x] Theme ảnh hưởng: tên tiền tệ, item names, NPC titles, quest flavor text, enemy types
+- [x] Trang `/world-theme` — gallery 15 presets + ô nhập custom → preview → áp dụng
+- [x] Nút Dashboard "THEME THẾ GIỚI"
 
 ---
 
@@ -586,20 +586,131 @@ lib/
 
 **Mục tiêu:** World owner không cai trị một mình — có thể lập Hội Đồng từ top dân cư, ban hành luật, thu thuế có mục tiêu, tổ chức bầu cử. Công dân có tiếng nói. Thế giới có "chỉ số ổn định" dao động theo quyết định quản trị.
 
-- [ ] Bảng DB `world_constitution` (worldSlug, laws jsonb, taxPolicy jsonb, entryPolicy, tradePolicy, warPolicy, stability, lastAmended, amendedBy)
-- [ ] Bảng DB `world_council` (worldSlug, characterId, role: owner/minister/ambassador/citizen_rep, votingPower, appointedAt)
-- [ ] Bảng DB `world_votes` (id, worldSlug, proposedBy, proposalType, proposalContent, votesFor, votesAgainst, status, expiresAt, executedAt)
-- [ ] Bảng DB `world_decrees` (id, worldSlug, issuedBy, decreeName, decreeContent, effect jsonb, issuedAt, expiresAt)
-- [ ] Chỉ số ổn định (0-100): tax quá cao → -10/ngày, war liên tục → -5/ngày, prosperity event → +5
-- [ ] API GET /api/governance/:worldSlug — constitution, council, active votes, stability
-- [ ] API POST /api/governance/appoint/:worldSlug — bổ nhiệm vào hội đồng
-- [ ] API POST /api/governance/propose/:worldSlug — đề xuất luật/nghị quyết
-- [ ] API POST /api/governance/vote/:voteId — hội đồng bỏ phiếu
-- [ ] API POST /api/governance/decree/:worldSlug — owner ban hành sắc lệnh trực tiếp (không cần vote)
-- [ ] Auto-execute: vote pass → luật có hiệu lực ngay, stability thay đổi
-- [ ] AI sinh mô tả "Sắc Lệnh" theo phong cách lore thế giới (VD: Tu Tiên → dùng từ ngữ đạo môn)
-- [ ] Trang `/governance` — hiến pháp thế giới, hội đồng, vote đang mở, lịch sử sắc lệnh
-- [ ] Nút Dashboard "QUẢN TRỊ THẾ GIỚI"
+- [x] Bảng DB `world_constitution` (worldSlug, laws jsonb, taxPolicy jsonb, entryPolicy, tradePolicy, warPolicy, stability, lastAmended, amendedBy)
+- [x] Bảng DB `world_council` (worldSlug, characterId, role: owner/minister/ambassador/citizen_rep, votingPower, appointedAt)
+- [x] Bảng DB `world_votes` (id, worldSlug, proposedBy, proposalType, proposalContent, votesFor, votesAgainst, status, expiresAt, executedAt)
+- [x] Bảng DB `world_decrees` (id, worldSlug, issuedBy, decreeName, decreeContent, effect jsonb, issuedAt, expiresAt)
+- [x] Chỉ số ổn định (0-100): tax quá cao → -10/ngày, war liên tục → -5/ngày, prosperity event → +5
+- [x] API GET /api/governance/:worldSlug — constitution, council, active votes, stability
+- [x] API POST /api/governance/appoint/:worldSlug — bổ nhiệm vào hội đồng
+- [x] API POST /api/governance/propose/:worldSlug — đề xuất luật/nghị quyết
+- [x] API POST /api/governance/vote/:voteId — hội đồng bỏ phiếu
+- [x] API POST /api/governance/decree/:worldSlug — owner ban hành sắc lệnh trực tiếp (không cần vote)
+- [x] Auto-execute: vote pass → luật có hiệu lực ngay, stability thay đổi
+- [x] AI sinh mô tả "Sắc Lệnh" theo phong cách lore thế giới (VD: Tu Tiên → dùng từ ngữ đạo môn)
+- [x] Trang `/governance` — hiến pháp thế giới, hội đồng, vote đang mở, lịch sử sắc lệnh
+- [x] Nút Dashboard "QUẢN TRỊ THẾ GIỚI"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 31 — THIÊN TAI & PHÚC LỘC (WORLD DISASTERS & BLESSINGS)
+### ════════════════════════════════════════
+
+**Mục tiêu:** AI ngẫu nhiên kích hoạt thiên tai (thiên thạch, dịch bệnh, hạn hán) hoặc phúc lành (mưa kho báu, làn sóng giác ngộ, phúc khí) cho thế giới. Người chơi có thể cầu nguyện tập thể để giảm thiên tai. Ảnh hưởng đến EXP, tài nguyên, và kinh tế.
+
+- [x] Bảng DB `world_disasters` (id, worldSlug, eventType: disaster/blessing, eventName, severity: minor/major/catastrophic, description, aiNarrative, effect jsonb, startedAt, endsAt, prayerCount, status: active/ended, resolvedBy: expired/prayer/override)
+- [x] Bảng DB `disaster_prayers` (disasterId, characterId, prayerText, prayerPower, prayedAt)
+- [x] AI sinh sự kiện ngẫu nhiên mỗi 24h per world — random disaster hoặc blessing (30% blessing, 70% disaster)
+- [x] Hiệu ứng thực: disaster → EXP giảm 20-50%, tài nguyên giảm 30-80% / blessing → EXP tăng 50%, drop item tốt hơn
+- [x] Cơ chế cầu nguyện tập thể: tổng prayerPower ≥ 1000 → thiên tai giảm 1 cấp severity hoặc kết thúc sớm
+- [x] API GET /api/disasters/:worldSlug — thiên tai/phúc lành đang active
+- [x] API POST /api/disasters/trigger/:worldSlug — admin/AI trigger event thủ công
+- [x] API POST /api/disasters/:disasterId/pray — cầu nguyện đẩy lùi thiên tai
+- [x] API GET /api/disasters/history/:worldSlug — lịch sử sự kiện (20 gần nhất)
+- [x] Trang `/disasters` — bản đồ thiên tai toàn cầu, cầu nguyện tập thể, lịch sử
+- [x] Thông báo push khi thiên tai mới xuất hiện (notification bell)
+- [x] Nút Dashboard "THIÊN TAI & PHÚC LỘC"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 32 — NGÂN HÀNG LIÊN THẾ GIỚI (CROSS-WORLD BANK)
+### ════════════════════════════════════════
+
+**Mục tiêu:** Ngân hàng trung lập nằm giữa các thế giới. Người chơi gửi tiết kiệm nhận lãi 2%/ngày, vay vốn với lãi suất, chuyển khoản cross-world, đổi ngoại tệ. Tạo hệ thống tài chính độc lập với chợ thông thường.
+
+- [x] Bảng DB `bank_accounts` (id, characterId, worldSlug, balance, totalDeposited, totalWithdrawn, openedAt, lastInterestAt)
+- [x] Bảng DB `bank_loans` (id, characterId, worldSlug, principal, interestRate, totalOwed, dueAt, status: active/paid/defaulted, takenAt)
+- [x] Bảng DB `bank_transfers` (id, fromCharId, toCharId, amount, fromCurrency, toCurrency, exchangeRate, fee, note, transferredAt)
+- [x] Lãi suất tiết kiệm: 2%/ngày auto-compound — tính khi user đăng nhập (lazy evaluation)
+- [x] Phí chuyển khoản cross-world: 5% + phí cố định 10 gold
+- [x] Tỷ giá: thay đổi theo quan hệ ngoại giao (ally → tỷ giá tốt hơn, enemy → tệ hơn)
+- [x] Vay tối đa 500% số dư tài khoản, lãi 5%/ngày, auto-deduct từ tài khoản khi đến hạn
+- [x] API GET /api/bank/account — tài khoản của user
+- [x] API POST /api/bank/deposit — gửi tiết kiệm
+- [x] API POST /api/bank/withdraw — rút tiền
+- [x] API POST /api/bank/loan — vay vốn
+- [x] API POST /api/bank/repay/:loanId — trả nợ
+- [x] API POST /api/bank/transfer — chuyển khoản cross-world
+- [x] API GET /api/bank/rates — tỷ giá hối đoái hiện tại
+- [x] Trang `/bank` — tài khoản ngân hàng, vay nợ, chuyển khoản, tỷ giá
+- [x] Nút Dashboard "NGÂN HÀNG"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 33 — BẢNG TRUY NÃ (BOUNTY BOARD)
+### ════════════════════════════════════════
+
+**Mục tiêu:** Người chơi đặt tiền truy nã nhân vật khác (PvP bounty) hoặc boss đặc biệt. Ai hạ được mục tiêu nhận thưởng. Tạo hệ sinh thái thợ săn tiền thưởng (bounty hunter) và tội phạm trong thế giới.
+
+- [x] Bảng DB `bounties` (id, postedBy, targetCharId, targetCharName, targetWorldSlug, reward, reason, status: active/claimed/expired, claimedBy, postedAt, expiresAt)
+- [x] Bảng DB `bounty_claims` (bountyId, claimerCharId, battleProof jsonb, claimedAt, approvedAt, status)
+- [x] Giới hạn: max 3 bounty active per character, minimum reward 100 gold, expire sau 7 ngày
+- [x] Hạ target trong PvP → auto-detect + create claim → admin/AI approve trong 10 phút
+- [x] "Danh sách truy nã" công khai — ai có bounty cao nhất được gọi là Kẻ Thù Thiên Hạ
+- [x] API GET /api/bounties/active — danh sách bounty đang active
+- [x] API GET /api/bounties/my — bounty của mình (đặt + bị đặt)
+- [x] API POST /api/bounties/post — đặt tiền truy nã
+- [x] API POST /api/bounties/claim/:bountyId — claim khi hạ xong
+- [x] API DELETE /api/bounties/:bountyId — hủy bounty (mất 50% tiền)
+- [x] Trang `/bounties` — bảng truy nã, top bounty, lịch sử, đặt truy nã
+- [x] Nút Dashboard "TRUY NÃ"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 34 — ĐẠI HỘI VÕ LÂM (GRAND TOURNAMENT)
+### ════════════════════════════════════════
+
+**Mục tiêu:** Giải đấu PvP toàn server mỗi tuần — bracket 16 người, 4 vòng đấu. AI sinh commentary cho từng trận. Nhà vô địch nhận danh hiệu "Thiên Hạ Đệ Nhất" + phần thưởng đặc biệt + 1 tháng.
+
+- [x] Bảng DB `tournaments` (id, season, status: registration/active/ended, bracket jsonb, startAt, endAt, winnerId, prizePool, participantCount)
+- [x] Bảng DB `tournament_matches` (id, tournamentId, round, matchIndex, char1Id, char2Id, winnerId, battleLog jsonb, aiCommentary, foughtAt)
+- [x] Đăng ký tự do 3 ngày trước giải, chọn 16 người đầu tiên (nếu > 16 → ranked by power)
+- [x] Bracket tự động khi đủ 16 người — AI simulate trận đấu dựa trên stats thật
+- [x] AI sinh commentary kịch tính cho từng trận theo lore thế giới
+- [x] Auto-advance bracket, semi-final, final — mỗi vòng cách nhau 6h
+- [x] API GET /api/tournament/current — giải đang diễn ra hoặc đăng ký
+- [x] API POST /api/tournament/register — đăng ký tham gia
+- [x] API GET /api/tournament/:tournamentId/bracket — bracket hiện tại
+- [x] API POST /api/tournament/:tournamentId/simulate — admin/AI simulate vòng đấu
+- [x] Trang `/tournament` — đăng ký, bracket tree, commentary, lịch sử vô địch
+- [x] Nút Dashboard "ĐẠI HỘI VÕ LÂM"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 35 — BẤT ĐỘNG SẢN THẾ GIỚI (REAL ESTATE)
+### ════════════════════════════════════════
+
+**Mục tiêu:** Người chơi mua đất/cửa hàng trong thế giới để kiếm thu nhập thụ động. Đất có thể nâng cấp, cho thuê, bán lại. Tạo economy layer thứ 2 bên cạnh chiến đấu.
+
+- [x] Bảng DB `land_plots` (id, worldSlug, plotName, plotType: farmland/shop/mine/residence, tier: 1-5, ownerId, ownerCharId, price, rentalIncome, lastCollectedAt, purchasedAt, upgradeLevel, isForSale, salePrice)
+- [x] Bảng DB `land_transactions` (id, plotId, fromCharId, toCharId, transactionType: purchase/rent/upgrade/income, amount, notes, transactionAt)
+- [x] Mỗi thế giới có 30 plots sẵn (10 farmland, 10 shop, 5 mine, 5 residence) — seeded khi world tạo
+- [x] Thu nhập thụ động: farmland 5 gold/h, shop 15 gold/h, mine 25 gold/h, residence 8 gold/h (nhân tier)
+- [x] Nâng cấp plot tăng income 50% per level, max tier 5
+- [x] API GET /api/realestate/:worldSlug — tất cả plots của thế giới
+- [x] API GET /api/realestate/my-plots — plots của nhân vật hiện tại
+- [x] API POST /api/realestate/buy/:plotId — mua đất
+- [x] API POST /api/realestate/sell/:plotId — đăng bán đất
+- [x] API POST /api/realestate/upgrade/:plotId — nâng cấp plot
+- [x] API POST /api/realestate/collect/:plotId — thu nhập thụ động
+- [x] API POST /api/realestate/collect-all — thu tất cả cùng lúc
+- [x] Trang `/realestate` — bản đồ đất đai, mua bán, thu nhập, nâng cấp
+- [x] Nút Dashboard "BẤT ĐỘNG SẢN"
 
 ---
 
@@ -656,6 +767,28 @@ lib/
 | `auction_bids` | ✅ | P23 | Lịch sử đặt giá — bidderCharId, bidAmount, bidAt |
 | `character_titles` | ✅ | P24 | Danh hiệu nhân vật — titleKey, equipped, unlockedAt |
 | `pets` | ✅ | P25 | Đồng hành — species, rarity, tier, level, bondLevel, skills jsonb, isActive |
+| `world_relations` | ✅ | P27 | Quan hệ ngoại giao giữa 2 thế giới — ally/trade_partner/neutral/enemy |
+| `diplomacy_events` | ✅ | P27 | Sự kiện ngoại giao — proposal/accept/reject/cancel/declare_war |
+| `world_embassies` | ✅ | P27 | Đại sứ quán — ambassadorCharId, homeWorld, hostWorld |
+| `world_wars` | ✅ | P28 | Chiến tranh thế giới — 72h, attackerScore/defenderScore, warBulletin AI |
+| `war_contributions` | ✅ | P28 | Đóng góp chiến tranh per character — pvpKills, contribution points |
+| `world_themes` | ✅ | P29 | Theme thế giới — 15 preset + custom AI, geography/economy/military/culture |
+| `world_constitution` | ✅ | P30 | Hiến pháp thế giới — laws, taxPolicy, stability 0-100 |
+| `world_council` | ✅ | P30 | Hội đồng — minister/ambassador/citizen_rep, votingPower |
+| `world_votes` | ✅ | P30 | Bỏ phiếu — proposalType, 48h expire, auto-execute khi pass |
+| `world_decrees` | ✅ | P30 | Sắc lệnh owner — AI sinh lore text, stabilityDelta |
+| `world_disasters` | ✅ | P31 | Thiên tai/phúc lành AI — severity, prayerPower, effect jsonb |
+| `disaster_prayers` | ✅ | P31 | Cầu nguyện tập thể — prayerPower theo level nhân vật |
+| `bank_accounts` | ✅ | P32 | Tài khoản ngân hàng — lãi 2%/ngày auto-compound |
+| `bank_loans` | ✅ | P32 | Vay vốn — 5%/ngày, max 500% số dư, 7 ngày |
+| `bank_transfers` | ✅ | P32 | Chuyển khoản cross-world — phí 5% + 10 gold |
+| `bounties` | ✅ | P33 | Truy nã — reward, target, expire 7 ngày |
+| `bounty_claims` | ✅ | P33 | Claim tiền thưởng — auto-approve |
+| `tournaments` | ✅ | P34 | Giải đấu võ lâm — bracket 16 người, prize pool |
+| `tournament_participants` | ✅ | P34 | Người tham gia — seed, isEliminated |
+| `tournament_matches` | ✅ | P34 | Trận đấu — AI commentary, battleLog |
+| `land_plots` | ✅ | P35 | Bất động sản — 30 plots/world, thu nhập thụ động |
+| `land_transactions` | ✅ | P35 | Lịch sử giao dịch đất |
 
 ---
 
@@ -704,6 +837,15 @@ lib/
 | `/auction` | Nhà Đấu Giá | P23 | ✅ |
 | `/titles` | Hệ Thống Danh Hiệu | P24 | ✅ |
 | `/pets` | Đồng Hành (Pet System) | P25 | ✅ |
+| `/diplomacy` | Ngoại Giao Liên Thế Giới | P27 | ✅ |
+| `/world-war` | Chiến Tranh Thế Giới | P28 | ✅ |
+| `/world-theme` | Theme Thế Giới (15 preset + AI) | P29 | ✅ |
+| `/governance` | Quản Trị Thế Giới | P30 | ✅ |
+| `/disasters` | Thiên Tai & Phúc Lộc | P31 | ✅ |
+| `/bank` | Ngân Hàng Liên Thế Giới | P32 | ✅ |
+| `/bounties` | Bảng Truy Nã | P33 | ✅ |
+| `/tournament` | Đại Hội Võ Lâm | P34 | ✅ |
+| `/realestate` | Bất Động Sản Thế Giới | P35 | ✅ |
 
 ---
 

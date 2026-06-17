@@ -38,6 +38,15 @@ import auctionRouter from "./auction.js";
 import titlesRouter from "./titles.js";
 import petsRouter from "./pets.js";
 import worldEconomyRouter from "./worldEconomy.js";
+import diplomacyRouter from "./diplomacy.js";
+import worldWarRouter from "./worldWar.js";
+import worldThemeRouter from "./worldTheme.js";
+import worldGovernanceRouter from "./worldGovernance.js";
+import worldDisasterRouter from "./worldDisaster.js";
+import bankRouter from "./bank.js";
+import bountyRouter from "./bounty.js";
+import tournamentRouter from "./tournament.js";
+import realEstateRouter from "./realEstate.js";
 
 const router: IRouter = Router();
 
@@ -80,5 +89,14 @@ router.use(auctionRouter);
 router.use(titlesRouter);
 router.use(petsRouter);
 router.use(worldEconomyRouter);
+router.use(diplomacyRouter);
+router.use(worldWarRouter);
+router.use(worldThemeRouter);
+router.use(worldGovernanceRouter);
+router.use(worldDisasterRouter);
+router.use(bankRouter);
+router.use(bountyRouter);
+router.use(tournamentRouter);
+router.use(realEstateRouter);
 
 export default router;
