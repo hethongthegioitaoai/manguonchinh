@@ -18,7 +18,9 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 17/06/2026 — HỆ THỐNG LÃNH THỔ hoàn tất: 3 bảng DB `territories`+`territory_resources`+`territory_logs`; 5 loại (village/district/city/farmland/harbor); faction sở hữu lãnh thổ; thu hoạch tài nguyên theo loại (thực phẩm/cá/vàng/công cụ/gỗ) với hệ số thịnh vượng; nhật ký lãnh thổ; API 4 route (GET/seed/claim/harvest); trang `/territories`; nút Dashboard "LÃNH THỔ".
+> **Cập nhật lần cuối:** 17/06/2026 — HỆ THỐNG CHÍNH PHỦ NPC hoàn tất: 2 bảng DB `npc_governments`+`npc_government_logs`; 4 loại (village_council/city_authority/kingdom/republic); bầu lãnh đạo theo wealth+happiness; thu thuế NPC+thị trường+phe phái; tỷ lệ ủng hộ 0-100 theo thịnh vượng/an ninh/thuế/đói; kỷ niệm chính phủ; API 4 route (GET/establish/collect-taxes/update-approval); trang `/npc-government`; nút Dashboard "CHÍNH PHỦ NPC".
+
+> **Cập nhật trước:** 17/06/2026 — HỆ THỐNG LÃNH THỔ hoàn tất: 3 bảng DB `territories`+`territory_resources`+`territory_logs`; 5 loại (village/district/city/farmland/harbor); faction sở hữu lãnh thổ; thu hoạch tài nguyên theo loại (thực phẩm/cá/vàng/công cụ/gỗ) với hệ số thịnh vượng; nhật ký lãnh thổ; API 4 route (GET/seed/claim/harvest); trang `/territories`; nút Dashboard "LÃNH THỔ".
 
 > **Cập nhật trước:** 17/06/2026 — HỆ THỐNG HỘI NHÓM NPC hoàn tất: bảng DB `npc_factions`+`npc_faction_members`+`npc_faction_memories`; 5 loại hội nhóm (merchant_guild/farming_clan/military_order/criminal_group/noble_house); tự động thành lập từ 3+ NPC cùng nghề quan hệ>70; bầu thủ lĩnh theo wealth+influence; thu phí thành viên 5% tài sản vào quỹ; ký ức gia nhập/bầu lãnh đạo; API 3 route (GET/auto-form/collect-tribute); trang `/npc-factions`; nút Dashboard "HỘI NHÓM NPC".
 

@@ -597,6 +597,14 @@ export default function DashboardPage() {
                         onClick: () => setLocation("/territories"),
                       },
                       {
+                        icon: Landmark,
+                        label: "CHÍNH PHỦ NPC",
+                        sub: "Hội đồng, thu thuế, tỷ lệ ủng hộ",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/npc-government"),
+                      },
+                      {
                         icon: Globe,
                         label: "THẾ GIỚI",
                         sub: "Boss, tài nguyên & trạng thái thế giới",
