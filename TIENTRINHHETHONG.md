@@ -14,6 +14,7 @@
 > 5. Build task đó ngay lập tức
 > 6. Sau khi xong: đánh `[x]`, cập nhật bảng DB/Route nếu cần, ghi ngày "Cập nhật lần cuối"
 > 7. Lặp lại bước 4–6 cho đến khi không còn task `[ ]` nào unblocked
+> 8. **Nếu KHÔNG còn task `[ ]` nào:** phân tích toàn bộ hệ thống hiện tại (routes, DB, tính năng đã có), tự đề xuất ít nhất 5 chức năng mới phù hợp với vision dự án, thêm chúng vào ROADMAP dưới dạng Phase mới với task `[ ]`, rồi BUILD NGAY phase đó — KHÔNG chờ user phê duyệt.
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
@@ -544,6 +545,11 @@ configureWorkflow("Frontend", "pnpm --filter @workspace/ai-world-system run dev"
   sau khi thêm schema
 - Nếu task thuộc loại "API mới" → thêm route + đăng ký vào routes/index.ts + restart API Server
 - Nếu task thuộc loại "Trang FE mới" → tạo page + thêm vào App.tsx + thêm nút Dashboard
+- Nếu KHÔNG CÒN task [ ] nào:
+    1. Phân tích hệ thống: đọc routes, DB schema, trang FE đã có
+    2. Đề xuất ≥5 tính năng mới phù hợp vision (ví dụ: cơ chế mới, cải thiện AI, social, economy...)
+    3. Thêm vào ROADMAP thành Phase mới với task [ ] chi tiết
+    4. BUILD NGAY phase đó — không hỏi user
 ```
 
 ### Bước 3 — Build
