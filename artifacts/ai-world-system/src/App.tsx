@@ -44,6 +44,8 @@ import WorldPassportPage from "@/pages/WorldPassportPage";
 import ProphecyPage from "@/pages/ProphecyPage";
 import IsekaiPage from "@/pages/IsekaiPage";
 import FatePage from "@/pages/FatePage";
+import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
+import ResetPasswordPage from "@/pages/ResetPasswordPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -96,6 +98,8 @@ function Router() {
       <Route path="/prophecy" component={ProphecyPage} />
       <Route path="/isekai" component={IsekaiPage} />
       <Route path="/fate" component={FatePage} />
+      <Route path="/forgot-password" component={ForgotPasswordPage} />
+      <Route path="/reset-password" component={ResetPasswordPage} />
       <Route component={NotFound} />
     </Switch>
   );

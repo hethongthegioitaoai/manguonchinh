@@ -32,6 +32,7 @@ import prophecyRouter from "./prophecy.js";
 import isekaiRouter from "./isekai.js";
 import fateRouter from "./fate.js";
 import notificationsRouter from "./notifications.js";
+import passwordResetRouter from "./passwordReset.js";
 
 const router: IRouter = Router();
 
@@ -68,5 +69,6 @@ router.use(prophecyRouter);
 router.use(isekaiRouter);
 router.use(fateRouter);
 router.use(notificationsRouter);
+router.use(passwordResetRouter);
 
 export default router;

@@ -332,6 +332,14 @@ export default function LoginPage() {
                   disabled={submitting}
                 />
                 <SubmitButton loading={submitting} label="ĐĂNG NHẬP" />
+                <div className="text-center">
+                  <a
+                    href="/forgot-password"
+                    className="font-mono text-[10px] text-cyan-500/40 hover:text-cyan-400 transition-colors tracking-widest"
+                  >
+                    Quên mật khẩu?
+                  </a>
+                </div>
               </form>
             )}
 
