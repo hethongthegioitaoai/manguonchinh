@@ -767,6 +767,9 @@ lib/
 | `auction_bids` | ✅ | P23 | Lịch sử đặt giá — bidderCharId, bidAmount, bidAt |
 | `character_titles` | ✅ | P24 | Danh hiệu nhân vật — titleKey, equipped, unlockedAt |
 | `pets` | ✅ | P25 | Đồng hành — species, rarity, tier, level, bondLevel, skills jsonb, isActive |
+| `world_currencies` | ✅ | P26 | Tiền tệ thế giới — AI sinh tên theo lore, exchangeRateToGold, totalSupply |
+| `world_treasury` | ✅ | P26 | Kho bạc thế giới — balance, taxRate, totalRevenue, totalExpenditure |
+| `currency_exchanges` | ✅ | P26 | Lịch sử đổi tiền cross-world — rate dao động ±2-5% theo volume |
 | `world_relations` | ✅ | P27 | Quan hệ ngoại giao giữa 2 thế giới — ally/trade_partner/neutral/enemy |
 | `diplomacy_events` | ✅ | P27 | Sự kiện ngoại giao — proposal/accept/reject/cancel/declare_war |
 | `world_embassies` | ✅ | P27 | Đại sứ quán — ambassadorCharId, homeWorld, hostWorld |
@@ -837,6 +840,7 @@ lib/
 | `/auction` | Nhà Đấu Giá | P23 | ✅ |
 | `/titles` | Hệ Thống Danh Hiệu | P24 | ✅ |
 | `/pets` | Đồng Hành (Pet System) | P25 | ✅ |
+| `/world-economy` | Kinh Tế Thế Giới | P26 | ✅ |
 | `/diplomacy` | Ngoại Giao Liên Thế Giới | P27 | ✅ |
 | `/world-war` | Chiến Tranh Thế Giới | P28 | ✅ |
 | `/world-theme` | Theme Thế Giới (15 preset + AI) | P29 | ✅ |
