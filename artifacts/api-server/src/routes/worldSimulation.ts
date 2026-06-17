@@ -3,6 +3,7 @@ import { isAuthenticated } from "../auth/replitAuth.js";
 import { db } from "@workspace/db";
 import { worldSimState, worldSimLog, customWorlds, worldFrameworks, worldDisasters, worldWeather } from "@workspace/db/schema";
 import { eq, and, desc, lt, sql } from "drizzle-orm";
+import { applyGovernmentPolicies } from "./npcGovernmentPolicy.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const router = Router();
@@ -144,6 +145,9 @@ Viết 1 câu tiếng Việt mô tả nhịp sống thường ngày của thế 
       deltaMood: dMood,
       deltaStability: dStability,
     }).returning();
+
+    /* ─── Apply government policy effects ─── */
+    try { await applyGovernmentPolicies(worldSlug); } catch {}
 
     return { log, state: updatedState };
   } catch (e) {

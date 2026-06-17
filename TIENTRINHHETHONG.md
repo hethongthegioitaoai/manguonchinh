@@ -18,7 +18,9 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 17/06/2026 — HỆ THỐNG CHÍNH PHỦ NPC hoàn tất: 2 bảng DB `npc_governments`+`npc_government_logs`; 4 loại (village_council/city_authority/kingdom/republic); bầu lãnh đạo theo wealth+happiness; thu thuế NPC+thị trường+phe phái; tỷ lệ ủng hộ 0-100 theo thịnh vượng/an ninh/thuế/đói; kỷ niệm chính phủ; API 4 route (GET/establish/collect-taxes/update-approval); trang `/npc-government`; nút Dashboard "CHÍNH PHỦ NPC".
+> **Cập nhật lần cuối:** 17/06/2026 — HỆ THỐNG CHÍNH SÁCH CHÍNH PHỦ hoàn tất: 3 bảng DB mới (`government_policies`+`government_active_policies`+`government_policy_history`); 6 chính sách mặc định (Thuế Thấp/Thuế Cao/Trợ Cấp Lương Thực/Khuyến Khích Thương Mại/Mở Rộng Quân Sự/Đầu Tư Hạ Tầng); tích hợp world tick (áp dụng effects mỗi tick); lãnh đạo tự động quyết định theo điều kiện; API 6 route (seed/catalog/active/activate/deactivate/auto-decide/apply-tick); tab CHÍNH SÁCH trong GovCard (ĐANG HOẠT ĐỘNG / DANH MỤC / LỊCH SỬ); nút "TẠO CHÍNH SÁCH MẶC ĐỊNH" và "LÃNH ĐẠO TỰ QUYẾT ĐỊNH".
+
+> **Cập nhật trước:** 17/06/2026 — HỆ THỐNG CHÍNH PHỦ NPC hoàn tất: 2 bảng DB `npc_governments`+`npc_government_logs`; 4 loại (village_council/city_authority/kingdom/republic); bầu lãnh đạo theo wealth+happiness; thu thuế NPC+thị trường+phe phái; tỷ lệ ủng hộ 0-100 theo thịnh vượng/an ninh/thuế/đói; kỷ niệm chính phủ; API 4 route (GET/establish/collect-taxes/update-approval); trang `/npc-government`; nút Dashboard "CHÍNH PHỦ NPC".
 
 > **Cập nhật trước:** 17/06/2026 — HỆ THỐNG LÃNH THỔ hoàn tất: 3 bảng DB `territories`+`territory_resources`+`territory_logs`; 5 loại (village/district/city/farmland/harbor); faction sở hữu lãnh thổ; thu hoạch tài nguyên theo loại (thực phẩm/cá/vàng/công cụ/gỗ) với hệ số thịnh vượng; nhật ký lãnh thổ; API 4 route (GET/seed/claim/harvest); trang `/territories`; nút Dashboard "LÃNH THỔ".
 

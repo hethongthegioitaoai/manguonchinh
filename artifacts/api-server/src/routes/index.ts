@@ -64,6 +64,7 @@ import npcPopulationRouter from "./npcPopulation.js";
 import npcFactionsRouter from "./npcFactions.js";
 import territoriesRouter from "./territories.js";
 import npcGovernmentRouter from "./npcGovernment.js";
+import npcGovernmentPolicyRouter from "./npcGovernmentPolicy.js";
 
 const router: IRouter = Router();
 
@@ -132,5 +133,6 @@ router.use(npcPopulationRouter);
 router.use(npcFactionsRouter);
 router.use(territoriesRouter);
 router.use(npcGovernmentRouter);
+router.use(npcGovernmentPolicyRouter);
 
 export default router;

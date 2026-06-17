@@ -57,3 +57,4 @@ export * from "./npcFamily";
 export * from "./npcFactions";
 export * from "./territories";
 export * from "./npcGovernment";
+export * from "./npcGovernmentPolicies";
