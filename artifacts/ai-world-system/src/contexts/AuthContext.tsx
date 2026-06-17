@@ -8,6 +8,7 @@ interface User {
   firstName?: string | null;
   lastName?: string | null;
   profileImageUrl?: string | null;
+  emailVerified?: boolean;
 }
 
 interface AuthContextValue {

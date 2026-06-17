@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import {
   LogOut, Globe, Zap, User, Shield, Swords, Users,
-  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain, Sparkles, Skull, Hammer, Newspaper, Crown, ShoppingBag, Map, ScrollText, Infinity, Orbit,
+  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain, Sparkles, Skull, Hammer, Newspaper, Crown, ShoppingBag, Map, ScrollText, Infinity, Orbit, Mail, X,
 } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Button } from "@/components/ui/button";
@@ -65,6 +65,8 @@ export default function DashboardPage() {
   const [expFlash, setExpFlash] = useState<number | null>(null);
   const [activeEvent, setActiveEvent] = useState<{ title: string; description: string; type: string; karmaEffect: number } | null>(null);
   const [worldKarma, setWorldKarma] = useState<number>(0);
+  const [verifyBannerDismissed, setVerifyBannerDismissed] = useState(false);
+  const showVerifyBanner = !user?.emailVerified && !verifyBannerDismissed;
 
   useEffect(() => {
     if (!loading && !user) setLocation("/login");
@@ -273,6 +275,40 @@ export default function DashboardPage() {
           </Button>
         </div>
       </nav>
+
+      <AnimatePresence>
+        {showVerifyBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.3 }}
+            className="relative z-10 flex items-center gap-3 px-5 py-2.5 border-b"
+            style={{
+              background: "linear-gradient(90deg, rgba(234,179,8,0.08), rgba(234,179,8,0.04))",
+              borderColor: "rgba(234,179,8,0.25)",
+            }}
+          >
+            <Mail className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" strokeWidth={1.5} />
+            <p className="font-mono text-xs text-yellow-300/80 flex-1 leading-relaxed tracking-wide">
+              Email chưa được xác thực.{" "}
+              <button
+                onClick={() => setLocation("/settings")}
+                className="underline underline-offset-2 text-yellow-300 hover:text-yellow-100 transition-colors"
+              >
+                Vào Cài đặt để gửi lại email xác nhận →
+              </button>
+            </p>
+            <button
+              onClick={() => setVerifyBannerDismissed(true)}
+              className="ml-2 text-yellow-400/50 hover:text-yellow-300 transition-colors flex-shrink-0"
+              aria-label="Đóng"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 md:px-8 py-8">
 
