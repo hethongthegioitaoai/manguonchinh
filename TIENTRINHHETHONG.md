@@ -18,7 +18,7 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 17/06/2026 — Notification Bell hoàn tất: icon chuông trên Dashboard, bảng thông báo có unread badge đỏ, lưu vào DB bảng `notifications`, đọc/xoá từng cái hoặc tất cả, auto-refresh mỗi 30s + WS trigger
+> **Cập nhật lần cuối:** 17/06/2026 — Phase 23 NHÀ ĐẤU GIÁ hoàn tất: đấu giá vật phẩm theo thời gian thực, đặt giá tranh giành, mua ngay, auto-settle khi hết hạn, hoàn vàng người thua, bảng quản lý của tôi
 
 ---
 
@@ -418,6 +418,102 @@ lib/
 
 ---
 
+### ════════════════════════════════════════
+### PHASE 23 — NHÀ ĐẤU GIÁ ✅
+### ════════════════════════════════════════
+
+**Mục tiêu:** Người chơi đưa vật phẩm hiếm lên đấu giá — ai trả cao nhất sau X giờ thắng. Tạo nền kinh tế sôi động, vật phẩm epic có giá trị thật.
+
+- [x] Bảng DB `auction_listings` (sellerCharId, itemId, itemName, itemIcon, itemRarity, worldSlug, startBid, currentBid, currentBidderId, buyoutPrice, quantity, status, expiresAt)
+- [x] Bảng DB `auction_bids` (auctionId, bidderCharId, bidAmount, bidAt)
+- [x] API GET /api/auction/list — danh sách active, auto-settle expired khi GET
+- [x] API GET /api/auction/my — listings + bids của tôi
+- [x] API GET /api/auction/my-chars — nhân vật + inventory
+- [x] API POST /api/auction/list-item — đăng vật phẩm, trừ inventory ngay
+- [x] API POST /api/auction/:id/bid — đặt giá (trừ vàng, hoàn vàng người thua trước)
+- [x] API POST /api/auction/:id/buyout — mua ngay theo giá cố định
+- [x] API DELETE /api/auction/:id/cancel — huỷ nếu chưa có bid
+- [x] Auto-settle: hết hạn → chuyển item cho người thắng + trả item về seller nếu không có bid
+- [x] Trang `/auction` — CHỢ ĐẤU GIÁ (đặt giá/mua ngay), ĐĂNG BÁN, CỦA TÔI (3 tab)
+- [x] Nút Dashboard "NHÀ ĐẤU GIÁ" tag "NEW"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 24 — HỆ THỐNG DANH HIỆU
+### ════════════════════════════════════════
+
+**Mục tiêu:** Nhân vật tích lũy danh hiệu từ thành tựu/sự kiện/boss kill. Danh hiệu hiển thị trên profile + leaderboard — flex với cộng đồng.
+
+- [ ] Bảng DB `titles` (id, key, name, description, icon, rarity, source, worldSlug nullable)
+- [ ] Bảng DB `character_titles` (id, characterId, titleKey, equippedAt, unlockedAt)
+- [ ] Seed 20+ danh hiệu: Kiếm Thánh / Trùm Trùm Kinh Tế / Kẻ Sống Sót Ngục Tối / Thần Chiến Trường / Tiên Tri Đúng Nhất / ...
+- [ ] API GET /api/titles/:characterId — danh sách + trạng thái unlocked
+- [ ] API POST /api/titles/equip/:characterId — trang bị danh hiệu (1 active tại 1 thời điểm)
+- [ ] Auto-unlock khi: đạt level 50, win 100 battle, clear dungeon hard, giải tiên tri, isekai thành công
+- [ ] Hiển thị danh hiệu trên `/character/:id` (profile) + leaderboard + feed posts
+- [ ] Nút Dashboard "DANH HIỆU"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 25 — ĐỒNG HÀNH (PET SYSTEM)
+### ════════════════════════════════════════
+
+**Mục tiêu:** Nhân vật có thú cưỡi/linh thú/robot đồng hành — passive buff chiến đấu, có thể tiến hóa qua EXP pet.
+
+- [ ] Bảng DB `pets` (id, characterId, name, species, level, exp, rarity, skills jsonb, bondLevel, lastFedAt, createdAt)
+- [ ] 9 loại pet × 3 thế giới: Tu Tiên (Linh Hổ/Rồng Con/Phượng Hoàng), Cyberpunk (Drone/Mech Dog/Nano Spider), Hoang Phế (Mutant Wolf/Scavenger Bird/Toxic Slug)
+- [ ] API POST /api/pets/summon — triệu hồi pet ngẫu nhiên (tốn 200 vàng, cooldown 24h)
+- [ ] API GET /api/pets/my — pets của nhân vật
+- [ ] API POST /api/pets/:id/feed — cho ăn tăng bond level (dùng consumable item)
+- [ ] API POST /api/pets/:id/equip — đặt làm đồng hành active (1 lúc 1 pet)
+- [ ] Passive buff khi có pet active: +5-15% EXP, +5-10% gold drop, +crit% tùy loại pet
+- [ ] Pet tiến hóa khi đạt level 10/20/30 — đổi tên, tăng buff
+- [ ] Trang `/pets` — danh sách pet, bond meter, nút feed/equip/summon
+- [ ] Nút Dashboard "ĐỒNG HÀNH"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 26 — CHUYỂN SINH (REINCARNATION)
+### ════════════════════════════════════════
+
+**Mục tiêu:** Nhân vật đạt level 50+ có thể Chuyển Sinh — reset về level 1, giữ kỹ năng, nhận bonus vĩnh viễn. Tạo vòng chơi lại hấp dẫn.
+
+- [ ] Bảng DB `reincarnations` (id, characterId, fromLevel, fromSystem, bonusGranted jsonb, narrativeIntro, reincarnationCount, createdAt)
+- [ ] Điều kiện: level ≥ 50
+- [ ] Bonus vĩnh viễn per lần chuyển sinh: +10% EXP toàn bộ, +5% gold, +1 stat point vào stat cao nhất
+- [ ] AI sinh narrative 3-4 câu về quá trình siêu độ/chuyển sinh
+- [ ] Giữ lại: kỹ năng đã unlock, thành tựu, memories, danh hiệu
+- [ ] Reset: level về 1, EXP về 0, inventory clear (trừ equipped)
+- [ ] API POST /api/reincarnation/proceed — thực hiện chuyển sinh
+- [ ] API GET /api/reincarnation/status/:characterId — eligible? + lịch sử
+- [ ] Huy hiệu "Chuyển Sinh lần N" hiển thị trên profile + leaderboard
+- [ ] Trang `/reincarnation` — xác nhận, preview bonus, lịch sử chuyển sinh của server
+- [ ] Nút Dashboard "CHUYỂN SINH" (disabled nếu level < 50)
+
+---
+
+### ════════════════════════════════════════
+### PHASE 27 — BẢN ĐỒ KHO BÁU (TREASURE HUNT)
+### ════════════════════════════════════════
+
+**Mục tiêu:** AI sinh ra bản đồ kho báu bí ẩn — chuỗi câu đố/clue dẫn đến phần thưởng ẩn. Người chơi giải theo thứ tự, first to finish thắng.
+
+- [ ] Bảng DB `treasure_maps` (id, worldSlug, title, difficulty, clues jsonb, finalReward jsonb, status, winnerId, createdAt, expiresAt)
+- [ ] Bảng DB `treasure_progress` (id, mapId, characterId, currentClue, answersSubmitted jsonb, completedAt)
+- [ ] AI (Gemini) sinh map: 4-5 clue theo phong cách thế giới (thơ/mật mã/hình ảnh mô tả)
+- [ ] API GET /api/treasure/list — danh sách bản đồ active theo world
+- [ ] API POST /api/treasure/generate/:worldSlug — creator/admin kích hoạt (cooldown 12h/world)
+- [ ] API GET /api/treasure/progress/:mapId — xem tiến độ của mình
+- [ ] API POST /api/treasure/:mapId/submit — nộp đáp án cho clue hiện tại (AI chấm yes/no)
+- [ ] First to complete → reward: item epic + 1000 EXP + title đặc biệt
+- [ ] Trang `/treasure` — bản đồ active, giao diện giải clue, bảng ai đang dẫn đầu
+- [ ] Nút Dashboard "KHO BÁU ẨN"
+
+---
+
 ## 📦 TRẠNG THÁI BẢNG DB
 
 | Bảng | Trạng thái | Phase | Mô tả |
@@ -467,6 +563,8 @@ lib/
 | `isekai_records` | ✅ | P21 | Lịch sử xuyên không — identity mới + narrative + system grant |
 | `fate_events` | ✅ | P22 | Mệnh Cục Cát/Hung — effect thực tế, cooldown 1h |
 | `fate_readings` | ✅ | P22 | Giải quẻ Bát Quái AI — Thiên Cơ Tiên phán, cooldown 2h |
+| `auction_listings` | ✅ | P23 | Phiên đấu giá — startBid, currentBid, buyoutPrice, expiresAt, status |
+| `auction_bids` | ✅ | P23 | Lịch sử đặt giá — bidderCharId, bidAmount, bidAt |
 
 ---
 
@@ -512,6 +610,7 @@ lib/
 | `/prophecy` | Thần Khải & Tiên Tri | P20 | ✅ |
 | `/isekai` | Cổng Xuyên Không | P21 | ✅ |
 | `/fate` | Mệnh Số & Vận Mệnh | P22 | ✅ |
+| `/auction` | Nhà Đấu Giá | P23 | ✅ |
 
 ---
 

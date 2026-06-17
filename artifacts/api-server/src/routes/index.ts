@@ -34,6 +34,7 @@ import fateRouter from "./fate.js";
 import notificationsRouter from "./notifications.js";
 import passwordResetRouter from "./passwordReset.js";
 import emailVerificationRouter from "./emailVerification.js";
+import auctionRouter from "./auction.js";
 
 const router: IRouter = Router();
 
@@ -72,5 +73,6 @@ router.use(fateRouter);
 router.use(notificationsRouter);
 router.use(passwordResetRouter);
 router.use(emailVerificationRouter);
+router.use(auctionRouter);
 
 export default router;
