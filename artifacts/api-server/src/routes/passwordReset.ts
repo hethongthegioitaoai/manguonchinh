@@ -38,9 +38,9 @@ router.post("/auth/forgot-password", async (req, res) => {
       : `http://localhost:5000`;
     const resetUrl = `${domain}/reset-password?token=${token}`;
 
-    const smtpConfigured = !!(process.env.SMTP_USER && process.env.SMTP_PASS);
+    const emailConfigured = !!process.env.RESEND_API_KEY;
 
-    if (smtpConfigured) {
+    if (emailConfigured) {
       await sendPasswordResetEmail(user.email!, resetUrl, user.username ?? user.firstName ?? "Người dùng");
       return res.json({ message: "Đã gửi email hướng dẫn đặt lại mật khẩu." });
     } else {

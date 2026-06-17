@@ -1,23 +1,10 @@
-import nodemailer from "nodemailer";
-
-function createTransport() {
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST ?? "smtp.gmail.com",
-    port: Number(process.env.SMTP_PORT ?? 587),
-    secure: false,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-}
+import { Resend } from "resend";
 
 export async function sendPasswordResetEmail(toEmail: string, resetUrl: string, username: string) {
-  const transporter = createTransport();
-  const from = process.env.SMTP_USER;
+  const resend = new Resend(process.env.RESEND_API_KEY);
 
-  await transporter.sendMail({
-    from: `"AI World System" <${from}>`,
+  await resend.emails.send({
+    from: "AI World System <onboarding@resend.dev>",
     to: toEmail,
     subject: "⚡ Đặt lại mật khẩu — AI World System",
     html: `
