@@ -18,7 +18,9 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 17/06/2026 — HỆ THỐNG QUAN HỆ NPC hoàn tất: bảng DB `npc_relationships` (score -100→100, 6 loại: người lạ/người quen/bạn bè/đồng minh/đối thủ/kẻ thù), logic gặp gỡ ngẫu nhiên trong mỗi tick (đánh giá lòng tốt/tham/dũng/tò mò → delta điểm), ký ức cuộc gặp lưu 2 chiều, API `GET /api/npc-relationships/:npcId`, panel QUAN HỆ 3-tab trong trang `/npc-simulation` (Trạng Thái / Quan Hệ / Bộ Nhớ) với score bar, badge 4 loại ý nghĩa, lịch sử gặp gỡ.
+> **Cập nhật lần cuối:** 17/06/2026 — HỆ THỐNG KINH TẾ & VIỆC LÀM NPC hoàn tất: 3 bảng DB mới (`npc_jobs`, `npc_inventory`, `npc_transactions`), 5 nghề: nông dân/thương nhân/bảo vệ/thợ thủ công/ngư dân, mỗi tick NPC làm việc→nhận lương→sản xuất hàng, tự ăn từ kho hoặc mua ở chợ nếu đói, bán dư thừa, giao dịch 2 NPC (mua thực phẩm/cá/gỗ), API `GET /api/npc-economy/:npcId`, tab KINH TẾ mới: nghề nghiệp+kỹ năng, kho đồ grid, lịch sử giao dịch.
+
+> **Cập nhật trước:** 17/06/2026 — HỆ THỐNG QUAN HỆ NPC hoàn tất: bảng DB `npc_relationships` (score -100→100, 6 loại: người lạ/người quen/bạn bè/đồng minh/đối thủ/kẻ thù), logic gặp gỡ ngẫu nhiên trong mỗi tick (đánh giá lòng tốt/tham/dũng/tò mò → delta điểm), ký ức cuộc gặp lưu 2 chiều, API `GET /api/npc-relationships/:npcId`, panel QUAN HỆ 3-tab trong trang `/npc-simulation` (Trạng Thái / Quan Hệ / Bộ Nhớ) với score bar, badge 4 loại ý nghĩa, lịch sử gặp gỡ.
 
 > **Cập nhật trước:** 17/06/2026 — Tích hợp ROADMAP TẠO THẾ GIỚI ẢO vào tầm nhìn cốt lõi + thêm Phases 41–45: [41] FREE WORLD FRAMEWORK (tạo thế giới theo chủ đề hoàn toàn tự do, AI sinh framework), [42] GOD OBSERVER DASHBOARD (Thần quan sát thế giới realtime, autonomous events), [43] LIVING WORLD ENGINE (thế giới sống đúng theo lore, NPC có cuộc đời, văn hóa, kinh tế), [44] MULTI-WORLD MANAGEMENT (nhiều thế giới/user, cổng liên kết, Tinh Vực), [45] COSMIC HIERARCHY (THẾ GIỚI→TINH VỰC→NGÂN HÀ→THIÊN HÀ→VŨ TRỤ, nền tảng VR/AR/XR).
 >

@@ -44,8 +44,35 @@ export const npcRelationships = pgTable("npc_relationships", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const npcJobs = pgTable("npc_jobs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  npcCoreId: uuid("npc_core_id").notNull().references(() => npcCores.id, { onDelete: "cascade" }),
+  jobType: varchar("job_type", { length: 64 }).notNull().default("thương nhân"),
+  salary: integer("salary").notNull().default(20),
+  skillLevel: real("skill_level").notNull().default(0.5),
+});
+
+export const npcInventory = pgTable("npc_inventory", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  npcCoreId: uuid("npc_core_id").notNull().references(() => npcCores.id, { onDelete: "cascade" }),
+  itemName: varchar("item_name", { length: 64 }).notNull(),
+  quantity: integer("quantity").notNull().default(0),
+});
+
+export const npcTransactions = pgTable("npc_transactions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  npcCoreId: uuid("npc_core_id").notNull().references(() => npcCores.id, { onDelete: "cascade" }),
+  description: text("description").notNull(),
+  amount: integer("amount").notNull().default(0),
+  transactionType: varchar("transaction_type", { length: 16 }).notNull().default("earn"),
+  timestamp: timestamp("timestamp").defaultNow(),
+});
+
 export type NpcCore = typeof npcCores.$inferSelect;
 export type InsertNpcCore = typeof npcCores.$inferInsert;
 export type NpcPersonality = typeof npcPersonalities.$inferSelect;
 export type NpcCoreMemory = typeof npcCoreMemories.$inferSelect;
 export type NpcRelationship = typeof npcRelationships.$inferSelect;
+export type NpcJob = typeof npcJobs.$inferSelect;
+export type NpcInventoryItem = typeof npcInventory.$inferSelect;
+export type NpcTransaction = typeof npcTransactions.$inferSelect;
