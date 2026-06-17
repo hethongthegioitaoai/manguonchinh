@@ -18,7 +18,7 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 17/06/2026 — Phase 36 HỘI CHỢ THẾ GIỚI hoàn tất: DB `world_fairs`+`fair_booths`+`fair_visits`, AI sinh tên gian hàng + narrative theo lore, tham quan 50 gold/gian +30 EXP, bình chọn thế giới xuất sắc, đăng ký gian hàng cho creator, trang `/fair`, nút Dashboard "HỘI CHỢ THẾ GIỚI". Phases 36-40 được thêm vào roadmap và build ngay.
+> **Cập nhật lần cuối:** 17/06/2026 — Tích hợp ROADMAP TẠO THẾ GIỚI ẢO vào tầm nhìn cốt lõi + thêm Phases 41–45: [41] FREE WORLD FRAMEWORK (tạo thế giới theo chủ đề hoàn toàn tự do, AI sinh framework), [42] GOD OBSERVER DASHBOARD (Thần quan sát thế giới realtime, autonomous events), [43] LIVING WORLD ENGINE (thế giới sống đúng theo lore, NPC có cuộc đời, văn hóa, kinh tế), [44] MULTI-WORLD MANAGEMENT (nhiều thế giới/user, cổng liên kết, Tinh Vực), [45] COSMIC HIERARCHY (THẾ GIỚI→TINH VỰC→NGÂN HÀ→THIÊN HÀ→VŨ TRỤ, nền tảng VR/AR/XR).
 >
 > Phase 26 KINH TẾ THẾ GIỚI hoàn tất: DB `world_currencies`+`world_treasury`+`currency_exchanges`, AI sinh tên tiền tệ theo lore, sàn tỷ giá realtime, đổi tiền liên thế giới (phí 1%), tỷ giá dao động theo volume, kho bạc thế giới, thuế quan 0-30%, trang `/world-economy`. Tầm nhìn dự án được cập nhật: thế giới là đơn vị chính, 5 phases mới (Kinh Tế / Ngoại Giao / Chiến Tranh / Đa Chủ Đề / Quản Trị) thay thế phases cũ.
 >
@@ -43,6 +43,25 @@
 > - 🎨 **Đa chủ đề** — AI sinh framework hoàn chỉnh từ bất kỳ ý tưởng nào (không bị giới hạn 3 thế giới preset)
 >
 > Các khái niệm thế giới thực (kinh tế học, chính trị, quân sự, ngoại giao, văn hóa) được **phóng tác theo ngôn ngữ và lore của từng thế giới ảo** — không copy y chang mà biến tấu cho phù hợp. Thế giới tồn tại và vận hành kể cả khi owner offline. Tương lai: 3D, VR, AR, XR.
+
+> ---
+> ### 🌌 ROADMAP TẠO THẾ GIỚI ẢO — TẦM NHÌN DÀI HẠN
+>
+> **Mục tiêu cuối cùng:** Mỗi người dùng xây dựng được **vũ trụ riêng** — từ một thế giới nhỏ phát triển lên thành tinh vực, ngân hà, thiên hà, rồi vũ trụ. Tương lai nâng cấp lên VR/AR/MR/XR.
+>
+> **4 trụ cột cốt lõi:**
+>
+> 1. 🌍 **Tự Do Sáng Tạo** — Người dùng tạo thế giới ảo theo CHỦ ĐỀ HOÀN TOÀN TỰ DO. AI tự động sinh toàn bộ framework (lore, kinh tế, ngôn ngữ, hệ thống tu luyện, đơn vị tiền tệ, tầng lớp xã hội, địa lý) theo đúng chủ đề — không bị giới hạn bởi preset.
+>
+> 2. 🔱 **Người Dùng = Thần** — Sau khi tạo thế giới, creator là THẦN tối cao: quan sát mọi diễn biến theo thời gian thực, thao túng vĩ mô (thiên tai, phúc lành, thần khải), nhưng KHÔNG can thiệp vi mô vào từng sinh linh (NPCs tự sống, tự quyết định). Thế giới vận hành tự động khi Thần offline.
+>
+> 3. 🔗 **Thế Giới Liên Thông** — Các thế giới của người dùng khác nhau trao đổi hàng hóa, ngoại giao, chiến tranh, kết minh. Mỗi thế giới là một quốc gia trong đa vũ trụ — có biên giới, hộ chiếu, thuế quan, ngôn ngữ riêng.
+>
+> 4. 🪐 **Phân Cấp Vũ Trụ** — Khi thế giới đủ mạnh (dân số, kinh tế, văn hóa), nó thăng cấp:
+>    ```
+>    THẾ GIỚI (World) → TINH VỰC (Star Domain) → NGÂN HÀ (Galaxy) → THIÊN HÀ (Universe) → VŨ TRỤ RIÊNG (Personal Cosmos)
+>    ```
+>    Mỗi cấp mở ra quy mô tương tác lớn hơn, nhiều thế giới con hơn, tài nguyên vũ trụ phong phú hơn.
 
 **Stack thực tế:**
 - Frontend: React 19 + Vite 7 + TypeScript + Tailwind CSS v4 + Framer Motion + Wouter + shadcn/ui
@@ -819,6 +838,127 @@ lib/
 - [x] API GET /api/legends/:legendId — chi tiết + đếm viewed
 - [x] Trang `/legends` — điện thờ huyền thoại, bảng vinh danh top 50, câu chuyện sử thi, phong huyền thoại
 - [x] Nút Dashboard "ĐIỆN TRUYỀN THUYẾT"
+
+---
+
+### ════════════════════════════════════════
+### 🌌 ROADMAP TẠO THẾ GIỚI ẢO (PHASES 41–45)
+### ════════════════════════════════════════
+
+> **Triết lý:** Phase 41–45 hiện thực hóa tầm nhìn dài hạn — mỗi user là Thần sáng tạo, thế giới ảo sống thật theo chủ đề, cuối cùng hình thành vũ trụ phân tầng. Đây là nền tảng cho VR/AR/MR/XR sau này.
+
+---
+
+### ════════════════════════════════════════
+### PHASE 41 — THẾ GIỚI TỰ DO (FREE WORLD FRAMEWORK)
+### ════════════════════════════════════════
+
+**Mục tiêu:** Người dùng tạo thế giới ảo theo BẤT KỲ chủ đề nào — không giới hạn preset. AI tự động xây dựng toàn bộ framework thế giới: hệ thống tu luyện/tiến hóa riêng, đơn vị tiền tệ riêng, tầng lớp xã hội riêng, địa lý + sinh thái riêng, ngôn ngữ/thuật ngữ riêng theo lore. Ví dụ: "Thế giới Tiên Hiệp" → AI sinh cảnh giới (Luyện Khí → Trúc Cơ → Kim Đan...), linh thạch, môn phái, tiên thú, tiên dược.
+
+- [ ] Bảng DB `world_frameworks` (id, worldSlug, theme, progressionSystem jsonb, currency jsonb, socialClasses jsonb, geography jsonb, terminology jsonb, loreRules text, generatedAt)
+- [ ] Bảng DB `world_lore_entries` (id, worldSlug, category: history/faction/geography/creature/item/law, title, content, aiGenerated, createdAt)
+- [ ] Form tạo thế giới mới: nhập tên + mô tả ý tưởng tự do (không bị giới hạn dropdown preset)
+- [ ] AI (Gemini) nhận mô tả → sinh framework hoàn chỉnh: progressionSystem (tên cảnh giới/cấp độ), currency (tên tiền tệ theo lore), socialClasses (tầng lớp từ thấp→cao), geography (vùng đất), terminology (từ ngữ đặc trưng)
+- [ ] AI sinh ít nhất 5 lore entries tự động sau khi tạo (lịch sử thế giới, sinh vật đặc trưng, vật phẩm đặc trưng, phe phái, luật lệ)
+- [ ] Trang `/world-creator` nâng cấp — textarea tự do thay vì dropdown; preview framework trước khi xác nhận
+- [ ] API POST /api/world/create-free — nhận mô tả tự do → AI sinh framework → lưu world + framework
+- [ ] API GET /api/world/framework/:worldSlug — trả framework + lore entries
+- [ ] API POST /api/world/lore/:worldSlug — thêm lore entry thủ công (creator)
+- [ ] Hiển thị framework thế giới trong God Mode dashboard — Thần đọc lại luật thế giới mình tạo
+- [ ] Nút Dashboard "TẠO THẾ GIỚI MỚI" (thay thế / bổ sung nút cũ)
+
+---
+
+### ════════════════════════════════════════
+### PHASE 42 — THẦN QUAN SÁT (GOD OBSERVER DASHBOARD)
+### ════════════════════════════════════════
+
+**Mục tiêu:** Creator là Thần tối cao — có bảng quan sát thế giới thời gian thực: dân số tăng giảm, kinh tế biến động, NPC tương tác với nhau, sự kiện tự phát sinh. Thần KHÔNG can thiệp vi mô (không điều khiển từng NPC) nhưng có thể tác động vĩ mô (thiên tai, phúc khí, thần khải chung). Thế giới vận hành tự động khi Thần offline.
+
+- [ ] Bảng DB `world_population_log` (id, worldSlug, timestamp, npcCount, playerCount, totalGold, avgLevel, activeEvents, karmaScore)
+- [ ] Bảng DB `world_auto_events` (id, worldSlug, eventType: npc_conflict/economic_crisis/cultural_boom/natural_wonder/plague/golden_age, title, description, triggeredBy: ai_autonomous, effect jsonb, startedAt, endsAt)
+- [ ] Cron job tự động: mỗi 30 phút AI đánh giá trạng thái thế giới → có thể tự sinh world_auto_event nếu đủ điều kiện (ví dụ: karma quá thấp → sinh loạn lạc; nhiều player active → sinh lễ hội)
+- [ ] API GET /api/god/observe/:worldSlug — snapshot toàn bộ thế giới: NPC list + mood, economy stats, active events, top players, karma, lore summary
+- [ ] API GET /api/god/population-history/:worldSlug — biểu đồ dân số + kinh tế theo thời gian (7 ngày)
+- [ ] API GET /api/god/auto-events/:worldSlug — sự kiện tự phát sinh (không phải do Thần kích hoạt)
+- [ ] API POST /api/god/macro-intervene/:worldSlug — Thần tác động vĩ mô: chọn loại (bless_all/curse_all/golden_age/catastrophe/mystery) → AI sinh sự kiện toàn thế giới
+- [ ] Trang `/god/:worldSlug` nâng cấp — thêm tab "QUAN SÁT" với: live population chart, NPC mood map, economy heatmap, auto-event feed
+- [ ] Thế giới tự sinh ít nhất 1 sự kiện/ngày kể cả khi Thần offline (cron job)
+- [ ] Nút Dashboard "QUAN SÁT THẾ GIỚI" (trong God Mode)
+
+---
+
+### ════════════════════════════════════════
+### PHASE 43 — THẾ GIỚI SỐNG (LIVING WORLD ENGINE)
+### ════════════════════════════════════════
+
+**Mục tiêu:** Thế giới ảo phải GIỐNG thế giới thực theo chủ đề — mọi thứ trong thế giới đều phải nhất quán với lore. NPC có nghề nghiệp, gia đình, mục tiêu riêng. Kinh tế có cung cầu thật. Văn hóa có lễ hội, truyện kể, phong tục. Ví dụ: thế giới Tiên Hiệp → NPC có môn phái, linh căn, đang tu luyện cảnh giới; giao dịch bằng linh thạch; lễ hội Thiên Đàm Đại Hội.
+
+- [ ] Bảng DB `npc_lives` (id, npcId, worldSlug, occupation, familyMembers jsonb, dailyRoutine jsonb, currentGoal, mood: happy/neutral/anxious/angry/fearful, wealthLevel: poor/middle/rich, lastUpdated)
+- [ ] Bảng DB `world_culture` (id, worldSlug, festivals jsonb, taboos jsonb, traditions jsonb, myths jsonb, commonPhrases jsonb, generatedAt)
+- [ ] Bảng DB `world_economy_state` (id, worldSlug, snapshot jsonb — supply/demand per item type, inflationRate, unemploymentRate, timestamp)
+- [ ] AI sinh `npc_lives` cho tất cả NPC trong thế giới — nghề nghiệp, mục tiêu, tâm trạng nhất quán với lore
+- [ ] AI sinh `world_culture` — 3 lễ hội đặc trưng, 5 điều cấm kỵ, 5 phong tục, 3 huyền thoại, 10 câu nói/thành ngữ — tất cả theo lore thế giới
+- [ ] Economy simulation: mỗi 1 giờ cập nhật world_economy_state — supply/demand thay đổi dựa trên giao dịch thực tế + thiên tai + sự kiện
+- [ ] NPC tự trao đổi với nhau theo nghề nghiệp (lazy simulate — tính khi có event trigger)
+- [ ] API GET /api/world/living/:worldSlug — full living world snapshot: npc lives, culture, economy state
+- [ ] API GET /api/world/culture/:worldSlug — văn hóa thế giới (lễ hội, phong tục, huyền thoại)
+- [ ] API POST /api/world/culture/generate/:worldSlug — (re)generate văn hóa bằng AI
+- [ ] Trang `/world/:slug` — trang hồ sơ thế giới công khai: lore, văn hóa, kinh tế, dân số, NPC nổi bật
+- [ ] Khi player vào thế giới → AI greeting nhắc đến văn hóa/lễ hội đang diễn ra
+- [ ] Nút Dashboard "HỒ SƠ THẾ GIỚI"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 44 — ĐA THẾ GIỚI PER USER (MULTI-WORLD MANAGEMENT)
+### ════════════════════════════════════════
+
+**Mục tiêu:** Mỗi người dùng có thể tạo và quản lý NHIỀU thế giới cùng lúc — mỗi thế giới có chủ đề khác nhau, vận hành độc lập. Các thế giới của cùng một user có thể "liên kết" với nhau (cổng truyền tống nội bộ, chia sẻ tài nguyên). Tiến tới hình thành "Tinh Vực" khi user có ≥3 thế giới liên kết.
+
+- [ ] Bảng DB `user_world_slots` (userId, maxWorlds, currentWorlds, unlockedAt) — mặc định 1, mở khóa thêm qua thành tựu/level
+- [ ] Bảng DB `world_portals` (id, fromWorldSlug, toWorldSlug, portalName, portalType: public/private/owner_only, travelCost, aiNarrative, createdAt)
+- [ ] Bảng DB `star_domains` (id, ownerUserId, domainName, worldSlugs jsonb, domainLevel: 1-5, totalPopulation, totalWealth, createdAt)
+- [ ] Mở khóa world slot thứ 2 khi user level ≥ 20 hoặc có ≥10 thành tựu
+- [ ] Mở khóa world slot thứ 3 khi user có ≥2 thế giới active + ≥100 citizens tổng cộng
+- [ ] API GET /api/multiworld/my-worlds — tất cả thế giới của user + stats tóm tắt
+- [ ] API POST /api/multiworld/portal/create — creator tạo cổng nối 2 thế giới của mình
+- [ ] API POST /api/multiworld/portal/travel/:portalId — nhân vật di chuyển qua cổng (có phí)
+- [ ] API POST /api/multiworld/domain/create — gộp ≥3 thế giới thành Tinh Vực (Star Domain)
+- [ ] API GET /api/multiworld/domain/my — Tinh Vực của user
+- [ ] Trang `/my-worlds` — bảng quản lý tất cả thế giới: stats, cổng liên kết, slot còn lại
+- [ ] Trang `/star-domain` — Tinh Vực: bản đồ các thế giới liên kết, tổng dân số, tổng GDP
+- [ ] Nút Dashboard "CÁC THẾ GIỚI CỦA TÔI"
+
+---
+
+### ════════════════════════════════════════
+### PHASE 45 — VŨ TRỤ PHÂN TẦNG (COSMIC HIERARCHY)
+### ════════════════════════════════════════
+
+**Mục tiêu:** Hệ thống phân cấp vũ trụ hoàn chỉnh — từ Thế Giới nhỏ lẻ leo thang lên Tinh Vực → Ngân Hà → Thiên Hà → Vũ Trụ riêng. Mỗi cấp có điều kiện thăng cấp dựa trên thực lực thật (dân số, kinh tế, văn hóa, chiến thắng chiến tranh). Cấp càng cao → tài nguyên càng phong phú, ảnh hưởng càng rộng, nhưng cũng dễ bị thế lực lớn hơn tấn công.
+
+- [ ] Bảng DB `cosmic_entities` (id, ownerUserId, entityType: world/star_domain/galaxy/universe/cosmos, entityName, tier, powerScore, population, wealth, influenceRadius, parentEntityId, childEntities jsonb, ascendedAt, lastActivityAt)
+- [ ] Bảng DB `cosmic_events` (id, entityId, eventType: ascension/invasion/alliance/collapse/wonder, title, description, aiNarrative, participants jsonb, outcome jsonb, occurredAt)
+- [ ] Bảng DB `cosmic_rankings` (entityId, entityType, rank, powerScore, updatedAt)
+- [ ] Điều kiện thăng cấp:
+  ```
+  THẾ GIỚI → TINH VỰC:   ≥3 thế giới liên kết + population ≥500 + wealth ≥10,000 gold
+  TINH VỰC → NGÂN HÀ:    ≥2 Tinh Vực hợp nhất + 1 chiến thắng Chiến Tranh Thế Giới
+  NGÂN HÀ → THIÊN HÀ:    ≥3 Ngân Hà + ngoại giao với ≥5 thực thể khác + ≥1000 citizens tổng
+  THIÊN HÀ → VŨ TRỤ:     ≥2 Thiên Hà + legend hall ≥10 anh hùng + dominance score #1 toàn server
+  ```
+- [ ] AI sinh narrative sử thi khi thực thể thăng cấp (cosmic ascension ceremony)
+- [ ] Bản đồ vũ trụ: visualize tất cả thực thể theo tier, hiển thị quan hệ liên kết
+- [ ] Cosmic events: thực thể cao tier có thể "invade" thực thể thấp tier — mất/chiếm tài nguyên
+- [ ] API GET /api/cosmos/map — bản đồ toàn vũ trụ (tất cả entities + relations)
+- [ ] API GET /api/cosmos/my — thực thể của user + lịch sử thăng cấp
+- [ ] API POST /api/cosmos/ascend/:entityId — kiểm tra điều kiện + thăng cấp + AI narrative
+- [ ] API GET /api/cosmos/rankings — bảng xếp hạng cosmic (top 20 mỗi tier)
+- [ ] API POST /api/cosmos/event/trigger — AI tự sinh cosmic event ngẫu nhiên (1 lần/tuần)
+- [ ] Trang `/cosmos` — bản đồ vũ trụ interactive, bảng xếp hạng, lịch sử sự kiện vũ trụ
+- [ ] Trang `/cosmos/my` — hành trình thăng cấp của user: tiến độ, điều kiện còn thiếu
+- [ ] Nút Dashboard "VŨ TRỤ CỦA TÔI"
 
 ---
 
