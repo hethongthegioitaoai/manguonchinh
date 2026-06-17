@@ -576,9 +576,17 @@ export default function DashboardPage() {
                         icon: Users,
                         label: "DÂN SỐ NPC",
                         sub: "Sinh sản, già hóa, phân bổ độ tuổi dân số",
-                        tag: "NEW",
+                        tag: null,
                         disabled: false,
                         onClick: () => setLocation("/npc-population"),
+                      },
+                      {
+                        icon: Shield,
+                        label: "HỘI NHÓM NPC",
+                        sub: "Thành lập hội nhóm, thủ lĩnh, quỹ hội",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/npc-factions"),
                       },
                       {
                         icon: Globe,

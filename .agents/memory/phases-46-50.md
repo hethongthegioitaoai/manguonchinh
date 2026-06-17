@@ -24,6 +24,18 @@ description: Phase 46 THỜI TIẾT ĐỘNG complete; phases 47-50 pending with 
 - Dashboard: Activity icon, "SIM ENGINE — THẾ GIỚI TỰ SỐNG"
 - Bug fix: `/api/simulation/all` was ordering by `worldSimLog.happenedAt` instead of `worldSimState.lastTickAt`
 
+## Phase 51 — HỘI NHÓM NPC ✅ (complete 2026-06-17)
+
+- Tables: `npc_factions`, `npc_faction_members`, `npc_faction_memories` (pushed to DB)
+- Schema: `lib/db/src/schema/npcFactions.ts`, exported from `lib/db/src/schema/index.ts`
+- Route: `artifacts/api-server/src/routes/npcFactions.ts`
+  - GET /api/npc-factions/:worldSlug
+  - POST /api/npc-factions/auto-form/:worldSlug (formation: 3+ NPC same job, rel>70)
+  - POST /api/npc-factions/collect-tribute/:worldSlug (5% wealth tithe)
+- Leader election: wealth + relationship network size score
+- Page: `/npc-factions` — NPCFactionPage.tsx, expandable faction cards
+- Dashboard button: Shield icon, label "HỘI NHÓM NPC"
+
 ## Phases 47-50 — pending [ ] in TIENTRINHHETHONG.md
 
 - Phase 47: CARAVAN LIÊN THẾ GIỚI — tables: caravans, caravan_raids

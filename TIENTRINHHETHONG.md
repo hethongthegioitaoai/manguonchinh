@@ -18,7 +18,9 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 17/06/2026 — HỆ THỐNG DÂN SỐ NPC hoàn tất: thêm cột `life_stage` + `tick_count` vào `npc_cores`; bảng `npc_births`; logic già hoá mỗi 5 tick +1 tuổi trong tick route; hệ thống sinh con cho cặp đôi đủ điều kiện (trưởng thành + happiness>60 + quan hệ>75, 15% xác suất/lần); route `GET /api/npc-population/:worldSlug` + `POST /api/npc-population/run-aging/:worldSlug`; trang `/npc-population` — 3 stat card, phân bổ độ tuổi 4 giai đoạn, danh sách dân cư, nút Chạy Già Hóa & Sinh Sản, ký ức chào đời.
+> **Cập nhật lần cuối:** 17/06/2026 — HỆ THỐNG HỘI NHÓM NPC hoàn tất: bảng DB `npc_factions`+`npc_faction_members`+`npc_faction_memories`; 5 loại hội nhóm (merchant_guild/farming_clan/military_order/criminal_group/noble_house); tự động thành lập từ 3+ NPC cùng nghề quan hệ>70; bầu thủ lĩnh theo wealth+influence; thu phí thành viên 5% tài sản vào quỹ; ký ức gia nhập/bầu lãnh đạo; API 3 route (GET/auto-form/collect-tribute); trang `/npc-factions`; nút Dashboard "HỘI NHÓM NPC".
+
+> **Cập nhật trước:** 17/06/2026 — HỆ THỐNG DÂN SỐ NPC hoàn tất: thêm cột `life_stage` + `tick_count` vào `npc_cores`; bảng `npc_births`; logic già hoá mỗi 5 tick +1 tuổi trong tick route; hệ thống sinh con cho cặp đôi đủ điều kiện (trưởng thành + happiness>60 + quan hệ>75, 15% xác suất/lần); route `GET /api/npc-population/:worldSlug` + `POST /api/npc-population/run-aging/:worldSlug`; trang `/npc-population` — 3 stat card, phân bổ độ tuổi 4 giai đoạn, danh sách dân cư, nút Chạy Già Hóa & Sinh Sản, ký ức chào đời.
 
 > **Cập nhật trước:** 17/06/2026 — HỆ THỐNG GIA ĐÌNH NPC hoàn tất: 2 bảng DB mới (`npc_family`, `npc_family_memories`); điều kiện kết đôi (friendship > 70 + happiness > 50); API CRUD 4 route (GET /api/npc-family/:npcId, POST form-partner, POST set-parent, POST auto-match/:worldSlug); tab GIA ĐÌNH thứ 5 trong NPCSimulationPage — bạn đời/cha/mẹ/con cái, ký ức gia đình, nút ghép đôi tự động.
 
@@ -1287,6 +1289,24 @@ configureWorkflow("Frontend", "pnpm --filter @workspace/ai-world-system run dev"
 - [ ] Nút Dashboard "LỄ HỘI THEO MÙA"
 
 ---
+
+### ════════════════════════════════════════
+### PHASE 51 — HỘI NHÓM NPC (NPC FACTION SYSTEM)
+### ════════════════════════════════════════
+
+**Mục tiêu:** NPC tự thành lập hội nhóm dựa trên quan hệ và nghề nghiệp. Hội nhóm có thủ lĩnh, quỹ, ký ức.
+
+- [x] Bảng DB `npc_factions` (id, worldSlug, name, type, leaderNpcId, treasury, reputation, createdAt, updatedAt)
+- [x] Bảng DB `npc_faction_members` (id, factionId, npcId, role, joinedAt)
+- [x] Bảng DB `npc_faction_memories` (id, npcId, factionId, content, createdAt)
+- [x] 5 loại faction: merchant_guild / farming_clan / military_order / criminal_group / noble_house
+- [x] Formation rule: 3+ NPC quan hệ >70 cùng nghề → tự thành lập
+- [x] Bầu lãnh đạo theo wealth + số kết nối quan hệ
+- [x] Thu phí 5% tài sản thành viên vào quỹ hội
+- [x] Ký ức: "Gia nhập Hội Thương Nhân", "Được bầu làm thủ lĩnh"
+- [x] API: GET /api/npc-factions/:worldSlug, POST auto-form/:worldSlug, POST collect-tribute/:worldSlug
+- [x] Trang `/npc-factions` — stat cards, danh sách faction, expand chi tiết (thủ lĩnh/thành viên/ký ức)
+- [x] Nút Dashboard "HỘI NHÓM NPC"
 
 ### ════════════════════════════════════════
 ### PHASE 50 — VŨ ĐÀI THẦN LỰC (DIVINE ARENA)

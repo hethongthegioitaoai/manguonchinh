@@ -54,3 +54,4 @@ export * from "./worldWeather";
 export * from "./worldSimulation";
 export * from "./npcCore";
 export * from "./npcFamily";
+export * from "./npcFactions";
