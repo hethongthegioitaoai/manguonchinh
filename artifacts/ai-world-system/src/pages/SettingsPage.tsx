@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import {
-  ArrowLeft, User, Trash2, Loader2, AlertTriangle, CheckCircle2, Settings, Globe,
+  ArrowLeft, User, Trash2, Loader2, AlertTriangle, CheckCircle2, Settings, Globe, KeyRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -34,6 +34,43 @@ export default function SettingsPage() {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
+
+  const [pwForm, setPwForm] = useState({ current: "", next: "", confirm: "" });
+  const [pwLoading, setPwLoading] = useState(false);
+  const [pwError, setPwError] = useState<string | null>(null);
+  const [pwSuccess, setPwSuccess] = useState<string | null>(null);
+
+  async function handleChangePassword(e: React.FormEvent) {
+    e.preventDefault();
+    setPwError(null);
+    if (!pwForm.current || !pwForm.next || !pwForm.confirm) {
+      setPwError("Vui lòng nhập đầy đủ"); return;
+    }
+    if (pwForm.next !== pwForm.confirm) {
+      setPwError("Mật khẩu mới không khớp"); return;
+    }
+    if (pwForm.next.length < 6) {
+      setPwError("Mật khẩu mới phải có ít nhất 6 ký tự"); return;
+    }
+    setPwLoading(true);
+    try {
+      const res = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ currentPassword: pwForm.current, newPassword: pwForm.next }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setPwError(data.message ?? "Lỗi"); return; }
+      setPwSuccess(data.message);
+      setPwForm({ current: "", next: "", confirm: "" });
+      setTimeout(() => setPwSuccess(null), 4000);
+    } catch {
+      setPwError("Không thể kết nối máy chủ");
+    } finally {
+      setPwLoading(false);
+    }
+  }
 
   useEffect(() => {
     if (!loading && !user) setLocation("/login");
@@ -223,6 +260,71 @@ export default function SettingsPage() {
                 + TẠO NHÂN VẬT MỚI
               </Button>
             </div>
+          </div>
+        </motion.section>
+
+        <motion.section
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="border border-border/60 bg-card/50 backdrop-blur-md overflow-hidden"
+        >
+          <div className="px-6 py-4 border-b border-border/40 flex items-center gap-2">
+            <KeyRound className="w-4 h-4 text-primary" strokeWidth={1.5} />
+            <span className="font-orbitron text-sm tracking-widest text-primary">ĐỔI MẬT KHẨU</span>
+          </div>
+          <div className="p-6">
+            <AnimatePresence>
+              {pwSuccess && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
+                  className="flex items-center gap-3 border border-green-500/40 bg-green-500/10 px-4 py-3 font-mono text-sm text-green-400 mb-4"
+                >
+                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                  {pwSuccess}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {pwError && (
+              <div className="flex items-center gap-2 border border-destructive/40 bg-destructive/10 px-4 py-3 font-mono text-xs text-destructive mb-4">
+                <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                {pwError}
+              </div>
+            )}
+
+            <form onSubmit={handleChangePassword} className="space-y-4">
+              {[
+                { label: "MẬT KHẨU HIỆN TẠI", key: "current" as const, placeholder: "••••••••" },
+                { label: "MẬT KHẨU MỚI", key: "next" as const, placeholder: "••••••••" },
+                { label: "XÁC NHẬN MẬT KHẨU MỚI", key: "confirm" as const, placeholder: "••••••••" },
+              ].map(({ label, key, placeholder }) => (
+                <div key={key} className="flex flex-col gap-1.5">
+                  <label className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground/60 uppercase">
+                    {label}
+                  </label>
+                  <input
+                    type="password"
+                    value={pwForm[key]}
+                    onChange={e => setPwForm(f => ({ ...f, [key]: e.target.value }))}
+                    placeholder={placeholder}
+                    disabled={pwLoading}
+                    className="w-full bg-background/40 border border-border/50 focus:border-primary/50 px-3 py-2.5 font-mono text-sm text-foreground placeholder:text-muted-foreground/20 outline-none transition-colors disabled:opacity-50"
+                  />
+                </div>
+              ))}
+              <div className="pt-1">
+                <Button
+                  type="submit"
+                  disabled={pwLoading}
+                  className="rounded-none font-orbitron text-xs tracking-widest border border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 transition-all"
+                  variant="ghost"
+                >
+                  {pwLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  {pwLoading ? "ĐANG XỬ LÝ..." : "CẬP NHẬT MẬT KHẨU"}
+                </Button>
+              </div>
+            </form>
           </div>
         </motion.section>
 
