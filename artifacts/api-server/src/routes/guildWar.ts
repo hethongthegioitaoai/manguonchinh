@@ -3,7 +3,7 @@ import { isAuthenticated } from "../auth/replitAuth.js";
 import { db } from "@workspace/db";
 import { clanWars, guilds, guildMembers, characters, characterFaction } from "@workspace/db/schema";
 import { eq, and, or, desc, inArray } from "drizzle-orm";
-import { notifyMany } from "../lib/notify.js";
+import { saveAndNotifyMany } from "../lib/notify.js";
 
 const router = Router();
 
@@ -106,7 +106,7 @@ router.post("/guild-war/declare/:targetGuildId", isAuthenticated, async (req: an
       .innerJoin(characters, eq(characters.id, guildMembers.characterId))
       .where(eq(guildMembers.guildId, targetGuild.id));
     const targetUserIds = targetMembers.map(m => m.userId);
-    notifyMany(targetUserIds, { type: "guild_war_declared", attackerGuildName: guild.name, defenderGuildName: targetGuild.name });
+    await saveAndNotifyMany(targetUserIds, { type: "guild_war_declared", attackerGuildName: guild.name, defenderGuildName: targetGuild.name });
 
     res.json({ message: `Tuyên chiến với ${targetGuild.name} thành công! Chiến tranh kéo dài 24h.`, war });
   } catch (err: any) {

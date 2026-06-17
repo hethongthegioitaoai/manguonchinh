@@ -17,7 +17,7 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 17/06/2026 — WebSocket Real-Time Notifications hoàn tất: PvP challenge, level-up, guild war, world events push đến client ngay lập tức
+> **Cập nhật lần cuối:** 17/06/2026 — Notification Bell hoàn tất: icon chuông trên Dashboard, bảng thông báo có unread badge đỏ, lưu vào DB bảng `notifications`, đọc/xoá từng cái hoặc tất cả, auto-refresh mỗi 30s + WS trigger
 
 ---
 

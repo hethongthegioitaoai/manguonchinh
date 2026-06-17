@@ -31,6 +31,7 @@ import worldPassportRouter from "./worldPassport.js";
 import prophecyRouter from "./prophecy.js";
 import isekaiRouter from "./isekai.js";
 import fateRouter from "./fate.js";
+import notificationsRouter from "./notifications.js";
 
 const router: IRouter = Router();
 
@@ -66,5 +67,6 @@ router.use(worldPassportRouter);
 router.use(prophecyRouter);
 router.use(isekaiRouter);
 router.use(fateRouter);
+router.use(notificationsRouter);
 
 export default router;

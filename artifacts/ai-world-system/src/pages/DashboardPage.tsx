@@ -5,6 +5,7 @@ import {
   LogOut, Globe, Zap, User, Shield, Swords, Users,
   TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain, Sparkles, Skull, Hammer, Newspaper, Crown, ShoppingBag, Map, ScrollText, Infinity, Orbit,
 } from "lucide-react";
+import { NotificationBell } from "@/components/NotificationBell";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { getWorld, WORLDS, SYSTEM_ICONS, getRealm, type SystemName } from "@/lib/worlds";
@@ -237,6 +238,7 @@ export default function DashboardPage() {
           <span className="font-mono text-xs text-muted-foreground hidden md:block">
             {displayName}
           </span>
+          <NotificationBell />
           <Button
             variant="ghost"
             size="sm"

@@ -108,6 +108,9 @@ export function useRealtimeNotifications() {
         try {
           const event = JSON.parse(e.data) as WSEvent;
           handleEvent(event);
+          if (event.type !== "auth_ok" && event.type !== "ping") {
+            import("@/components/NotificationBell").then(m => m.refetchNotifications?.());
+          }
         } catch {}
       };
 

@@ -4,7 +4,7 @@ import { db } from "@workspace/db";
 import { battles, characters, items, inventory } from "@workspace/db/schema";
 import { eq, and } from "drizzle-orm";
 import { shouldDropItem, pickDropItem } from "../lib/itemTemplates.js";
-import { notifyUser } from "../lib/notify.js";
+import { saveAndNotify } from "../lib/notify.js";
 
 const router = Router();
 
@@ -210,7 +210,7 @@ router.post("/battle/finish", isAuthenticated, async (req: any, res) => {
     }
 
     if (leveledUp) {
-      notifyUser(userId, { type: "level_up", characterName: char.name, newLevel: updatedChar.level });
+      await saveAndNotify(userId, { type: "level_up", characterName: char.name, newLevel: updatedChar.level });
     }
 
     res.json({ battle, character: updatedChar, expGained, leveledUp, droppedItem, cultivationEnergyGained });
