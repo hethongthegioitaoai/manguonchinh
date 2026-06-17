@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { achievements, characterAchievements, characters } from "@workspace/db/schema";
 import { eq, and, inArray } from "drizzle-orm";
@@ -155,7 +155,7 @@ router.get("/achievements/:characterId", isAuthenticated, async (req: any, res) 
 router.post("/achievements/check/:characterId", isAuthenticated, async (req: any, res) => {
   try {
     const { characterId } = req.params;
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
 
     const [char] = await db.select().from(characters).where(eq(characters.id, characterId));
     if (!char || char.userId !== userId) return res.status(403).json({ message: "Không có quyền" });

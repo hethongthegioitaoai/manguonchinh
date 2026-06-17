@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { characters, worlds } from "@workspace/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -19,7 +19,7 @@ const createCharacterSchema = z.object({
 
 router.get("/characters", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const userChars = await db
       .select()
       .from(characters)
@@ -33,7 +33,7 @@ router.get("/characters", isAuthenticated, async (req: any, res) => {
 
 router.post("/characters", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const parsed = createCharacterSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ message: "Invalid request", errors: parsed.error.flatten() });
@@ -64,7 +64,7 @@ router.post("/characters", isAuthenticated, async (req: any, res) => {
 
 router.delete("/characters/:characterId", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { characterId } = req.params;
 
     const [char] = await db

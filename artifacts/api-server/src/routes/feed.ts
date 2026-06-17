@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { storyPosts, postLikes, characters } from "@workspace/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -12,7 +12,7 @@ router.get("/api/feed", isAuthenticated, async (req, res) => {
     const limit = Math.min(Number(req.query.limit) || 30, 100);
     const offset = Number(req.query.offset) || 0;
     const worldSlug = req.query.world as string | undefined;
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
 
     let query = db.select().from(storyPosts).orderBy(desc(storyPosts.createdAt)).limit(limit).offset(offset);
 
@@ -44,7 +44,7 @@ router.get("/api/feed", isAuthenticated, async (req, res) => {
 // POST /api/feed — đăng bài thủ công
 router.post("/api/feed", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { characterId, content } = req.body;
     if (!characterId || !content?.trim()) return res.status(400).json({ error: "Thiếu thông tin" });
 
@@ -73,7 +73,7 @@ router.post("/api/feed", isAuthenticated, async (req, res) => {
 // POST /api/feed/auto — tự động đăng từ sự kiện game (internal)
 router.post("/api/feed/auto", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { characterId, postType, content, metadata } = req.body;
     if (!characterId || !content || !postType) return res.status(400).json({ error: "Thiếu thông tin" });
 
@@ -102,7 +102,7 @@ router.post("/api/feed/auto", isAuthenticated, async (req, res) => {
 // POST /api/feed/:postId/like — thích / bỏ thích
 router.post("/api/feed/:postId/like", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { postId } = req.params;
 
     const existing = await db.select().from(postLikes).where(and(eq(postLikes.postId, postId), eq(postLikes.userId, userId)));
@@ -127,7 +127,7 @@ router.post("/api/feed/:postId/like", isAuthenticated, async (req, res) => {
 // DELETE /api/feed/:postId — xoá bài của mình
 router.delete("/api/feed/:postId", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { postId } = req.params;
     await db.delete(storyPosts).where(and(eq(storyPosts.id, postId), eq(storyPosts.userId, userId)));
     res.json({ success: true });

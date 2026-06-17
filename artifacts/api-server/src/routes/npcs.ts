@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { npcs, characters, users } from "@workspace/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -79,7 +79,7 @@ router.get("/npcs/:worldSlug", isAuthenticated, async (req: any, res) => {
 
 router.post("/npcs/:worldSlug/tick", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     if (!(await isAdmin(userId))) return res.status(403).json({ message: "Chỉ admin mới có quyền này" });
     const { worldSlug } = req.params;
     await seedNPCsIfEmpty(worldSlug);
@@ -147,7 +147,7 @@ router.post("/npcs/:npcId/interact", isAuthenticated, async (req: any, res) => {
     const [npc] = await db.select().from(npcs).where(eq(npcs.id, npcId));
     if (!npc) return res.status(404).json({ message: "NPC not found" });
 
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const charList = await db.select().from(characters).where(eq(characters.userId, userId));
     const char = charList.find(c => (c.stats as any)?.world_slug === npc.worldSlug) ?? charList[0];
     const charCtx = char ? `Nhân vật: ${char.name}, cấp ${char.level}, hệ thống ${(char.stats as any)?.system}` : "Nhân vật vô danh";

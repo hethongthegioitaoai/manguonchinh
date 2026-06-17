@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { characters } from "@workspace/db/schema";
 import { characterSkills } from "@workspace/db/schema";
@@ -59,7 +59,7 @@ function calcAvailablePoints(level: number, spentPoints: number): number {
 
 router.get("/skills/:characterId", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { characterId } = req.params;
 
     const [char] = await db
@@ -100,7 +100,7 @@ const unlockSchema = z.object({
 
 router.post("/skills/:characterId/unlock", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { characterId } = req.params;
 
     const parsed = unlockSchema.safeParse(req.body);

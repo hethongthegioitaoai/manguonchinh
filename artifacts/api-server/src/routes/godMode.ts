@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { divineActions, npcPrayers, npcs, customWorlds, worldEvents } from "@workspace/db/schema";
 import { eq, and, desc, isNull } from "drizzle-orm";
@@ -11,7 +11,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
 // GET /api/god/my-worlds — danh sách thế giới user đã tạo
 router.get("/api/god/my-worlds", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const worlds = await db.select().from(customWorlds)
       .where(eq(customWorlds.createdBy, userId))
       .orderBy(desc(customWorlds.createdAt));
@@ -25,7 +25,7 @@ router.get("/api/god/my-worlds", isAuthenticated, async (req, res) => {
 // GET /api/god/world/:worldSlug — thông tin thế giới + NPC + prayers
 router.get("/api/god/world/:worldSlug", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { worldSlug } = req.params;
 
     const [world] = await db.select().from(customWorlds)
@@ -50,7 +50,7 @@ router.get("/api/god/world/:worldSlug", isAuthenticated, async (req, res) => {
 // POST /api/god/prayers/generate/:worldSlug — AI sinh prayer cho NPC (trigger thủ công)
 router.post("/api/god/prayers/generate/:worldSlug", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { worldSlug } = req.params;
 
     const [world] = await db.select().from(customWorlds)
@@ -101,7 +101,7 @@ Chỉ trả về lời cầu nguyện, không giải thích.`;
 // POST /api/god/intervene/:worldSlug — Thần can thiệp vào thế giới
 router.post("/api/god/intervene/:worldSlug", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { worldSlug } = req.params;
     const { command } = req.body;
     if (!command?.trim()) return res.status(400).json({ error: "Thiếu lệnh thần" });
@@ -156,7 +156,7 @@ Hãy diễn giải lệnh này thành một SỰ KIỆN THẦN THÁNH xảy ra t
 // POST /api/god/bless/:npcId — ban phước NPC
 router.post("/api/god/bless/:npcId", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { npcId } = req.params;
 
     const [npc] = await db.select().from(npcs).where(eq(npcs.id, npcId));
@@ -196,7 +196,7 @@ router.post("/api/god/bless/:npcId", isAuthenticated, async (req, res) => {
 // POST /api/god/smite/:npcId — trừng phạt NPC
 router.post("/api/god/smite/:npcId", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { npcId } = req.params;
     const { permanent } = req.body;
 
@@ -248,7 +248,7 @@ router.post("/api/god/smite/:npcId", isAuthenticated, async (req, res) => {
 // POST /api/god/answer-prayer/:prayerId — Thần trả lời lời cầu nguyện
 router.post("/api/god/answer-prayer/:prayerId", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { prayerId } = req.params;
     const { answer } = req.body;
     if (!answer?.trim()) return res.status(400).json({ error: "Thiếu câu trả lời" });

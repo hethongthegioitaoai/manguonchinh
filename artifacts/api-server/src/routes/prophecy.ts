@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { prophecies, prophecyClaims, characters, customWorlds } from "@workspace/db/schema";
 import { eq, and, desc, isNull, sql } from "drizzle-orm";
@@ -66,7 +66,7 @@ router.get("/api/prophecy/:worldSlug", isAuthenticated, async (req, res) => {
 // POST /api/prophecy/generate/:worldSlug — AI sinh prophecy mới (trigger thủ công)
 router.post("/api/prophecy/generate/:worldSlug", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { worldSlug } = req.params;
 
     // Chỉ creator hoặc bất kỳ user nào với thế giới public được trigger
@@ -108,7 +108,7 @@ const claimSchema = z.object({
 // POST /api/prophecy/claim/:prophecyId — nhân vật submit claim
 router.post("/api/prophecy/claim/:prophecyId", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { prophecyId } = req.params;
     const parsed = claimSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Dữ liệu không hợp lệ" });
@@ -194,7 +194,7 @@ Chỉ trả về số nguyên từ 0 đến 100.`;
 // GET /api/prophecy/claims/:prophecyId — xem tất cả claims (creator only)
 router.get("/api/prophecy/claims/:prophecyId", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { prophecyId } = req.params;
 
     const [prophecy] = await db.select().from(prophecies).where(eq(prophecies.id, prophecyId));
@@ -222,7 +222,7 @@ router.get("/api/prophecy/claims/:prophecyId", isAuthenticated, async (req, res)
 // POST /api/prophecy/judge/:claimId — creator approve/reject claim thủ công
 router.post("/api/prophecy/judge/:claimId", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { claimId } = req.params;
     const { approve } = req.body;
 

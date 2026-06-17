@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { characters, characterMemories, worldMemories, worldState, worldResources } from "@workspace/db/schema";
 import { eq, and, desc } from "drizzle-orm";
@@ -182,7 +182,7 @@ LUẬT:
 
 router.post("/api/narrative/generate", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { characterId, choiceLabel, history, freeInput } = req.body;
 
     if (!characterId) return res.status(400).json({ message: "Thiếu characterId" });

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { recipes, characters, inventory, items } from "@workspace/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -54,7 +54,7 @@ router.get("/craft/recipes/:worldSlug", isAuthenticated, async (req: any, res) =
     await seedRecipes();
     const { worldSlug } = req.params;
     const list = await db.select().from(recipes).where(eq(recipes.worldSlug, worldSlug));
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
 
     const chars = await db.select({ id: characters.id }).from(characters).where(eq(characters.userId, userId));
     const charId = chars[0]?.id;
@@ -92,7 +92,7 @@ router.get("/craft/recipes/:worldSlug", isAuthenticated, async (req: any, res) =
 // POST /api/craft/make
 router.post("/craft/make", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { recipeId } = req.body;
     await seedRecipes();
 

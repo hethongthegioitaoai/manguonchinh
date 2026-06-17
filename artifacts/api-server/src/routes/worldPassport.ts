@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { worldPassports, worldEntryLog, characters, customWorlds, npcs, worldEvents } from "@workspace/db/schema";
 import { eq, and, desc, or } from "drizzle-orm";
@@ -11,7 +11,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
 // GET /api/passport/worlds — danh sách custom worlds public để xin nhập cảnh
 router.get("/api/passport/worlds", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const worlds = await db.select().from(customWorlds)
       .where(eq(customWorlds.isPublic, true))
       .orderBy(desc(customWorlds.createdAt))
@@ -28,7 +28,7 @@ router.get("/api/passport/worlds", isAuthenticated, async (req, res) => {
 // GET /api/passport/my — hộ chiếu của user (tất cả nhân vật)
 router.get("/api/passport/my", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const myChars = await db.select().from(characters).where(eq(characters.userId, userId));
     if (!myChars.length) return res.json([]);
 
@@ -59,7 +59,7 @@ router.get("/api/passport/my", isAuthenticated, async (req, res) => {
 // GET /api/passport/visitors/:worldSlug — creator xem khách trong thế giới của mình
 router.get("/api/passport/visitors/:worldSlug", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { worldSlug } = req.params;
     const [world] = await db.select().from(customWorlds)
       .where(and(eq(customWorlds.slug, worldSlug), eq(customWorlds.createdBy, userId)));
@@ -83,7 +83,7 @@ router.get("/api/passport/visitors/:worldSlug", isAuthenticated, async (req, res
 // POST /api/passport/request/:worldSlug — xin nhập cảnh
 router.post("/api/passport/request/:worldSlug", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { worldSlug } = req.params;
     const { characterId, note } = req.body;
     if (!characterId) return res.status(400).json({ error: "Thiếu characterId" });
@@ -121,7 +121,7 @@ router.post("/api/passport/request/:worldSlug", isAuthenticated, async (req, res
 // POST /api/passport/approve/:passportId — creator approve
 router.post("/api/passport/approve/:passportId", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { passportId } = req.params;
     const { note } = req.body;
 
@@ -148,7 +148,7 @@ router.post("/api/passport/approve/:passportId", isAuthenticated, async (req, re
 // POST /api/passport/ban/:passportId — creator ban/kick
 router.post("/api/passport/ban/:passportId", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { passportId } = req.params;
     const { reason } = req.body;
 
@@ -175,7 +175,7 @@ router.post("/api/passport/ban/:passportId", isAuthenticated, async (req, res) =
 // GET /api/passport/visit/:worldSlug — xem thế giới qua "mắt khách" (readonly + AI narrate)
 router.get("/api/passport/visit/:worldSlug", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { worldSlug } = req.params;
     const { characterId } = req.query as { characterId?: string };
 

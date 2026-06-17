@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { guilds, guildMembers, characters, worlds, users } from "@workspace/db/schema";
 import { eq, desc, sql, and } from "drizzle-orm";
@@ -83,7 +83,7 @@ router.get("/guilds/:guildId", isAuthenticated, async (req: any, res) => {
 
 router.post("/guilds", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { name, worldSlug, description, tag, characterId } = req.body;
 
     if (!name?.trim() || !worldSlug || !characterId) {
@@ -137,7 +137,7 @@ router.post("/guilds", isAuthenticated, async (req: any, res) => {
 
 router.post("/guilds/:guildId/join", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { guildId } = req.params;
     const { characterId } = req.body;
 
@@ -182,7 +182,7 @@ router.post("/guilds/:guildId/join", isAuthenticated, async (req: any, res) => {
 
 router.post("/guilds/:guildId/leave", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { guildId } = req.params;
     const { characterId } = req.body;
 
@@ -222,7 +222,7 @@ router.post("/guilds/:guildId/leave", isAuthenticated, async (req: any, res) => 
 
 router.delete("/guilds/:guildId", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { guildId } = req.params;
 
     const [guild] = await db.select().from(guilds).where(eq(guilds.id, guildId));

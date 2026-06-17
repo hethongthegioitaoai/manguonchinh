@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { customWorlds } from "@workspace/db/schema";
 import { desc, eq } from "drizzle-orm";
@@ -88,7 +88,7 @@ router.post("/custom-worlds/create", isAuthenticated, async (req: any, res) => {
     const parsed = createSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: "Invalid world data" });
     const { name, genre, rules, description } = parsed.data;
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
 
     const content = await generateWorldContent(name, genre, rules, description);
 
@@ -185,7 +185,7 @@ router.post("/custom-worlds/generate-ai", isAuthenticated, async (req: any, res)
 
 router.delete("/custom-worlds/:id", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const [world] = await db.select().from(customWorlds).where(eq(customWorlds.id, req.params.id));
     if (!world) return res.status(404).json({ message: "World not found" });
     if (world.createdBy !== userId) return res.status(403).json({ message: "Không có quyền xóa thế giới này" });

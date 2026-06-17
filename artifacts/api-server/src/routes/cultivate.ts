@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { characters } from "@workspace/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -43,7 +43,7 @@ function getCultivationEnergy(stats: any): number {
 
 router.get("/cultivate/:characterId", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { characterId } = req.params;
 
     const [char] = await db
@@ -73,7 +73,7 @@ const investSchema = z.object({
 
 router.post("/cultivate/:characterId", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { characterId } = req.params;
 
     const parsed = investSchema.safeParse(req.body);

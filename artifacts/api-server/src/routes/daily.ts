@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { dailyLogins, characters, inventory, items } from "@workspace/db/schema";
 import { eq, and, desc } from "drizzle-orm";
@@ -28,7 +28,7 @@ function getRewardForStreak(streak: number) {
 // GET /api/daily/status
 router.get("/daily/status", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const today = getTodayStr();
 
     const [todayRow] = await db.select().from(dailyLogins)
@@ -72,7 +72,7 @@ router.get("/daily/status", isAuthenticated, async (req: any, res) => {
 // POST /api/daily/claim
 router.post("/daily/claim", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const today = getTodayStr();
 
     const [existing] = await db.select().from(dailyLogins)

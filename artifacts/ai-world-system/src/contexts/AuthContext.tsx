@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 interface User {
   id: string;
   email?: string | null;
+  username?: string | null;
   firstName?: string | null;
   lastName?: string | null;
   profileImageUrl?: string | null;
@@ -40,10 +41,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      window.location.href = "/api/logout";
+      await fetch("/api/logout", { method: "POST", credentials: "include" });
     },
     onSuccess: () => {
       queryClient.setQueryData(["/api/auth/user"], null);
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     },
   });
 

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { factions, characterFaction, characters } from "@workspace/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -54,7 +54,7 @@ router.get("/factions/:worldSlug", isAuthenticated, async (req: any, res) => {
 
 router.get("/factions/character/:characterId", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { characterId } = req.params;
 
     const [char] = await db.select().from(characters)
@@ -88,7 +88,7 @@ const joinSchema = z.object({ factionId: z.string().uuid() });
 
 router.post("/factions/character/:characterId/join", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { characterId } = req.params;
 
     const parsed = joinSchema.safeParse(req.body);
@@ -118,7 +118,7 @@ router.post("/factions/character/:characterId/join", isAuthenticated, async (req
 
 router.post("/factions/character/:characterId/leave", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { characterId } = req.params;
 
     const [char] = await db.select().from(characters)
@@ -139,7 +139,7 @@ router.post("/factions/character/:characterId/leave", isAuthenticated, async (re
 
 router.post("/factions/character/:characterId/reputation", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { characterId } = req.params;
     const amount = Math.max(1, Math.min(500, Number(req.body.amount) || 50));
 

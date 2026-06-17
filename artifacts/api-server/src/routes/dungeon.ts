@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { dungeons, dungeonRuns, characters, items, inventory } from "@workspace/db/schema";
 import { eq, and, desc } from "drizzle-orm";
@@ -59,7 +59,7 @@ router.get("/dungeon/list/:worldSlug", isAuthenticated, async (req: any, res) =>
     await seedDungeons();
     const { worldSlug } = req.params;
     const list = await db.select().from(dungeons).where(eq(dungeons.worldSlug, worldSlug));
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
 
     const chars = await db.select({ id: characters.id }).from(characters).where(eq(characters.userId, userId));
     const charId = chars[0]?.id;
@@ -82,7 +82,7 @@ router.get("/dungeon/list/:worldSlug", isAuthenticated, async (req: any, res) =>
 // GET /api/dungeon/active
 router.get("/dungeon/active", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const [char] = await db.select().from(characters).where(eq(characters.userId, userId));
     if (!char) return res.json({ activeRun: null });
 
@@ -105,7 +105,7 @@ router.get("/dungeon/active", isAuthenticated, async (req: any, res) => {
 // POST /api/dungeon/start/:dungeonId
 router.post("/dungeon/start/:dungeonId", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { dungeonId } = req.params;
 
     await seedDungeons();
@@ -148,7 +148,7 @@ router.post("/dungeon/start/:dungeonId", isAuthenticated, async (req: any, res) 
 // POST /api/dungeon/advance — chiến tầng hiện tại
 router.post("/dungeon/advance", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { runId, action } = req.body; // action: "fight" | "flee"
 
     const [char] = await db.select().from(characters).where(eq(characters.userId, userId));

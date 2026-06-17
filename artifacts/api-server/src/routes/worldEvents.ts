@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { worldEvents, worldState, worldResources, characters, users } from "@workspace/db/schema";
 import { eq, desc, and, lte, gte } from "drizzle-orm";
@@ -170,7 +170,7 @@ const triggerSchema = z.object({
 
 router.post("/admin/event/trigger", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     if (!(await isAdmin(userId))) return res.status(403).json({ message: "Chỉ admin mới có quyền này" });
 
     const parsed = triggerSchema.safeParse(req.body);
@@ -194,7 +194,7 @@ router.post("/admin/event/trigger", isAuthenticated, async (req: any, res) => {
 
 router.get("/admin/stats", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     if (!(await isAdmin(userId))) return res.status(403).json({ message: "Chỉ admin mới có quyền này" });
 
     const allChars = await db.select({
@@ -236,7 +236,7 @@ router.get("/admin/stats", isAuthenticated, async (req: any, res) => {
 
 router.post("/world-events/:id/deactivate", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     if (!(await isAdmin(userId))) return res.status(403).json({ message: "Chỉ admin mới có quyền này" });
     const { id } = req.params;
     await db.update(worldEvents).set({ active: false }).where(eq(worldEvents.id, id));

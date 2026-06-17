@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { crossWorldEvents, characterWorldTravel, characters, customWorlds } from "@workspace/db/schema";
 import { eq, desc, and } from "drizzle-orm";
@@ -103,7 +103,7 @@ router.get("/multiverse/travel/:characterId", isAuthenticated, async (req: any, 
 
 router.post("/multiverse/travel", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { characterId, toWorld, reason } = req.body;
     if (!characterId || !toWorld) return res.status(400).json({ message: "characterId và toWorld là bắt buộc" });
 

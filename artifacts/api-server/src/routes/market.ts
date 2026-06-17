@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { marketPrices, items, inventory, characters, worldResources } from "@workspace/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -117,7 +117,7 @@ router.get("/market/:worldSlug", isAuthenticated, async (req: any, res) => {
 
 router.get("/market/:worldSlug/gold/:characterId", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { characterId } = req.params;
     const [char] = await db.select().from(characters)
       .where(and(eq(characters.id, characterId), eq(characters.userId, userId)));
@@ -132,7 +132,7 @@ const buySchema = z.object({ itemId: z.string().uuid(), quantity: z.number().int
 
 router.post("/market/:worldSlug/buy", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { worldSlug } = req.params;
     const parsed = buySchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: "itemId required" });
@@ -184,7 +184,7 @@ const sellSchema = z.object({ inventoryId: z.string().uuid(), quantity: z.number
 
 router.post("/market/:worldSlug/sell", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { worldSlug } = req.params;
     const parsed = sellSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: "inventoryId required" });

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { characterMemories, worldMemories, npcMemories, characters } from "@workspace/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -8,7 +8,7 @@ const router = Router();
 
 router.get("/api/memories/:characterId", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { characterId } = req.params;
 
     const [char] = await db
@@ -32,7 +32,7 @@ router.get("/api/memories/:characterId", isAuthenticated, async (req: any, res) 
 
 router.post("/api/memories/:characterId", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { characterId } = req.params;
     const { content, memoryType, importance, worldSlug } = req.body;
 
@@ -63,7 +63,7 @@ router.post("/api/memories/:characterId", isAuthenticated, async (req: any, res)
 
 router.delete("/api/memories/:characterId/:memoryId", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { characterId, memoryId } = req.params;
 
     const [char] = await db

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { quests, characters } from "@workspace/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -34,7 +34,7 @@ const CULTIVATION_ENERGY_PER_QUEST = 15;
 
 router.get("/quests/:characterId", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { characterId } = req.params;
 
     const [char] = await db.select().from(characters).where(
@@ -51,7 +51,7 @@ router.get("/quests/:characterId", isAuthenticated, async (req: any, res) => {
 
 router.post("/quests/generate/:characterId", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { characterId } = req.params;
 
     const [char] = await db.select().from(characters).where(
@@ -96,7 +96,7 @@ router.post("/quests/generate/:characterId", isAuthenticated, async (req: any, r
 
 router.post("/quests/:questId/complete", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { questId } = req.params;
 
     const [quest] = await db.select().from(quests).where(eq(quests.id, questId));
@@ -136,7 +136,7 @@ router.post("/quests/:questId/complete", isAuthenticated, async (req: any, res) 
 
 router.post("/characters/:characterId/exp", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { characterId } = req.params;
     const { amount } = req.body;
 

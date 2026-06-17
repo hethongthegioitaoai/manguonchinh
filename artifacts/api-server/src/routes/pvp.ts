@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { characters, battles, pvpRankings } from "@workspace/db/schema";
 import { eq, ne, and, desc, asc } from "drizzle-orm";
@@ -112,7 +112,7 @@ async function updateRanking(characterId: string, result: "win" | "lose" | "draw
 // GET /api/pvp/opponents
 router.get("/pvp/opponents", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const myChars = await db.select().from(characters).where(eq(characters.userId, userId));
     if (!myChars.length) return res.status(404).json({ message: "Chưa có nhân vật" });
     const myChar = myChars[0];
@@ -161,7 +161,7 @@ router.get("/pvp/opponents", isAuthenticated, async (req: any, res) => {
 // POST /api/pvp/challenge/:defenderId
 router.post("/pvp/challenge/:defenderId", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { defenderId } = req.params;
 
     const myChars = await db.select().from(characters).where(eq(characters.userId, userId));
@@ -247,7 +247,7 @@ router.post("/pvp/challenge/:defenderId", isAuthenticated, async (req: any, res)
 // GET /api/pvp/history
 router.get("/pvp/history", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const myChars = await db.select().from(characters).where(eq(characters.userId, userId));
     if (!myChars.length) return res.status(404).json({ message: "Chưa có nhân vật" });
 

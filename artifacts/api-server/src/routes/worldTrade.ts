@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import {
   worldTradeListings, worldTradeHistory,
@@ -50,7 +50,7 @@ Chỉ trả về tên item mới (tiếng Việt, tối đa 20 ký tự), không
 // GET /api/world-trade — danh sách listing active + filter
 router.get("/api/world-trade", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { fromWorld, toWorld, myChar } = req.query as Record<string, string>;
 
     // Expire stale listings
@@ -85,7 +85,7 @@ router.get("/api/world-trade", isAuthenticated, async (req, res) => {
 // GET /api/world-trade/my-chars — nhân vật của user + gold + inventory
 router.get("/api/world-trade/my-chars", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const chars = await db.select().from(characters).where(eq(characters.userId, userId));
     if (!chars.length) return res.json([]);
 
@@ -135,7 +135,7 @@ const listSchema = z.object({
 // POST /api/world-trade/list — đăng bán item
 router.post("/api/world-trade/list", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const parsed = listSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Dữ liệu không hợp lệ" });
     const { characterId, itemId, quantity, priceGold, toWorldSlug } = parsed.data;
@@ -180,7 +180,7 @@ router.post("/api/world-trade/list", isAuthenticated, async (req, res) => {
 // POST /api/world-trade/:listingId/buy — mua item cross-world
 router.post("/api/world-trade/:listingId/buy", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { listingId } = req.params;
     const { characterId } = req.body;
 
@@ -268,7 +268,7 @@ router.post("/api/world-trade/:listingId/buy", isAuthenticated, async (req, res)
 // DELETE /api/world-trade/:listingId/cancel — huỷ listing và hoàn lại item
 router.delete("/api/world-trade/:listingId/cancel", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req.user as any)?.claims?.sub as string;
+    const userId = (req as any).userId;
     const { listingId } = req.params;
 
     const rows = await db.select({ listing: worldTradeListings, char: characters })

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../auth/replitAuth.js";
+import { isAuthenticated } from "../auth/localAuth.js";
 import { db } from "@workspace/db";
 import { clanWars, guilds, guildMembers, characters, characterFaction } from "@workspace/db/schema";
 import { eq, and, or, desc, inArray } from "drizzle-orm";
@@ -19,7 +19,7 @@ async function getCharAndGuild(userId: string) {
 // GET /api/guild-war/status
 router.get("/guild-war/status", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { char, guild, member } = await getCharAndGuild(userId);
 
     if (!guild) return res.json({ myGuild: null, activeWar: null, history: [], allGuilds: [], isLeader: false });
@@ -78,7 +78,7 @@ async function autoEndWar(warId: string) {
 // POST /api/guild-war/declare/:targetGuildId
 router.post("/guild-war/declare/:targetGuildId", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { targetGuildId } = req.params;
     const { char, guild, member } = await getCharAndGuild(userId);
 
@@ -118,7 +118,7 @@ router.post("/guild-war/declare/:targetGuildId", isAuthenticated, async (req: an
 // POST /api/guild-war/end/:warId — manual end (leader only)
 router.post("/guild-war/end/:warId", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = (req as any).userId;
     const { warId } = req.params;
     const { guild, member } = await getCharAndGuild(userId);
 
