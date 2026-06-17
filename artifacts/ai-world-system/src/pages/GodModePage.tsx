@@ -93,7 +93,7 @@ export default function GodModePage() {
   useEffect(() => {
     if (!user) return;
     if (!worldSlug) {
-      fetch("/api/god/my-worlds").then(r => r.json()).then(setMyWorlds).finally(() => setFetching(false));
+      fetch("/api/god/my-worlds").then(r => r.ok ? r.json() : []).then(d => setMyWorlds(Array.isArray(d) ? d : [])).finally(() => setFetching(false));
     }
   }, [user, worldSlug]);
 

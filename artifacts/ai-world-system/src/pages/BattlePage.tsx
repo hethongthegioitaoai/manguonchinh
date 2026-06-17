@@ -121,6 +121,7 @@ export default function BattlePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ characterId: activeChar.id, mode }),
       });
+      if (!res.ok) { alert("Không thể bắt đầu trận chiến. Thử lại sau."); return; }
       const data = await res.json();
       setEnemy(data.enemy as Enemy);
       setStartTime(Date.now());
@@ -154,6 +155,7 @@ export default function BattlePage() {
           metadata: { enemyType: enemy.type, worldSlug: activeChar.stats.world_slug },
         }),
       });
+      if (!res.ok) { setBattleResult({ result, hpLeft, expGained: 0, leveledUp: false, enemy, mode: selectedMode, droppedItem: null }); setPhase("result"); return; }
       const data = await res.json();
       setBattleResult({ result, hpLeft, expGained: data.expGained, leveledUp: data.leveledUp, enemy, mode: selectedMode, droppedItem: data.droppedItem ?? null });
       if (data.character) setActiveChar(prev => prev ? { ...prev, exp: data.character.exp, level: data.character.level } : prev);

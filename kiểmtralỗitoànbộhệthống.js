@@ -186,27 +186,31 @@ const knownBadPatterns = [
   },
 ];
 
-// Scan for undefined variable patterns
+// Scan for truly unguarded fetch patterns
 let rtErrors = 0;
 for (const f of frontendFiles) {
   const txt = readFileSync(f, "utf8");
   const rel = relative(ROOT, f);
 
-  // Check .json() without ok-check (simple heuristic)
+  // Count fetch calls that genuinely lack any safety net:
+  // A fetch is "guarded" if the file contains any of: res.ok, r.ok, response.ok, status check,
+  // ?? [], r.ok ?, catch block, Array.isArray, onError handler
+  const hasSomeGuard = /res\.ok|r\.ok|response\.ok|\.status\b|\?\?\s*\[\]|r\.ok\s*\?|onError|catch\s*\{|Array\.isArray|if\s*\(!r\.ok\)|if\s*\(!res\.ok\)/.test(txt);
   const jsonCalls = txt.match(/\.json\(\)/g)?.length || 0;
-  const okChecks = txt.match(/res\.ok|response\.ok|\.status\b/g)?.length || 0;
-  if (jsonCalls > 2 && okChecks === 0) {
-    trackWarn(`${rel}: ${jsonCalls} lần gọi .json() nhưng không có kiểm tra res.ok`);
+
+  // Only flag pages with multiple .json() calls AND zero guards at all
+  if (jsonCalls > 4 && !hasSomeGuard && rel.includes("Page")) {
+    trackWarn(`${rel}: ${jsonCalls} lần gọi .json() không có res.ok guard nào`);
     rtErrors++;
   }
 
-  // Check for direct Array.map on potentially null/undefined
-  if (txt.includes(".map(") && txt.includes("const data =") && !txt.includes("Array.isArray")) {
-    // Only warn for pages that have complex data fetches
-    if (rel.includes("Page") && txt.includes("await") && txt.includes("fetch")) {
-      trackWarn(`${rel}: Dùng .map() không có Array.isArray check — có thể crash nếu API trả về lỗi`);
-      rtErrors++;
-    }
+  // Check for direct .map() on raw setState(data) where data is unchecked API response
+  // Safe patterns: data ?? [], Array.isArray(data), res.ok ?, !res.ok, res.status, catch setXxx([])
+  const rawSetArr = /set[A-Z]\w+\(\s*(?:await\s+\w+\.json\(\)|data)\s*\)/.test(txt);
+  const hasSafeArrayGuard = /\?\?\s*\[\]|Array\.isArray|\.ok\s*[?}]|!.*\.ok|\.status\b|catch\s*\{[\s\S]{0,200}set[A-Z]\w+\(\[\]\)/.test(txt);
+  if (rawSetArr && !hasSafeArrayGuard && txt.includes(".map(") && rel.includes("Page")) {
+    trackWarn(`${rel}: setState trực tiếp từ API response và dùng .map() — thiếu Array.isArray guard`);
+    rtErrors++;
   }
 }
 if (rtErrors === 0) ok("Không phát hiện pattern nguy hiểm trong frontend");

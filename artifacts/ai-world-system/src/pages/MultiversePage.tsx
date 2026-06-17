@@ -79,33 +79,32 @@ export default function MultiversePage() {
 
   const { data: eventsData, isLoading: eventsLoading } = useQuery({
     queryKey: ["multiverse-events"],
-    queryFn: () => fetch("/api/multiverse/events", { credentials: "include" }).then(r => r.json()),
+    queryFn: async () => { const r = await fetch("/api/multiverse/events", { credentials: "include" }); if (!r.ok) return []; return r.json(); },
     enabled: !!user,
   });
 
   const { data: worldsData, isLoading: worldsLoading } = useQuery({
     queryKey: ["multiverse-worlds"],
-    queryFn: () => fetch("/api/multiverse/worlds", { credentials: "include" }).then(r => r.json()),
+    queryFn: async () => { const r = await fetch("/api/multiverse/worlds", { credentials: "include" }); if (!r.ok) return []; return r.json(); },
     enabled: !!user,
   });
 
   const { data: charsData } = useQuery({
     queryKey: ["characters"],
-    queryFn: () => fetch("/api/characters", { credentials: "include" }).then(r => r.json()),
+    queryFn: async () => { const r = await fetch("/api/characters", { credentials: "include" }); if (!r.ok) return []; return r.json(); },
     enabled: !!user,
   });
 
   const { data: travelData, refetch: refetchTravel } = useQuery({
     queryKey: ["multiverse-travel", selectedChar],
-    queryFn: () => selectedChar
-      ? fetch(`/api/multiverse/travel/${selectedChar}`, { credentials: "include" }).then(r => r.json())
+    queryFn: async () => selectedChar
+      ? (async () => { const r = await fetch(`/api/multiverse/travel/${selectedChar}`, { credentials: "include" }); if (!r.ok) return { history: [] }; return r.json(); })()
       : Promise.resolve({ history: [] }),
     enabled: !!selectedChar,
   });
 
   const generateMutation = useMutation({
-    mutationFn: () =>
-      fetch("/api/multiverse/events/generate", { method: "POST", credentials: "include" }).then(r => r.json()),
+    mutationFn: async () => { const r = await fetch("/api/multiverse/events/generate", { method: "POST", credentials: "include" }); if (!r.ok) throw new Error("Lỗi sinh sự kiện"); return r.json(); },
     onSuccess: (data) => {
       if (data.event) {
         qc.invalidateQueries({ queryKey: ["multiverse-events"] });
@@ -118,12 +117,15 @@ export default function MultiversePage() {
   });
 
   const travelMutation = useMutation({
-    mutationFn: (body: { characterId: string; toWorld: string; reason: string }) =>
-      fetch("/api/multiverse/travel", {
+    mutationFn: async (body: { characterId: string; toWorld: string; reason: string }) => {
+      const r = await fetch("/api/multiverse/travel", {
         method: "POST", credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
-      }).then(r => r.json()),
+      });
+      if (!r.ok) throw new Error("Lỗi di chuyển");
+      return r.json();
+    },
     onSuccess: (data) => {
       if (data.travel) {
         qc.invalidateQueries({ queryKey: ["characters"] });
