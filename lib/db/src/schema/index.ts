@@ -28,3 +28,4 @@ export * from "./isekai";
 export * from "./fate";
 export * from "./notifications";
 export * from "./auction";
+export * from "./titles";

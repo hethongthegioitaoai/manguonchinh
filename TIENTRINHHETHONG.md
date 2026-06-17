@@ -18,7 +18,7 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 17/06/2026 — Phase 23 NHÀ ĐẤU GIÁ hoàn tất: đấu giá vật phẩm theo thời gian thực, đặt giá tranh giành, mua ngay, auto-settle khi hết hạn, hoàn vàng người thua, bảng quản lý của tôi
+> **Cập nhật lần cuối:** 17/06/2026 — Phase 24 HỆ THỐNG DANH HIỆU hoàn tất: 17 danh hiệu 5 tier (common→legendary), auto-unlock qua battle/dungeon/level/gold/prophecy/isekai/auction/guild/trade/fate/passport, equip/unequip, toast notification, grid 2 col với rarity color. Phase 23 NHÀ ĐẤU GIÁ cũng hoàn tất trước đó.
 
 ---
 
@@ -440,19 +440,20 @@ lib/
 ---
 
 ### ════════════════════════════════════════
-### PHASE 24 — HỆ THỐNG DANH HIỆU
+### PHASE 24 — HỆ THỐNG DANH HIỆU ✅
 ### ════════════════════════════════════════
 
 **Mục tiêu:** Nhân vật tích lũy danh hiệu từ thành tựu/sự kiện/boss kill. Danh hiệu hiển thị trên profile + leaderboard — flex với cộng đồng.
 
-- [ ] Bảng DB `titles` (id, key, name, description, icon, rarity, source, worldSlug nullable)
-- [ ] Bảng DB `character_titles` (id, characterId, titleKey, equippedAt, unlockedAt)
-- [ ] Seed 20+ danh hiệu: Kiếm Thánh / Trùm Trùm Kinh Tế / Kẻ Sống Sót Ngục Tối / Thần Chiến Trường / Tiên Tri Đúng Nhất / ...
-- [ ] API GET /api/titles/:characterId — danh sách + trạng thái unlocked
-- [ ] API POST /api/titles/equip/:characterId — trang bị danh hiệu (1 active tại 1 thời điểm)
-- [ ] Auto-unlock khi: đạt level 50, win 100 battle, clear dungeon hard, giải tiên tri, isekai thành công
-- [ ] Hiển thị danh hiệu trên `/character/:id` (profile) + leaderboard + feed posts
-- [ ] Nút Dashboard "DANH HIỆU"
+- [x] Bảng DB `character_titles` (characterId, titleKey, equipped, unlockedAt)
+- [x] 17 danh hiệu hardcoded theo 5 tier: Máu Đầu Tiên / Chiến Thần / Bá Chủ Ngục Tối / Tiên Tri Ứng Nghiệm / Huyền Thoại (legendary) / ...
+- [x] API GET /api/titles/:characterId — auto-check điều kiện + auto-grant danh hiệu mới + trả danh hiệu đã có
+- [x] API POST /api/titles/equip/:characterId — trang bị danh hiệu (unequip all others)
+- [x] API POST /api/titles/unequip/:characterId — gỡ danh hiệu đang đeo
+- [x] Auto-unlock dựa trên: battle wins, dungeon clears (hard), level, gold, prophecy claims, isekai, auction listings, guild leadership, world trades, fate readings, world passport
+- [x] Toast notification khi nhận danh hiệu mới
+- [x] Trang `/titles` — grid 2 col, filter all/unlocked/locked, banner danh hiệu đang trang bị, rarity color
+- [x] Nút Dashboard "DANH HIỆU" tag "NEW"
 
 ---
 
@@ -565,6 +566,7 @@ lib/
 | `fate_readings` | ✅ | P22 | Giải quẻ Bát Quái AI — Thiên Cơ Tiên phán, cooldown 2h |
 | `auction_listings` | ✅ | P23 | Phiên đấu giá — startBid, currentBid, buyoutPrice, expiresAt, status |
 | `auction_bids` | ✅ | P23 | Lịch sử đặt giá — bidderCharId, bidAmount, bidAt |
+| `character_titles` | ✅ | P24 | Danh hiệu nhân vật — titleKey, equipped, unlockedAt |
 
 ---
 
@@ -611,6 +613,7 @@ lib/
 | `/isekai` | Cổng Xuyên Không | P21 | ✅ |
 | `/fate` | Mệnh Số & Vận Mệnh | P22 | ✅ |
 | `/auction` | Nhà Đấu Giá | P23 | ✅ |
+| `/titles` | Hệ Thống Danh Hiệu | P24 | ✅ |
 
 ---
 

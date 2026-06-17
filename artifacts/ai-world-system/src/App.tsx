@@ -45,6 +45,7 @@ import ProphecyPage from "@/pages/ProphecyPage";
 import IsekaiPage from "@/pages/IsekaiPage";
 import FatePage from "@/pages/FatePage";
 import AuctionPage from "@/pages/AuctionPage";
+import TitlesPage from "@/pages/TitlesPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";
@@ -101,6 +102,7 @@ function Router() {
       <Route path="/isekai" component={IsekaiPage} />
       <Route path="/fate" component={FatePage} />
       <Route path="/auction" component={AuctionPage} />
+      <Route path="/titles" component={TitlesPage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/reset-password" component={ResetPasswordPage} />
       <Route path="/verify-email" component={VerifyEmailPage} />

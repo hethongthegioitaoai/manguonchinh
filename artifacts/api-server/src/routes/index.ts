@@ -35,6 +35,7 @@ import notificationsRouter from "./notifications.js";
 import passwordResetRouter from "./passwordReset.js";
 import emailVerificationRouter from "./emailVerification.js";
 import auctionRouter from "./auction.js";
+import titlesRouter from "./titles.js";
 
 const router: IRouter = Router();
 
@@ -74,5 +75,6 @@ router.use(notificationsRouter);
 router.use(passwordResetRouter);
 router.use(emailVerificationRouter);
 router.use(auctionRouter);
+router.use(titlesRouter);
 
 export default router;
