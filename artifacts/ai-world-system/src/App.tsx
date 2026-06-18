@@ -73,6 +73,11 @@ import NPCPopulationPage from "@/pages/NPCPopulationPage";
 import NPCFactionPage from "@/pages/NPCFactionPage";
 import TerritoryPage from "@/pages/TerritoryPage";
 import NpcGovernmentPage from "@/pages/NpcGovernmentPage";
+import NpcElectionPage from "@/pages/NpcElectionPage";
+import CaravanPage from "@/pages/CaravanPage";
+import LibraryPage from "@/pages/LibraryPage";
+import FestivalPage from "@/pages/FestivalPage";
+import DivineArenaPage from "@/pages/DivineArenaPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";
 
@@ -155,6 +160,11 @@ function Router() {
       <Route path="/npc-factions" component={NPCFactionPage} />
       <Route path="/territories" component={TerritoryPage} />
       <Route path="/npc-government" component={NpcGovernmentPage} />
+      <Route path="/npc-elections" component={NpcElectionPage} />
+      <Route path="/caravan" component={CaravanPage} />
+      <Route path="/library" component={LibraryPage} />
+      <Route path="/festival" component={FestivalPage} />
+      <Route path="/divine-arena" component={DivineArenaPage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/reset-password" component={ResetPasswordPage} />
       <Route path="/verify-email" component={VerifyEmailPage} />

@@ -65,6 +65,11 @@ import npcFactionsRouter from "./npcFactions.js";
 import territoriesRouter from "./territories.js";
 import npcGovernmentRouter from "./npcGovernment.js";
 import npcGovernmentPolicyRouter from "./npcGovernmentPolicy.js";
+import npcElectionsRouter from "./npcElections.js";
+import caravansRouter from "./caravans.js";
+import knowledgeLibraryRouter from "./knowledgeLibrary.js";
+import seasonalFestivalsRouter from "./seasonalFestivals.js";
+import divineArenaRouter from "./divineArena.js";
 
 const router: IRouter = Router();
 
@@ -134,5 +139,10 @@ router.use(npcFactionsRouter);
 router.use(territoriesRouter);
 router.use(npcGovernmentRouter);
 router.use(npcGovernmentPolicyRouter);
+router.use(npcElectionsRouter);
+router.use(caravansRouter);
+router.use(knowledgeLibraryRouter);
+router.use(seasonalFestivalsRouter);
+router.use(divineArenaRouter);
 
 export default router;

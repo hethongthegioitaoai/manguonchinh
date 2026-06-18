@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import {
   LogOut, Globe, Zap, User, Shield, Swords, Users,
-  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain, Sparkles, Skull, Hammer, Newspaper, Crown, ShoppingBag, Map, ScrollText, Infinity, Orbit, Mail, X, Gavel, Award, Handshake, Palette, Scale, AlertTriangle, Landmark, Target, Sword, Leaf, Compass, BookOpen, CloudLightning, Activity,
+  TrendingUp, ChevronRight, Plus, Loader2, CheckCircle2, Scroll, Star, ExternalLink, Trophy, Settings, Brain, Sparkles, Skull, Hammer, Newspaper, Crown, ShoppingBag, Map, ScrollText, Infinity, Orbit, Mail, X, Gavel, Award, Handshake, Palette, Scale, AlertTriangle, Landmark, Target, Sword, Leaf, Compass, BookOpen, CloudLightning, Activity, Vote, Truck, PartyPopper,
 } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Button } from "@/components/ui/button";
@@ -603,6 +603,46 @@ export default function DashboardPage() {
                         tag: "NEW",
                         disabled: false,
                         onClick: () => setLocation("/npc-government"),
+                      },
+                      {
+                        icon: Vote,
+                        label: "BẦU CỬ NPC",
+                        sub: "Bỏ phiếu, ứng cử, kết quả bầu cử",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/npc-elections"),
+                      },
+                      {
+                        icon: Truck,
+                        label: "CARAVAN LIÊN THẾ GIỚI",
+                        sub: "Đoàn thương nhân, tuyến đường, cướp bóc",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/caravan"),
+                      },
+                      {
+                        icon: BookOpen,
+                        label: "THƯ VIỆN CỔ ĐẠI",
+                        sub: "Lore, kỹ năng, yêu quái, cõi giới",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/library"),
+                      },
+                      {
+                        icon: PartyPopper,
+                        label: "LỄ HỘI THEO MÙA",
+                        sub: "Xuân Hạ Thu Đông — quest, phần thưởng độc quyền",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/festival"),
+                      },
+                      {
+                        icon: Swords,
+                        label: "VŨ ĐÀI THẦN LỰC",
+                        sub: "Đấu trường liên thế giới — bảng xếp hạng thần lực",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/divine-arena"),
                       },
                       {
                         icon: Globe,

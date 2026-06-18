@@ -18,7 +18,15 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 17/06/2026 — HỆ THỐNG CHÍNH SÁCH CHÍNH PHỦ hoàn tất: 3 bảng DB mới (`government_policies`+`government_active_policies`+`government_policy_history`); 6 chính sách mặc định (Thuế Thấp/Thuế Cao/Trợ Cấp Lương Thực/Khuyến Khích Thương Mại/Mở Rộng Quân Sự/Đầu Tư Hạ Tầng); tích hợp world tick (áp dụng effects mỗi tick); lãnh đạo tự động quyết định theo điều kiện; API 6 route (seed/catalog/active/activate/deactivate/auto-decide/apply-tick); tab CHÍNH SÁCH trong GovCard (ĐANG HOẠT ĐỘNG / DANH MỤC / LỊCH SỬ); nút "TẠO CHÍNH SÁCH MẶC ĐỊNH" và "LÃNH ĐẠO TỰ QUYẾT ĐỊNH".
+> **Cập nhật lần cuối:** 18/06/2026 — VŨ ĐÀI THẦN LỰC hoàn tất: 2 bảng DB (`divine_arena_matches`+`divine_arena_rankings`); 4 rule set (cultivation_duel/cyber_duel/wasteland_survival/cross_world); AI narrative sinh theo lore từng rule set; tier system 6 bậc (Đồng/Bạc/Vàng/Bạch Kim/Kim Cương/Thần); matchmaking NPC ngẫu nhiên cross-world; divinePoints tracking + auto rank recalc; 3 endpoints (GET/match/tournament); trang `/divine-arena` (tạo trận, chọn world/ruleset, giải đấu 5 trận, bảng xếp hạng); nút Dashboard "VŨ ĐÀI THẦN LỰC".
+
+> **Cập nhật trước:** 18/06/2026 — LỄ HỘI THEO MÙA hoàn tất: 2 bảng DB (`seasonal_festivals`+`festival_participations`); 4 mùa auto-detect (Xuân/Hạ/Thu/Đông); lore lễ hội riêng cho 3 thế giới × 4 mùa = 12 templates; 3 quest/lễ hội + phần thưởng cosmetic độc quyền; bảng xếp hạng điểm; 5 endpoints (GET/create/join/complete-task/end); trang `/festival` (mùa hiện tại banner, countdown, tham gia, hoàn thành quest, leaderboard); nút Dashboard "LỄ HỘI THEO MÙA". + CARAVAN LIÊN THẾ GIỚI + THƯ VIỆN CỔ ĐẠI cũng hoàn tất trong session này.
+
+> **Cập nhật trước:** 18/06/2026 — CARAVAN LIÊN THẾ GIỚI + THƯ VIỆN CỔ ĐẠI hoàn tất: Caravan: 2 bảng DB (`caravans`+`caravan_raids`), 4 tuyến đường liên thế giới, AI sinh hành trình, 4 endpoints (GET/dispatch/simulate/auto-dispatch), trang `/caravan` (tạo caravan, mô phỏng, lịch sử cướp bóc), nút Dashboard. Thư Viện: 2 bảng (`knowledge_entries`+`player_research`), 5 category (history/skills/items/monsters/realms), 5 rarity tier, lore seed 3 thế giới, AI generate entry, nghiên cứu nhận bonus, 4 endpoints, trang `/library` (search, filter category, rarity, nghiên cứu), nút Dashboard "THƯ VIỆN CỔ ĐẠI".
+
+> **Cập nhật trước:** 17/06/2026 — HỆ THỐNG BẦU CỬ NPC hoàn tất: 2 bảng DB `elections`+`election_candidates`; 3 loại bầu cử (bầu_thị_trưởng/bầu_thống_đốc/bầu_lãnh_đạo_vương_quốc); điều kiện ứng cử (age≥18, happiness≥50); bỏ phiếu có trọng số (campaign_score + faction + incumbent approval bonus + random); turnout 60-90%; cập nhật lãnh đạo chính phủ sau bầu cử; ký ức NPC (đã bỏ phiếu / thắng / thua); API 4 route (GET/open/vote/resolve/auto-election); trang `/npc-elections` (summary cards / MỞ BẦU CỬ / BỎ PHIẾU / CÔNG BỐ KQ / TỰ ĐỘNG); nút Dashboard "BẦU CỬ NPC".
+
+> **Cập nhật trước:** 17/06/2026 — HỆ THỐNG CHÍNH SÁCH CHÍNH PHỦ hoàn tất: 3 bảng DB mới (`government_policies`+`government_active_policies`+`government_policy_history`); 6 chính sách mặc định (Thuế Thấp/Thuế Cao/Trợ Cấp Lương Thực/Khuyến Khích Thương Mại/Mở Rộng Quân Sự/Đầu Tư Hạ Tầng); tích hợp world tick (áp dụng effects mỗi tick); lãnh đạo tự động quyết định theo điều kiện; API 6 route (seed/catalog/active/activate/deactivate/auto-decide/apply-tick); tab CHÍNH SÁCH trong GovCard (ĐANG HOẠT ĐỘNG / DANH MỤC / LỊCH SỬ); nút "TẠO CHÍNH SÁCH MẶC ĐỊNH" và "LÃNH ĐẠO TỰ QUYẾT ĐỊNH".
 
 > **Cập nhật trước:** 17/06/2026 — HỆ THỐNG CHÍNH PHỦ NPC hoàn tất: 2 bảng DB `npc_governments`+`npc_government_logs`; 4 loại (village_council/city_authority/kingdom/republic); bầu lãnh đạo theo wealth+happiness; thu thuế NPC+thị trường+phe phái; tỷ lệ ủng hộ 0-100 theo thịnh vượng/an ninh/thuế/đói; kỷ niệm chính phủ; API 4 route (GET/establish/collect-taxes/update-approval); trang `/npc-government`; nút Dashboard "CHÍNH PHỦ NPC".
 
@@ -1253,13 +1261,13 @@ configureWorkflow("Frontend", "pnpm --filter @workspace/ai-world-system run dev"
 
 **Mục tiêu:** Player tổ chức đoàn thương nhân vận chuyển tài nguyên từ thế giới này sang thế giới khác để kiếm lời. Caravan có thể bị cướp bởi player khác trong tuyến đường nguy hiểm. AI sinh câu chuyện hành trình.
 
-- [ ] Bảng DB `caravans` (id, leaderId, leaderName, fromWorld, toWorld, cargo jsonb, guards, status, route, aiNarrative, departedAt, arrivesAt, goldReward)
-- [ ] Bảng DB `caravan_raids` (id, caravanId, raiderId, raiderName, success, loot jsonb, battleLog, raidedAt)
-- [ ] 4 tuyến đường: Tu Tiên↔Cyberpunk, Cyberpunk↔Hoang Phế, Tu Tiên↔Hoang Phế, vòng 3 thế giới
-- [ ] AI sinh hành trình caravan — rủi ro ngẫu nhiên (bandits/disasters/weather)
-- [ ] API CRUD caravans + raid endpoint
-- [ ] Trang `/caravan` — tạo caravan, theo dõi hành trình, lịch sử
-- [ ] Nút Dashboard "CARAVAN LIÊN THẾ GIỚI"
+- [x] Bảng DB `caravans` (id, leaderId, leaderName, fromWorld, toWorld, cargo jsonb, guards, status, route, aiNarrative, departedAt, arrivesAt, goldReward)
+- [x] Bảng DB `caravan_raids` (id, caravanId, raiderId, raiderName, success, loot jsonb, battleLog, raidedAt)
+- [x] 4 tuyến đường: Tu Tiên↔Cyberpunk, Cyberpunk↔Hoang Phế, Tu Tiên↔Hoang Phế, vòng 3 thế giới
+- [x] AI sinh hành trình caravan — rủi ro ngẫu nhiên (bandits/disasters/weather)
+- [x] API CRUD caravans + raid endpoint
+- [x] Trang `/caravan` — tạo caravan, theo dõi hành trình, lịch sử
+- [x] Nút Dashboard "CARAVAN LIÊN THẾ GIỚI"
 
 ---
 
@@ -1269,13 +1277,13 @@ configureWorkflow("Frontend", "pnpm --filter @workspace/ai-world-system run dev"
 
 **Mục tiêu:** Mỗi thế giới tích lũy "lore entries" từ player khám phá, battle, và AI sinh. Player nghiên cứu để mở kỹ năng ẩn/vật phẩm bí ẩn/cảnh giới đặc biệt. Thư viện là "trí nhớ sống" của thế giới.
 
-- [ ] Bảng DB `knowledge_entries` (id, worldSlug, title, category, content, aiGenerated, discoveredBy, rarity, unlockCost, timesStudied, createdAt)
-- [ ] Bảng DB `player_research` (id, characterId, entryId, studiedAt, bonusUnlocked)
-- [ ] AI sinh lore entry từ battle history + world events
-- [ ] 5 category: history/skills/items/monsters/realms
-- [ ] API CRUD + research endpoint
-- [ ] Trang `/library` — thư viện thế giới, browse/search entries, nghiên cứu
-- [ ] Nút Dashboard "THƯ VIỆN CỔ ĐẠI"
+- [x] Bảng DB `knowledge_entries` (id, worldSlug, title, category, content, aiGenerated, discoveredBy, rarity, unlockCost, timesStudied, createdAt)
+- [x] Bảng DB `player_research` (id, characterId, entryId, studiedAt, bonusUnlocked)
+- [x] AI sinh lore entry từ battle history + world events
+- [x] 5 category: history/skills/items/monsters/realms
+- [x] API CRUD + research endpoint
+- [x] Trang `/library` — thư viện thế giới, browse/search entries, nghiên cứu
+- [x] Nút Dashboard "THƯ VIỆN CỔ ĐẠI"
 
 ---
 
@@ -1285,14 +1293,14 @@ configureWorkflow("Frontend", "pnpm --filter @workspace/ai-world-system run dev"
 
 **Mục tiêu:** Mỗi mùa (3 tháng thực) thế giới có lễ hội riêng — event đặc biệt, quest giới hạn thời gian, boss mùa, phần thưởng cosmetic độc quyền. AI sinh lore lễ hội theo chủ đề thế giới.
 
-- [ ] Bảng DB `seasonal_festivals` (id, worldSlug, season, festivalName, theme, startDate, endDate, rewards jsonb, aiNarrative, participantCount, isActive)
-- [ ] Bảng DB `festival_participations` (id, festivalId, characterId, tasksCompleted, rewardsClaimed, joinedAt)
-- [ ] 4 mùa: Xuân/Hạ/Thu/Đông (auto-rotate theo calendar)
-- [ ] AI sinh tên lễ hội + narrative + 3 quest đặc biệt
-- [ ] Phần thưởng cosmetic (title/pet skin/avatar frame) độc quyền theo mùa
-- [ ] API CRUD festivals + participation
-- [ ] Trang `/festival` — lễ hội hiện tại, task list, đếm ngược, leaderboard mùa
-- [ ] Nút Dashboard "LỄ HỘI THEO MÙA"
+- [x] Bảng DB `seasonal_festivals` (id, worldSlug, season, festivalName, theme, startDate, endDate, rewards jsonb, aiNarrative, participantCount, isActive)
+- [x] Bảng DB `festival_participations` (id, festivalId, characterId, tasksCompleted, rewardsClaimed, joinedAt)
+- [x] 4 mùa: Xuân/Hạ/Thu/Đông (auto-rotate theo calendar)
+- [x] AI sinh tên lễ hội + narrative + 3 quest đặc biệt
+- [x] Phần thưởng cosmetic (title/pet skin/avatar frame) độc quyền theo mùa
+- [x] API CRUD festivals + participation
+- [x] Trang `/festival` — lễ hội hiện tại, task list, đếm ngược, leaderboard mùa
+- [x] Nút Dashboard "LỄ HỘI THEO MÙA"
 
 ---
 
@@ -1337,12 +1345,12 @@ configureWorkflow("Frontend", "pnpm --filter @workspace/ai-world-system run dev"
 
 **Mục tiêu:** Đấu trường liên thế giới — player từ các thế giới khác nhau chiến đấu trong arena thần thánh. Mỗi trận có rule set riêng theo lore (Tu Tiên: kiếm khí; Cyberpunk: mech; Hoang Phế: survival). AI sinh narrative trận đấu sử thi. Top player được phong "Thần Đấu".
 
-- [ ] Bảng DB `divine_arena_matches` (id, challenger, challengerWorld, defender, defenderWorld, ruleSet, winnerId, aiNarrative, expReward, goldReward, matchedAt, completedAt)
-- [ ] Bảng DB `divine_arena_rankings` (id, characterId, characterName, worldSlug, wins, losses, divinePoints, tier, rank, updatedAt)
-- [ ] 3 rule set theo thế giới: cultivation_duel/cyber_duel/wasteland_survival
-- [ ] AI sinh narrative trận đấu 4-6 câu theo lore thế giới đối kháng
-- [ ] Matchmaking: ghép cặp ngẫu nhiên cross-world, có thể challenge cụ thể
-- [ ] Tier system: Đồng/Bạc/Vàng/Bạch Kim/Kim Cương/Thần
-- [ ] API CRUD arena + matchmaking + rankings
-- [ ] Trang `/divine-arena` — matchmaking, trận đấu, bảng xếp hạng thần lực
-- [ ] Nút Dashboard "VŨ ĐÀI THẦN LỰC"
+- [x] Bảng DB `divine_arena_matches` (id, challenger, challengerWorld, defender, defenderWorld, ruleSet, winnerId, aiNarrative, expReward, goldReward, matchedAt, completedAt)
+- [x] Bảng DB `divine_arena_rankings` (id, characterId, characterName, worldSlug, wins, losses, divinePoints, tier, rank, updatedAt)
+- [x] 3 rule set theo thế giới: cultivation_duel/cyber_duel/wasteland_survival
+- [x] AI sinh narrative trận đấu 4-6 câu theo lore thế giới đối kháng
+- [x] Matchmaking: ghép cặp ngẫu nhiên cross-world, có thể challenge cụ thể
+- [x] Tier system: Đồng/Bạc/Vàng/Bạch Kim/Kim Cương/Thần
+- [x] API CRUD arena + matchmaking + rankings
+- [x] Trang `/divine-arena` — matchmaking, trận đấu, bảng xếp hạng thần lực
+- [x] Nút Dashboard "VŨ ĐÀI THẦN LỰC"
