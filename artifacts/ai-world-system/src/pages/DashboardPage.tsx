@@ -645,6 +645,14 @@ export default function DashboardPage() {
                         onClick: () => setLocation("/divine-arena"),
                       },
                       {
+                        icon: Handshake,
+                        label: "NGOẠI GIAO NPC",
+                        sub: "Liên minh, hiệp ước, tuyên chiến — quan hệ chính phủ",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/npc-diplomacy"),
+                      },
+                      {
                         icon: Globe,
                         label: "THẾ GIỚI",
                         sub: "Boss, tài nguyên & trạng thái thế giới",

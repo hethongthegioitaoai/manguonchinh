@@ -2,4 +2,4 @@
 - [Schema export naming](schema-export-naming.md) — guildMembers (không phải guild_members), characterFaction (không phải character_faction) — camelCase trong Drizzle schema exports
 - [Phases 36-40 pattern](phases-36-40.md) — 5 phases mới tất cả đã build: HỘI CHỢ/DI DÂN/THÁM HIỂM/KỸ NĂNG/ĐIỆN TRUYỀN THUYẾT — dùng pattern schema→export→route→register→page→App.tsx→Dashboard
 - [Phases 41-45 pattern](phases-41-45.md) — ROADMAP TẠO THẾ GIỚI ẢO xong: characters dùng worldId không phải currentWorld; COSMIC_TIER_NAMES phải khai báo local trong route (không import từ schema)
-- [Phases 46-50 roadmap](phases-46-50.md) — Phases 46-50 ALL DONE: THỜI TIẾT/BẦU CỬ NPC/CARAVAN/THƯ VIỆN/LỄ HỘI/VŨ ĐÀI; Dashboard icon imports PHẢI thêm vào cùng lúc khi tạo button — hay bị quên
+- [Phases 46-51 roadmap](phases-46-50.md) — Phase 51 NGOẠI GIAO NPC done; auth.ts thiếu /register + /login routes → "Không thể kết nối" — đã fix; diplomacy.ts là world-level (cũ), npcDiplomacy.ts là NPC-gov level (mới)

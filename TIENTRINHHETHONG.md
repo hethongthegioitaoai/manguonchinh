@@ -18,7 +18,9 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 18/06/2026 — VŨ ĐÀI THẦN LỰC hoàn tất: 2 bảng DB (`divine_arena_matches`+`divine_arena_rankings`); 4 rule set (cultivation_duel/cyber_duel/wasteland_survival/cross_world); AI narrative sinh theo lore từng rule set; tier system 6 bậc (Đồng/Bạc/Vàng/Bạch Kim/Kim Cương/Thần); matchmaking NPC ngẫu nhiên cross-world; divinePoints tracking + auto rank recalc; 3 endpoints (GET/match/tournament); trang `/divine-arena` (tạo trận, chọn world/ruleset, giải đấu 5 trận, bảng xếp hạng); nút Dashboard "VŨ ĐÀI THẦN LỰC".
+> **Cập nhật lần cuối:** 18/06/2026 — NGOẠI GIAO CHÍNH PHỦ NPC hoàn tất: 3 bảng DB (`diplomatic_relations`/`diplomatic_treaties`/`diplomatic_memories`); 6 loại quan hệ (điểm -100..+100); 6 hành động ngoại giao; AI tự điều chỉnh; auto-treaty; ký ức 2 chiều; trang `/npc-diplomacy` (4 tab); nút Dashboard. Đồng thời FIX BUG đăng ký/đăng nhập: thiếu route `/api/auth/register` + `/api/auth/login` → bổ sung vào `auth.ts`.
+
+> **Cập nhật trước:** 18/06/2026 — VŨ ĐÀI THẦN LỰC hoàn tất: 2 bảng DB (`divine_arena_matches`+`divine_arena_rankings`); 4 rule set (cultivation_duel/cyber_duel/wasteland_survival/cross_world); AI narrative sinh theo lore từng rule set; tier system 6 bậc (Đồng/Bạc/Vàng/Bạch Kim/Kim Cương/Thần); matchmaking NPC ngẫu nhiên cross-world; divinePoints tracking + auto rank recalc; 3 endpoints (GET/match/tournament); trang `/divine-arena` (tạo trận, chọn world/ruleset, giải đấu 5 trận, bảng xếp hạng); nút Dashboard "VŨ ĐÀI THẦN LỰC".
 
 > **Cập nhật trước:** 18/06/2026 — LỄ HỘI THEO MÙA hoàn tất: 2 bảng DB (`seasonal_festivals`+`festival_participations`); 4 mùa auto-detect (Xuân/Hạ/Thu/Đông); lore lễ hội riêng cho 3 thế giới × 4 mùa = 12 templates; 3 quest/lễ hội + phần thưởng cosmetic độc quyền; bảng xếp hạng điểm; 5 endpoints (GET/create/join/complete-task/end); trang `/festival` (mùa hiện tại banner, countdown, tham gia, hoàn thành quest, leaderboard); nút Dashboard "LỄ HỘI THEO MÙA". + CARAVAN LIÊN THẾ GIỚI + THƯ VIỆN CỔ ĐẠI cũng hoàn tất trong session này.
 
@@ -1354,3 +1356,24 @@ configureWorkflow("Frontend", "pnpm --filter @workspace/ai-world-system run dev"
 - [x] API CRUD arena + matchmaking + rankings
 - [x] Trang `/divine-arena` — matchmaking, trận đấu, bảng xếp hạng thần lực
 - [x] Nút Dashboard "VŨ ĐÀI THẦN LỰC"
+
+### ════════════════════════════════════════
+### PHASE 51 — NGOẠI GIAO CHÍNH PHỦ NPC
+### ════════════════════════════════════════
+
+**Mục tiêu:** Hệ thống ngoại giao giữa các chính phủ NPC — liên minh, hiệp ước, tuyên chiến, ký ức ngoại giao, AI tự điều chỉnh quan hệ.
+
+- [x] Bảng DB `diplomatic_relations` (id, governmentAId, governmentBId, relationScore -100..+100, relationType, createdAt, updatedAt)
+- [x] Bảng DB `diplomatic_treaties` (id, governmentAId, governmentBId, treatyType, startDate, endDate, status)
+- [x] Bảng DB `diplomatic_memories` (id, governmentId, targetGovId, event, scoreChange, createdAt)
+- [x] 6 loại quan hệ: đồng_minh/thân_thiện/trung_lập/căng_thẳng/thù_địch/chiến_tranh
+- [x] 5 loại hiệp ước: liên_minh/thương_mại/viện_trợ/phòng_thủ_chung/đình_chiến
+- [x] 6 hành động ngoại giao: gửi_viện_trợ/đề_nghị_liên_minh/ký_thương_mại/áp_đặt_cấm_vận/nhượng_lãnh_thổ/tuyên_chiến
+- [x] AI tự điều chỉnh quan hệ: thương mại/tranh chấp lãnh thổ/khác biệt phe phái
+- [x] Ký ức ngoại giao tự động cho cả 2 bên sau mỗi hành động
+- [x] Auto-treaty: đề nghị liên minh/thương mại/đình chiến → tạo treaty 30 ngày
+- [x] Tuyên chiến → hủy tất cả treaty đang hoạt động
+- [x] Fix bug: thiếu `/api/auth/register` + `/api/auth/login` → "Không thể kết nối máy chủ"
+- [x] API: GET /api/npc-diplomacy, POST init/action/ai-tick, GET memory/:govId
+- [x] Trang `/npc-diplomacy` (4 tab: QUAN HỆ/HIỆP ƯỚC/KÝ ỨC/HÀNH ĐỘNG)
+- [x] Nút Dashboard "NGOẠI GIAO NPC"
