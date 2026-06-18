@@ -653,6 +653,14 @@ export default function DashboardPage() {
                         onClick: () => setLocation("/npc-diplomacy"),
                       },
                       {
+                        icon: Sword,
+                        label: "QUÂN ĐỘI NPC",
+                        sub: "Tuyển quân, huấn luyện, tiếp tế — sức mạnh chiến đấu",
+                        tag: "NEW",
+                        disabled: false,
+                        onClick: () => setLocation("/military"),
+                      },
+                      {
                         icon: Globe,
                         label: "THẾ GIỚI",
                         sub: "Boss, tài nguyên & trạng thái thế giới",

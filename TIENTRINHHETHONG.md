@@ -18,7 +18,9 @@
 >
 > **KHÔNG hỏi user trước khi build — đây là lệnh mặc định mỗi khi load project.**
 
-> **Cập nhật lần cuối:** 18/06/2026 — NGOẠI GIAO CHÍNH PHỦ NPC hoàn tất: 3 bảng DB (`diplomatic_relations`/`diplomatic_treaties`/`diplomatic_memories`); 6 loại quan hệ (điểm -100..+100); 6 hành động ngoại giao; AI tự điều chỉnh; auto-treaty; ký ức 2 chiều; trang `/npc-diplomacy` (4 tab); nút Dashboard. Đồng thời FIX BUG đăng ký/đăng nhập: thiếu route `/api/auth/register` + `/api/auth/login` → bổ sung vào `auth.ts`.
+> **Cập nhật lần cuối:** 18/06/2026 — HỆ THỐNG QUÂN ĐỘI NPC hoàn tất: 2 bảng DB (`military_forces`+`military_memories`); quân đội gắn với từng chính phủ NPC; 7 endpoints (GET/establish/recruit/train/supply/tick/ai-decision); tuyển quân từ NPC đủ điều kiện (tuổi≥18/năng lượng≥50/không đói>70/không giữ chức đặc biệt); chính sách "Mở Rộng Quân Sự" tăng tỷ lệ tuyển; huấn luyện tốn ngân sách; tiếp tế ảnh hưởng morale+supply; AI Gemini đưa 3 quyết định chiến lược; trang `/military` (6 nút hành động, stat cards, ký ức chiến trường); nút Dashboard "QUÂN ĐỘI NPC". FIX: routes phải dùng `/military/...` không phải `/api/military/...` (router mount tại `/api`).
+
+> **Cập nhật trước:** 18/06/2026 — NGOẠI GIAO CHÍNH PHỦ NPC hoàn tất: 3 bảng DB (`diplomatic_relations`/`diplomatic_treaties`/`diplomatic_memories`); 6 loại quan hệ (điểm -100..+100); 6 hành động ngoại giao; AI tự điều chỉnh; auto-treaty; ký ức 2 chiều; trang `/npc-diplomacy` (4 tab); nút Dashboard. Đồng thời FIX BUG đăng ký/đăng nhập: thiếu route `/api/auth/register` + `/api/auth/login` → bổ sung vào `auth.ts`.
 
 > **Cập nhật trước:** 18/06/2026 — VŨ ĐÀI THẦN LỰC hoàn tất: 2 bảng DB (`divine_arena_matches`+`divine_arena_rankings`); 4 rule set (cultivation_duel/cyber_duel/wasteland_survival/cross_world); AI narrative sinh theo lore từng rule set; tier system 6 bậc (Đồng/Bạc/Vàng/Bạch Kim/Kim Cương/Thần); matchmaking NPC ngẫu nhiên cross-world; divinePoints tracking + auto rank recalc; 3 endpoints (GET/match/tournament); trang `/divine-arena` (tạo trận, chọn world/ruleset, giải đấu 5 trận, bảng xếp hạng); nút Dashboard "VŨ ĐÀI THẦN LỰC".
 
@@ -1377,3 +1379,25 @@ configureWorkflow("Frontend", "pnpm --filter @workspace/ai-world-system run dev"
 - [x] API: GET /api/npc-diplomacy, POST init/action/ai-tick, GET memory/:govId
 - [x] Trang `/npc-diplomacy` (4 tab: QUAN HỆ/HIỆP ƯỚC/KÝ ỨC/HÀNH ĐỘNG)
 - [x] Nút Dashboard "NGOẠI GIAO NPC"
+
+### ════════════════════════════════════════
+### PHASE 52 — HỆ THỐNG QUÂN ĐỘI NPC
+### ════════════════════════════════════════
+
+**Mục tiêu:** Mỗi chính phủ NPC có quân đội riêng — tuyển quân, huấn luyện, tiếp tế, AI chiến lược. Sức mạnh quân sự ảnh hưởng ngoại giao và kinh tế.
+
+- [x] Bảng DB `military_forces` (id, governmentId, territoryId, armyName, totalSoldiers, morale, trainingLevel, supplyLevel, militaryPower, createdAt, updatedAt)
+- [x] Bảng DB `military_memories` (id, npcId, armyId, content, createdAt)
+- [x] Schema export từ `lib/db/src/schema/index.ts`
+- [x] DB push thành công (`pnpm --filter @workspace/db run push`)
+- [x] Thành lập quân đội: mỗi chính phủ 1 đội, 20–80 chiến binh ban đầu, tên theo lore
+- [x] Tuyển quân: NPC đủ điều kiện (tuổi≥18/năng lượng≥50/không đói>70), chính sách "Mở Rộng Quân Sự" tăng tỷ lệ
+- [x] Huấn luyện: tăng trainingLevel (+0.1–0.2/tick), tốn ngân sách
+- [x] Tiếp tế: tiêu thực phẩm+ngân sách, đủ tiếp tế → morale+supply tăng, thiếu → giảm mạnh
+- [x] Full Tick: tuyển + huấn luyện + tiếp tế cùng lúc
+- [x] AI chiến lược: Gemini 2.0 Flash Lite phân tích tình hình → 3 quyết định chiến lược tiếng Việt
+- [x] Sức mạnh = soldiers × morale × training × supply / 10 (công thức cân bằng)
+- [x] API: GET `/military/:worldSlug`, POST establish/recruit/train/supply/tick/ai-decision
+- [x] Trang `/military` (selector 3 thế giới, 6 action cards, stat summary, bảng quân đội, ký ức chiến trường, quy tắc hệ thống)
+- [x] Nút Dashboard "QUÂN ĐỘI NPC" (Sword icon)
+- [x] FIX: routes dùng `/military/...` không phải `/api/military/...` (app mount `/api` rồi)

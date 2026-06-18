@@ -71,6 +71,7 @@ import knowledgeLibraryRouter from "./knowledgeLibrary.js";
 import seasonalFestivalsRouter from "./seasonalFestivals.js";
 import divineArenaRouter from "./divineArena.js";
 import npcDiplomacyRouter from "./npcDiplomacy.js";
+import militaryRouter from "./military.js";
 
 const router: IRouter = Router();
 
@@ -146,5 +147,6 @@ router.use(knowledgeLibraryRouter);
 router.use(seasonalFestivalsRouter);
 router.use(divineArenaRouter);
 router.use(npcDiplomacyRouter);
+router.use(militaryRouter);
 
 export default router;

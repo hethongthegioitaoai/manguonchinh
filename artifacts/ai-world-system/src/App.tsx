@@ -79,6 +79,7 @@ import LibraryPage from "@/pages/LibraryPage";
 import FestivalPage from "@/pages/FestivalPage";
 import DivineArenaPage from "@/pages/DivineArenaPage";
 import NpcDiplomacyPage from "@/pages/NpcDiplomacyPage";
+import MilitaryPage from "@/pages/MilitaryPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";
 
@@ -167,6 +168,7 @@ function Router() {
       <Route path="/festival" component={FestivalPage} />
       <Route path="/divine-arena" component={DivineArenaPage} />
       <Route path="/npc-diplomacy" component={NpcDiplomacyPage} />
+      <Route path="/military" component={MilitaryPage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/reset-password" component={ResetPasswordPage} />
       <Route path="/verify-email" component={VerifyEmailPage} />

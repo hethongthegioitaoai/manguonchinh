@@ -64,3 +64,4 @@ export * from "./knowledgeLibrary";
 export * from "./seasonalFestivals";
 export * from "./divineArena";
 export * from "./diplomaticRelations";
+export * from "./militaryForces";
